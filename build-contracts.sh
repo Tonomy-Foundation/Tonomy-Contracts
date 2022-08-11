@@ -31,3 +31,11 @@ then
 else
     ./build.sh
 fi
+
+cd "${PARENT_PATH}/contracts/id.tonomy"
+if [ -e id.tonomy.wasm ]
+then
+    echo "id.tonomy already built"
+else
+    ./build.sh
+fi
