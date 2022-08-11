@@ -14,6 +14,12 @@ namespace idtonomy
    using eosio::permission_level;
    using eosio::public_key;
 
+   enum AccountType
+   {
+      Person,
+      Organization
+   };
+
    /**
     * @defgroup idtonomy id.tonomy
     * @ingroup tonomycontracts
@@ -38,15 +44,28 @@ namespace idtonomy
           name creator,
           checksum256 username_hash,
           public_key password,
-          eosio::string salt,
+          std::string salt,
           public_key pin,
           public_key fingerprint);
 
-      // TODO:
-      // Enum for account type: Person, Organization, Smartcontract...
-      // Table for storng account information: username, salt and more in the future
-
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
+
+      TABLE user
+      {
+         // primary key automatically added by EOSIO method
+         name account;
+         AccountType type;
+         checksum256 username_hash;
+         std::string salt;
+
+         auto primary_key() const { return account }
+         // also index by username hash to find easier
+         auto by_username_hash() const { return username_hash }
+      };
+
+      typedef eosio::multi_index<N(users), user,
+                                 indexed_by<eosio::N(usernamehash), const_mem_fun<user, checksum256, &user::by_username_hash>>>
+          people_table;
    };
    /** @}*/ // end of @defgroup idtonomy id.tonomy
 } /// namespace idtonomy

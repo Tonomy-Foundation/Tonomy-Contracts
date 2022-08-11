@@ -7,7 +7,7 @@ namespace idtonomy
        name creator,
        checksum256 username_hash,
        public_key password,
-       eosio::string salt,
+       std::string salt,
        public_key pin,
        public_key fingerprint)
    {

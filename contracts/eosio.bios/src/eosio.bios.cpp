@@ -8,7 +8,7 @@ namespace eosiobios
       // require_auth(creator); // this is done implicity in apply_eosio_newaccount()...
 
       // This action can only be called by inline action from the id.tonomy account
-      check(eosio::get_sender() == "id.tonomy"_n, "cannot call newaccount() directly");
+      check(eosio::get_sender() == "id.tonomy"_n, "cannot call newaccount() directly, call from the id contract");
    }
 
    // TODO need to change so that other functions can only be called by tonomy logic
