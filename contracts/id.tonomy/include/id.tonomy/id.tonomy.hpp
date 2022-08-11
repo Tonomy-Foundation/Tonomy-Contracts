@@ -20,6 +20,14 @@ namespace idtonomy
    //    Organization
    // };
 
+   // enum AccountStatus
+   // {
+   //    Creating,
+   //    Active,
+   //    Deactivated,
+   //    Upgrading
+   // };
+
    /**
     * @defgroup idtonomy id.tonomy
     * @ingroup tonomycontracts
@@ -50,20 +58,21 @@ namespace idtonomy
 
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
 
-      TABLE user
+      TABLE account
       {
-         name account;
+         name account_name;
          // AccountType type;
+         // AccountStatus status;
          // checksum256 username_hash;
          // std::string salt;
 
          // primary key automatically added by EOSIO method
-         auto primary_key() const { return account; }
+         auto primary_key() const { return account_name; }
          // also index by username hash to find easier
          // auto by_username_hash() const { return username_hash }
       };
 
-      typedef eosio::multi_index<"users"_n, user> users_table;
+      typedef eosio::multi_index<"accounts"_n, account> accounts_table;
       // typedef eosio::multi_index<"users"_n, user,
       //                            indexed_by<eosio::"usernamehash"_n, const_mem_fun<user, checksum256, &user::by_username_hash>>>
       //     users_table;
