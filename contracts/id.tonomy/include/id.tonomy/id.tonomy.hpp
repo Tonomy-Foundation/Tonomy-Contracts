@@ -14,11 +14,11 @@ namespace idtonomy
    using eosio::permission_level;
    using eosio::public_key;
 
-   enum AccountType
-   {
-      Person,
-      Organization
-   };
+   // enum AccountType
+   // {
+   //    Person,
+   //    Organization
+   // };
 
    /**
     * @defgroup idtonomy id.tonomy
@@ -52,20 +52,21 @@ namespace idtonomy
 
       TABLE user
       {
-         // primary key automatically added by EOSIO method
          name account;
-         AccountType type;
-         checksum256 username_hash;
-         std::string salt;
+         // AccountType type;
+         // checksum256 username_hash;
+         // std::string salt;
 
-         auto primary_key() const { return account }
+         // primary key automatically added by EOSIO method
+         auto primary_key() const { return account; }
          // also index by username hash to find easier
-         auto by_username_hash() const { return username_hash }
+         // auto by_username_hash() const { return username_hash }
       };
 
-      typedef eosio::multi_index<N(users), user,
-                                 indexed_by<eosio::N(usernamehash), const_mem_fun<user, checksum256, &user::by_username_hash>>>
-          people_table;
+      typedef eosio::multi_index<"users"_n, user> users_table;
+      // typedef eosio::multi_index<"users"_n, user,
+      //                            indexed_by<eosio::"usernamehash"_n, const_mem_fun<user, checksum256, &user::by_username_hash>>>
+      //     users_table;
    };
    /** @}*/ // end of @defgroup idtonomy id.tonomy
 } /// namespace idtonomy
