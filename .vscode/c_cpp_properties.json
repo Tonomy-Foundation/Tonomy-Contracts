@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
-                "./eosio.cdt/libraries/eosiolib",
+                "./eosio.cdt/libraries/eosiolib"
             ]
         }
     ],
