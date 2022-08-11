@@ -34,7 +34,17 @@ namespace idtonomy
        *
        * @param creator - the creator of the account
        */
-      [[eosio::action]] void newperson(name creator);
+      [[eosio::action]] void newperson(
+          name creator,
+          checksum256 username_hash,
+          public_key password,
+          eosio::string salt,
+          public_key pin,
+          public_key fingerprint);
+
+      // TODO:
+      // Enum for account type: Person, Organization, Smartcontract...
+      // Table for storng account information: username, salt and more in the future
 
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
    };
