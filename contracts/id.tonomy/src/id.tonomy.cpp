@@ -62,6 +62,7 @@ namespace idtonomy
       // TODO:
       // update key with pin
       // update key with fingerprint
+      // may need to use status to lock the account till finished craeating
 
       // Store the salt and hashed username in table, with type = Person
       accounts_table _accounts(get_self(), get_self().value);
@@ -74,6 +75,11 @@ namespace idtonomy
       }
 
       _accounts.emplace(get_self(), [&](auto &account_itr)
-                        { account_itr.account_name = randomname; });
+                        {
+        account_itr.account_name = randomname;
+        account_itr.type = idtonomy::AccountType::Person;
+        account_itr.status = idtonomy::AccountStatus::Creating;
+        account_itr.username_hash = username_hash;
+        account_itr.salt = salt; });
    }
 }

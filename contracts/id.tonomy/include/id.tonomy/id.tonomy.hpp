@@ -14,19 +14,19 @@ namespace idtonomy
    using eosio::permission_level;
    using eosio::public_key;
 
-   // enum AccountType
-   // {
-   //    Person,
-   //    Organization
-   // };
+   enum AccountType
+   {
+      Person,
+      Organization
+   };
 
-   // enum AccountStatus
-   // {
-   //    Creating,
-   //    Active,
-   //    Deactivated,
-   //    Upgrading
-   // };
+   enum AccountStatus
+   {
+      Creating,
+      Active,
+      Deactivated,
+      Upgrading
+   };
 
    /**
     * @defgroup idtonomy id.tonomy
@@ -61,10 +61,10 @@ namespace idtonomy
       TABLE account
       {
          name account_name;
-         // AccountType type;
-         // AccountStatus status;
-         // checksum256 username_hash;
-         // checksum256 salt;
+         AccountType type;
+         AccountStatus status;
+         checksum256 username_hash;
+         checksum256 salt;
 
          // primary key automatically added by EOSIO method
          auto primary_key() const { return account_name.value; }
