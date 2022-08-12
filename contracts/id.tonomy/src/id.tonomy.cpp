@@ -17,9 +17,18 @@ namespace idtonomy
    {
       uint64_t num = 0;
       auto hash_array = hash.extract_as_byte_array();
-      for (std::size_t i = 0; i == hash_array.size(); i++)
+
+      for (size_t i = 0; i < hash_array.size(); i++)
       {
-         num += hash_array[i] * (8 ^ i);
+         num += hash_array[i] << 8;
+         print("\n i, hash_array[i], hash_array[i] << 8, num: ");
+         print(i);
+         print(", ");
+         print(hash_array[i]);
+         print(", ");
+         print(hash_array[i] << 8);
+         print(", ");
+         print(num);
       }
       return num;
    }
@@ -28,9 +37,19 @@ namespace idtonomy
    {
       // Random input from the block header
       uint64_t name_uint64_t = eosio::tapos_block_prefix();
+      print("\n name_uint64_t: ");
+      print(name_uint64_t);
+
       // Random input from the user generated salt
       uint64_t salt_uint64_t = uint64_t_from_checksum256(salt);
+      print("\n salt_uint64_t: ");
+      print(salt_uint64_t);
+
       name_uint64_t ^= salt_uint64_t;
+      print("\n name_uint64_t: ");
+      print(name_uint64_t);
+
+      // TODO go through and change any '.' character for a random character
       return name(name_uint64_t);
    }
 
@@ -56,16 +75,17 @@ namespace idtonomy
       // check the transaction is signed by the `creator` account
       eosio::require_auth(creator);
 
-      //    // generate new random account name
-      //    const name randomname = random_account_name(salt);
-
+      // generate new random account name
+      const name random_name = random_account_name(salt);
+      eosio::print("\n random_name: ");
+      eosio::print(random_name);
       //    // use the password public key for the owner authority
       //    eosiobios::authority owner = create_authory_with_key(password);
 
       //    // create the account with the random account name, and the ower authority for both the owner and active permission
       //    // if the account name exists, this will fail
       //    eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      //    newaccountaction.send(creator, randomname, owner, owner);
+      //    newaccountaction.send(creator, random_name, owner, owner);
 
       //    // TODO:
       //    // update key with pin
@@ -91,7 +111,7 @@ namespace idtonomy
       //    // Store the salt and hashed username in table
       //    _accounts.emplace(get_self(), [&](auto &account_itr)
       //                      {
-      //      account_itr.account_name = randomname;
+      //      account_itr.account_name = random_name;
       //      account_itr.type = idtonomy::enum_account_type::Person;
       //      account_itr.status = idtonomy::enum_account_status::Creating;
       //      account_itr.username_hash = username_hash;

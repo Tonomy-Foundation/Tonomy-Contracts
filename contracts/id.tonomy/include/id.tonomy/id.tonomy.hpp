@@ -10,6 +10,7 @@ namespace idtonomy
    using eosio::check;
    using eosio::checksum256;
    using eosio::name;
+   using eosio::print;
    using eosio::public_key;
 
    // Create an enum type and an eosio type for enums
