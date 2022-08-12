@@ -9,9 +9,7 @@ namespace idtonomy
    using eosio::action_wrapper;
    using eosio::check;
    using eosio::checksum256;
-   using eosio::ignore;
    using eosio::name;
-   using eosio::permission_level;
    using eosio::public_key;
 
    enum AccountType
@@ -41,6 +39,12 @@ namespace idtonomy
    {
    public:
       using contract::contract;
+
+      /**
+       * Constructor for the contract, which initializes the _accounts table
+       */
+      id(name receiver, name code, eosio::datastream<const char *> ds);
+
       /**
        * New account action
        *
@@ -67,15 +71,16 @@ namespace idtonomy
          checksum256 salt;
 
          // primary key automatically added by EOSIO method
-         auto primary_key() const { return account_name.value; }
-         // also index by username hash to find easier
-         // auto by_username_hash() const { return username_hash }
+         uint64_t primary_key() const { return account_name.value; }
+         // also index by username hash
+         checksum256 index_by_username_hash() const { return username_hash; }
       };
 
-      typedef eosio::multi_index<"accounts"_n, account> accounts_table;
-      // typedef eosio::multi_index<"users"_n, user,
-      //                            indexed_by<eosio::"usernamehash"_n, const_mem_fun<user, checksum256, &user::by_username_hash>>>
-      //     users_table;
+      // typedef eosio::multi_index<"accounts"_n, account> accounts_table;
+      typedef eosio::multi_index<"accounts"_n, account,
+                                 eosio::indexed_by<"usernamehash"_n, eosio::const_mem_fun<account, checksum256, &account::index_by_username_hash>>>
+          accounts_table;
+      accounts_table _accounts;
    };
    /** @}*/ // end of @defgroup idtonomy id.tonomy
 } /// namespace idtonomy

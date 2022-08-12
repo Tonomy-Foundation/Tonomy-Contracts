@@ -5,6 +5,14 @@
 
 namespace idtonomy
 {
+   // contract class constructor
+   id::id(name receiver, name code, eosio::datastream<const char *> ds) : // contract base class contructor
+                                                                          contract(receiver, code, ds),
+                                                                          // instantiate multi-index instance as data member (find it defined below)
+                                                                          _accounts(receiver, receiver.value)
+   {
+   }
+
    uint64_t uint64_t_from_checksum256(const checksum256 &hash)
    {
       uint64_t num = 0;
@@ -65,7 +73,7 @@ namespace idtonomy
       // may need to use status to lock the account till finished craeating
 
       // Store the salt and hashed username in table, with type = Person
-      accounts_table _accounts(get_self(), get_self().value);
+      // accounts_table _accounts(get_self(), get_self().value);
 
       // Check the username is not already taken
       const auto &account_itr = _accounts.find(randomname.value);
