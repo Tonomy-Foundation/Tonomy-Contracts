@@ -30,10 +30,11 @@ namespace idtonomy
 
    static const char *charmap = "12345abcdefghijklmnopqrstuvwxyz";
 
-   name remove_dot_name(const name &account_name, const uint8_t random_number)
+   name tidy_name(const name &account_name, const uint8_t random_number)
    {
       std::string name_string = account_name.to_string();
 
+      // Remove any . character and replace with random character
       for (int i = 0; i < name_string.length(); i++)
       {
          if (name_string[i] == '.')
@@ -42,6 +43,9 @@ namespace idtonomy
             name_string[i] = charmap[(random_number * i) % 31];
          }
       }
+
+      // remove last character (only 12 characters allowed)
+      name_string.erase(name_string.end() - 1);
       return name(name_string);
    }
 
@@ -62,7 +66,7 @@ namespace idtonomy
 
       // TODO go through and change any '.' character for a random character
       name res = name(name_uint64_t);
-      return remove_dot_name(res, uint8_t(name_uint64_t));
+      return tidy_name(res, uint8_t(name_uint64_t));
    }
 
    eosiobios::authority create_authory_with_key(const eosio::public_key &key)
@@ -89,15 +93,15 @@ namespace idtonomy
 
       // generate new random account name
       const name random_name = random_account_name(username_hash, salt);
-      eosio::print("\n random_name: ");
-      eosio::print(random_name);
-      //    // use the password public key for the owner authority
-      //    eosiobios::authority owner = create_authory_with_key(password);
 
-      //    // create the account with the random account name, and the ower authority for both the owner and active permission
-      //    // if the account name exists, this will fail
-      //    eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      //    newaccountaction.send(creator, random_name, owner, owner);
+      // use the password public key for the owner authority
+      eosiobios::authority owner = create_authory_with_key(password);
+
+      // create the account with the random account name, and the ower authority for both the owner and active permission
+      // if the account name exists, this will fail
+      // TODO need to set the "eosio.code" permission on "active for this to work"
+      eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
+      newaccountaction.send(creator, random_name, owner, owner);
 
       //    // TODO:
       //    // update key with pin
