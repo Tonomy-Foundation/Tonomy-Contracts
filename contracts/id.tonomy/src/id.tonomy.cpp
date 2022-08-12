@@ -80,7 +80,7 @@ namespace idtonomy
          check(false, "This username is already taken");
       }
 
-      // Store the salt and hashed username in table, with type = Person
+      // Store the salt and hashed username in table
       _accounts.emplace(get_self(), [&](auto &account_itr)
                         {
         account_itr.account_name = randomname;

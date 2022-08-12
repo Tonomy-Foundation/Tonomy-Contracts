@@ -76,10 +76,12 @@ namespace idtonomy
          checksum256 index_by_username_hash() const { return username_hash; }
       };
 
-      // typedef eosio::multi_index<"accounts"_n, account> accounts_table;
+      // Create a multi-index-table with two indexes
       typedef eosio::multi_index<"accounts"_n, account,
                                  eosio::indexed_by<"usernamehash"_n, eosio::const_mem_fun<account, checksum256, &account::index_by_username_hash>>>
           accounts_table;
+
+      // Create an instance of the table that can is initalized in the constructor
       accounts_table _accounts;
    };
    /** @}*/ // end of @defgroup idtonomy id.tonomy
