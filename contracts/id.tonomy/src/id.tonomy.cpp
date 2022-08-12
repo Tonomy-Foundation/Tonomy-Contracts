@@ -72,16 +72,15 @@ namespace idtonomy
       // update key with fingerprint
       // may need to use status to lock the account till finished craeating
 
-      // Store the salt and hashed username in table, with type = Person
-      // accounts_table _accounts(get_self(), get_self().value);
-
       // Check the username is not already taken
-      const auto &account_itr = _accounts.find(randomname.value);
-      if (account_itr != _accounts.end())
+      auto accounts_by_username_hash_itr = _accounts.get_index<"usernamehash"_n>();
+      const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
+      if (username_itr != accounts_by_username_hash_itr.end())
       {
          check(false, "This username is already taken");
       }
 
+      // Store the salt and hashed username in table, with type = Person
       _accounts.emplace(get_self(), [&](auto &account_itr)
                         {
         account_itr.account_name = randomname;
