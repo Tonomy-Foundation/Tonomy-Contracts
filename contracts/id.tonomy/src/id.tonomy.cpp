@@ -113,14 +113,7 @@ namespace idtonomy
       const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
       if (username_itr != accounts_by_username_hash_itr.end())
       {
-         if (username_itr->status == idtonomy::enum_account_status::Creating)
-         {
-            check(false, "Account keys still need to be added in a follow-up action, add the keys or this account will be deactivated");
-         }
-         else
-         {
-            check(false, "This username is already taken");
-         }
+         check(false, "This username is already taken");
       }
 
       //    // Store the salt and hashed username in table
