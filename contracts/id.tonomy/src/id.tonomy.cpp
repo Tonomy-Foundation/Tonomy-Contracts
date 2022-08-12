@@ -16,36 +16,39 @@ namespace idtonomy
    uint64_t uint64_t_from_checksum256(const checksum256 &hash)
    {
       uint64_t num = 0;
+      // get an array of 32 bytes from the hash
       auto hash_array = hash.extract_as_byte_array();
 
       for (size_t i = 0; i < hash_array.size(); i++)
       {
-         num += hash_array[i] << 8;
-         print("\n i, hash_array[i], hash_array[i] << 8, num: ");
-         print(i);
-         print(", ");
-         print(hash_array[i]);
-         print(", ");
-         print(hash_array[i] << 8);
-         print(", ");
-         print(num);
+         // for each byte add it to the number, right shifting the number of bits the array element is from
+         num += hash_array[i] << 8 * i;
       }
       return num;
    }
 
-   name random_account_name(const checksum256 &salt)
+   name random_account_name(const checksum256 &hash1, const checksum256 &hash2)
    {
-      // Random input from the block header
+      // Random input from the block header (8 bytes)
       uint64_t name_uint64_t = eosio::tapos_block_prefix();
       print("\n name_uint64_t: ");
       print(name_uint64_t);
 
-      // Random input from the user generated salt
-      uint64_t salt_uint64_t = uint64_t_from_checksum256(salt);
-      print("\n salt_uint64_t: ");
-      print(salt_uint64_t);
+      // Random input from hash1 (32 bytes)
+      uint64_t hash_uint64_t = uint64_t_from_checksum256(hash1);
+      print("\n hash_uint64_t: ");
+      print(hash_uint64_t);
 
-      name_uint64_t ^= salt_uint64_t;
+      name_uint64_t += hash_uint64_t << 8 * 8;
+      print("\n name_uint64_t: ");
+      print(name_uint64_t);
+
+      // Random input from hash2 (32 bytes)
+      hash_uint64_t = uint64_t_from_checksum256(hash2);
+      print("\n hash_uint64_t: ");
+      print(hash_uint64_t);
+
+      name_uint64_t += hash_uint64_t << 8 * (8 + 32);
       print("\n name_uint64_t: ");
       print(name_uint64_t);
 
@@ -76,7 +79,7 @@ namespace idtonomy
       eosio::require_auth(creator);
 
       // generate new random account name
-      const name random_name = random_account_name(salt);
+      const name random_name = random_account_name(username_hash, salt);
       eosio::print("\n random_name: ");
       eosio::print(random_name);
       //    // use the password public key for the owner authority
