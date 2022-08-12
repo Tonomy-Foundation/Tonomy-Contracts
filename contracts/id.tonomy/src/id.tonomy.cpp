@@ -17,9 +17,10 @@ namespace idtonomy
    {
       uint64_t num = 0;
       // get an array of 32 bytes from the hash
-      auto hash_array = hash.extract_as_byte_array();
+      std::array<uint8_t, 32> hash_array = hash.extract_as_byte_array();
 
-      for (size_t i = 0; i < hash_array.size(); i++)
+      // iterate over the first 8 bytes (only need 8 bytes for uint64_t)
+      for (size_t i = 0; i < 8; i++)
       {
          // for each byte add it to the number, right shifting the number of bits the array element is from
          num += hash_array[i] << 8 * i;
@@ -27,33 +28,41 @@ namespace idtonomy
       return num;
    }
 
+   static const char *charmap = "12345abcdefghijklmnopqrstuvwxyz";
+
+   name remove_dot_name(const name &account_name, const uint8_t random_number)
+   {
+      std::string name_string = account_name.to_string();
+
+      for (int i = 0; i < name_string.length(); i++)
+      {
+         if (name_string[i] == '.')
+         {
+            // TODO: if this is the last character then it must not be greater then 'f'
+            name_string[i] = charmap[(random_number * i) % 31];
+         }
+      }
+      return name(name_string);
+   }
+
    name random_account_name(const checksum256 &hash1, const checksum256 &hash2)
    {
-      // Random input from the block header (8 bytes)
-      uint64_t name_uint64_t = eosio::tapos_block_prefix();
-      print("\n name_uint64_t: ");
-      print(name_uint64_t);
+      // Put random input from the block header (32 bits) in the first and last 32 bits
+      uint64_t tapos = eosio::tapos_block_prefix();
+      uint64_t name_uint64_t = tapos;
+      name_uint64_t ^= tapos << 32;
 
-      // Random input from hash1 (32 bytes)
+      // Put the random input from hash1 (256 bits aka 32 bytes) in first 32 bits
       uint64_t hash_uint64_t = uint64_t_from_checksum256(hash1);
-      print("\n hash_uint64_t: ");
-      print(hash_uint64_t);
+      name_uint64_t ^= hash_uint64_t;
 
-      name_uint64_t += hash_uint64_t << 8 * 8;
-      print("\n name_uint64_t: ");
-      print(name_uint64_t);
-
-      // Random input from hash2 (32 bytes)
+      // Put the random input from hash2 (32 bytes) in the last 32 bytes
       hash_uint64_t = uint64_t_from_checksum256(hash2);
-      print("\n hash_uint64_t: ");
-      print(hash_uint64_t);
-
-      name_uint64_t += hash_uint64_t << 8 * (8 + 32);
-      print("\n name_uint64_t: ");
-      print(name_uint64_t);
+      name_uint64_t ^= hash_uint64_t << 32;
 
       // TODO go through and change any '.' character for a random character
-      return name(name_uint64_t);
+      name res = name(name_uint64_t);
+      return remove_dot_name(res, uint8_t(name_uint64_t));
    }
 
    eosiobios::authority create_authory_with_key(const eosio::public_key &key)
