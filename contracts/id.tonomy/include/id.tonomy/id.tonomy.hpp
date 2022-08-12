@@ -67,7 +67,7 @@ namespace idtonomy
          // checksum256 salt;
 
          // primary key automatically added by EOSIO method
-         auto primary_key() const { return account_name; }
+         auto primary_key() const { return account_name.value; }
          // also index by username hash to find easier
          // auto by_username_hash() const { return username_hash }
       };

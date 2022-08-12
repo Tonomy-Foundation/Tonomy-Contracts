@@ -55,14 +55,25 @@ namespace idtonomy
       eosiobios::authority owner = create_authory_with_key(password);
 
       // create the account with the random account name, and the ower authority for both the owner and active permission
+      // if the account name exists, this will fail
       eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
       newaccountaction.send(creator, randomname, owner, owner);
 
       // TODO:
       // update key with pin
       // update key with fingerprint
-      // Store the salt and hashed username in table, with type = Person
 
-      check(false, "Check false");
+      // Store the salt and hashed username in table, with type = Person
+      accounts_table _accounts(get_self(), get_self().value);
+
+      // Check the username is not already taken
+      const auto &account_itr = _accounts.find(randomname.value);
+      if (account_itr != _accounts.end())
+      {
+         check(false, "This username is already taken");
+      }
+
+      _accounts.emplace(get_self(), [&](auto &account_itr)
+                        { account_itr.account_name = randomname; });
    }
 }
