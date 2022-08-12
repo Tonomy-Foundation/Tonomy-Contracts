@@ -56,45 +56,45 @@ namespace idtonomy
       // check the transaction is signed by the `creator` account
       eosio::require_auth(creator);
 
-      // generate new random account name
-      const name randomname = random_account_name(salt);
+      //    // generate new random account name
+      //    const name randomname = random_account_name(salt);
 
-      // use the password public key for the owner authority
-      eosiobios::authority owner = create_authory_with_key(password);
+      //    // use the password public key for the owner authority
+      //    eosiobios::authority owner = create_authory_with_key(password);
 
-      // create the account with the random account name, and the ower authority for both the owner and active permission
-      // if the account name exists, this will fail
-      eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      newaccountaction.send(creator, randomname, owner, owner);
+      //    // create the account with the random account name, and the ower authority for both the owner and active permission
+      //    // if the account name exists, this will fail
+      //    eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
+      //    newaccountaction.send(creator, randomname, owner, owner);
 
-      // TODO:
-      // update key with pin
-      // update key with fingerprint
-      // may need to do this in separate action, or perhaps separate transaction... need to test
-      // may need to use status to lock the account till finished craeating
+      //    // TODO:
+      //    // update key with pin
+      //    // update key with fingerprint
+      //    // may need to do this in separate action, or perhaps separate transaction... need to test
+      //    // may need to use status to lock the account till finished craeating
 
-      // Check the username is not already taken
-      auto accounts_by_username_hash_itr = _accounts.get_index<"usernamehash"_n>();
-      const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
-      if (username_itr != accounts_by_username_hash_itr.end())
-      {
-         if (username_itr->status == idtonomy::AccountStatus::Creating)
-         {
-            check(false, "Account keys still need to be added in a follow-up action, add the keys or this account will be deactivated");
-         }
-         else
-         {
-            check(false, "This username is already taken");
-         }
-      }
+      //    // Check the username is not already taken
+      //    auto accounts_by_username_hash_itr = _accounts.get_index<"usernamehash"_n>();
+      //    const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
+      //    if (username_itr != accounts_by_username_hash_itr.end())
+      //    {
+      //       if (username_itr->status == idtonomy::enum_account_status::Creating)
+      //       {
+      //          check(false, "Account keys still need to be added in a follow-up action, add the keys or this account will be deactivated");
+      //       }
+      //       else
+      //       {
+      //          check(false, "This username is already taken");
+      //       }
+      //    }
 
-      // Store the salt and hashed username in table
-      _accounts.emplace(get_self(), [&](auto &account_itr)
-                        {
-        account_itr.account_name = randomname;
-        account_itr.type = idtonomy::AccountType::Person;
-        account_itr.status = idtonomy::AccountStatus::Creating;
-        account_itr.username_hash = username_hash;
-        account_itr.salt = salt; });
+      //    // Store the salt and hashed username in table
+      //    _accounts.emplace(get_self(), [&](auto &account_itr)
+      //                      {
+      //      account_itr.account_name = randomname;
+      //      account_itr.type = idtonomy::enum_account_type::Person;
+      //      account_itr.status = idtonomy::enum_account_status::Creating;
+      //      account_itr.username_hash = username_hash;
+      //      account_itr.salt = salt; });
    }
 }

@@ -12,19 +12,23 @@ namespace idtonomy
    using eosio::name;
    using eosio::public_key;
 
-   enum AccountType
+   // Create an enum type and an eosio type for enums
+   // https://eosio.stackexchange.com/questions/4950/store-enum-value-in-table
+   enum enum_account_type
    {
       Person,
       Organization
    };
+   typedef uint8_t account_type;
 
-   enum AccountStatus
+   enum enum_account_status
    {
       Creating,
       Active,
       Deactivated,
       Upgrading
    };
+   typedef uint8_t account_status;
 
    /**
     * @defgroup idtonomy id.tonomy
@@ -65,8 +69,8 @@ namespace idtonomy
       TABLE account
       {
          name account_name;
-         AccountType type;
-         AccountStatus status;
+         account_type type;
+         account_status status;
          checksum256 username_hash;
          checksum256 salt;
 
