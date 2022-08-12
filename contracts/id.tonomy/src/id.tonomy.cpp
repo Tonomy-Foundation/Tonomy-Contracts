@@ -70,6 +70,7 @@ namespace idtonomy
       // TODO:
       // update key with pin
       // update key with fingerprint
+      // may need to do this in separate action, or perhaps separate transaction... need to test
       // may need to use status to lock the account till finished craeating
 
       // Check the username is not already taken
@@ -77,7 +78,14 @@ namespace idtonomy
       const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
       if (username_itr != accounts_by_username_hash_itr.end())
       {
-         check(false, "This username is already taken");
+         if (username_itr->status == idtonomy::AccountStatus::Creating)
+         {
+            check(false, "Account keys still need to be added in a follow-up action, add the keys or this account will be deactivated");
+         }
+         else
+         {
+            check(false, "This username is already taken");
+         }
       }
 
       // Store the salt and hashed username in table
