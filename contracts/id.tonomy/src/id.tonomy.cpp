@@ -99,7 +99,6 @@ namespace idtonomy
 
       // create the account with the random account name, and the ower authority for both the owner and active permission
       // if the account name exists, this will fail
-      // TODO need to set the "eosio.code" permission on "active for this to work"
       eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
       newaccountaction.send(creator, random_name, owner, owner);
 
@@ -110,27 +109,27 @@ namespace idtonomy
       //    // may need to use status to lock the account till finished craeating
 
       //    // Check the username is not already taken
-      //    auto accounts_by_username_hash_itr = _accounts.get_index<"usernamehash"_n>();
-      //    const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
-      //    if (username_itr != accounts_by_username_hash_itr.end())
-      //    {
-      //       if (username_itr->status == idtonomy::enum_account_status::Creating)
-      //       {
-      //          check(false, "Account keys still need to be added in a follow-up action, add the keys or this account will be deactivated");
-      //       }
-      //       else
-      //       {
-      //          check(false, "This username is already taken");
-      //       }
-      //    }
+      auto accounts_by_username_hash_itr = _accounts.get_index<"usernamehash"_n>();
+      const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
+      if (username_itr != accounts_by_username_hash_itr.end())
+      {
+         if (username_itr->status == idtonomy::enum_account_status::Creating)
+         {
+            check(false, "Account keys still need to be added in a follow-up action, add the keys or this account will be deactivated");
+         }
+         else
+         {
+            check(false, "This username is already taken");
+         }
+      }
 
       //    // Store the salt and hashed username in table
-      //    _accounts.emplace(get_self(), [&](auto &account_itr)
-      //                      {
-      //      account_itr.account_name = random_name;
-      //      account_itr.type = idtonomy::enum_account_type::Person;
-      //      account_itr.status = idtonomy::enum_account_status::Creating;
-      //      account_itr.username_hash = username_hash;
-      //      account_itr.salt = salt; });
+      _accounts.emplace(get_self(), [&](auto &account_itr)
+                        {
+           account_itr.account_name = random_name;
+           account_itr.type = idtonomy::enum_account_type::Person;
+           account_itr.status = idtonomy::enum_account_status::Creating;
+           account_itr.username_hash = username_hash;
+           account_itr.salt = salt; });
    }
 }
