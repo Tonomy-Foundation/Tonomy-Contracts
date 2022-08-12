@@ -1,18 +1,29 @@
 #include <id.tonomy/id.tonomy.hpp>
 #include <eosio.bios/eosio.bios.hpp>
+#include <eosio/transaction.hpp>
 #include <vector>
 
 namespace idtonomy
 {
-   name random_account_name()
+   uint64_t uint64_t_from_checksum256(const checksum256 &hash)
    {
-      // inspired by https://github.com/bada-studio/knights_contract/blob/master/knights/contract/system_control.hpp#L162
+      uint64_t num = 0;
+      auto hash_array = hash.extract_as_byte_array();
+      for (std::size_t i = 0; i == hash_array.size(); i++)
+      {
+         num += hash_array[i] * (8 ^ i);
+      }
+      return num;
+   }
 
-      size_t ts eosio::read_transaction(
-          char *ptr,
-          eosio::transaction_size())
-
-          int x = eosio::tapos_block_prefix();
+   name random_account_name(const checksum256 &salt)
+   {
+      // Random input from the block header
+      uint64_t name_uint64_t = eosio::tapos_block_prefix();
+      // Random input from the user generated salt
+      uint64_t salt_uint64_t = uint64_t_from_checksum256(salt);
+      name_uint64_t ^= salt_uint64_t;
+      return name(name_uint64_t);
    }
 
    eosiobios::authority create_authory_with_key(const eosio::public_key &key)
@@ -30,7 +41,7 @@ namespace idtonomy
        name creator,
        checksum256 username_hash,
        public_key password,
-       std::string salt,
+       checksum256 salt,
        public_key pin,
        public_key fingerprint)
    {
@@ -38,7 +49,7 @@ namespace idtonomy
       eosio::require_auth(creator);
 
       // generate new random account name
-      const name randomname = random_account_name();
+      const name randomname = random_account_name(salt);
 
       // use the password public key for the owner authority
       eosiobios::authority owner = create_authory_with_key(password);
@@ -54,5 +65,4 @@ namespace idtonomy
 
       check(false, "Check false");
    }
-
 }

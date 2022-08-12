@@ -52,7 +52,7 @@ namespace idtonomy
           name creator,
           checksum256 username_hash,
           public_key password,
-          std::string salt,
+          checksum256 salt,
           public_key pin,
           public_key fingerprint);
 
@@ -64,7 +64,7 @@ namespace idtonomy
          // AccountType type;
          // AccountStatus status;
          // checksum256 username_hash;
-         // std::string salt;
+         // checksum256 salt;
 
          // primary key automatically added by EOSIO method
          auto primary_key() const { return account_name; }
