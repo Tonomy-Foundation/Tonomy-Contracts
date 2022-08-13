@@ -96,18 +96,17 @@ namespace idtonomy
       const name random_name = random_account_name(username_hash, salt);
 
       // use the password public key for the owner authority
-      eosiobios::authority owner = create_authory_with_key(password);
+      eosiobios::authority password_authority = create_authory_with_key(password);
 
       // create the account with the random account name, and the ower authority for both the owner and active permission
       // if the account name exists, this will fail
       eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      newaccountaction.send(creator, random_name, owner, owner);
+      newaccountaction.send(creator, random_name, password_authority, password_authority);
 
-      eosiobios::authority owner = create_authory_with_key(pin);
+      eosiobios::authority pin_authority = create_authory_with_key(pin);
       eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), "active"_n});
-      newacupdateauthactioncountaction.send(random_name, "pin"_n, "owner"_n, owner);
+      updateauthaction.send(random_name, "pin"_n, "owner"_n, pin_authority);
       //    // TODO:
-      //    // update key with pin
       //    // update key with fingerprint
       //    // may need to do this in separate action, or perhaps separate transaction... need to test
       //    // may need to use status to lock the account till finished craeating
