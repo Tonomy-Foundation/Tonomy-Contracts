@@ -24,6 +24,14 @@ else
     ./build.sh
 fi
 
+cd "${PARENT_PATH}/contracts/eosio.bios.tonomy"
+if [ -e eosio.bios.tonomy.wasm ]
+then
+    echo "eosio.bios.tonomy already built"
+else
+    ./build.sh
+fi
+
 cd "${PARENT_PATH}/contracts/eosio.token"
 if [ -e eosio.token.wasm ]
 then

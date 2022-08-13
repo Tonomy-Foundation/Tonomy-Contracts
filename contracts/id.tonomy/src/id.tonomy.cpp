@@ -77,6 +77,7 @@ namespace idtonomy
       key_weight1.weight = 1;
       key_weight1.key = key;
       new_authority.keys.push_back(key_weight1);
+
       return new_authority;
    }
 
@@ -102,6 +103,9 @@ namespace idtonomy
       eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
       newaccountaction.send(creator, random_name, owner, owner);
 
+      eosiobios::authority owner = create_authory_with_key(pin);
+      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), "active"_n});
+      newacupdateauthactioncountaction.send(random_name, "pin"_n, "owner"_n, owner);
       //    // TODO:
       //    // update key with pin
       //    // update key with fingerprint
