@@ -90,6 +90,7 @@ namespace idtonomy
        public_key fingerprint)
    {
       // check the transaction is signed by the `creator` account
+      // TODO remove this argument, and require authorization from id.tonomy account
       eosio::require_auth(creator);
 
       // generate new random account name
@@ -126,19 +127,9 @@ namespace idtonomy
                          name parent,
                          public_key key)
    {
-      // eosio::require_auth({account, parent});
       eosiobios::authority authority = create_authory_with_key(key);
-      print("\naccount: ");
-      print(account);
-      print("\nparent: ");
-      print(parent);
-      print("\npermission: ");
-      print(permission);
 
-      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, permission});
-      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, parent});
-      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), "owner"_n});
-      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), "active"_n});
+      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, permission});
       updateauthaction.send(account, permission, parent, authority);
    }
 }
