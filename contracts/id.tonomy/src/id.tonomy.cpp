@@ -71,14 +71,15 @@ namespace idtonomy
 
    eosiobios::authority create_authory_with_key(const eosio::public_key &key)
    {
-      eosiobios::authority new_authority{}; // zero initialized
-      new_authority.threshold = 1;
-      eosiobios::key_weight key_weight1;
-      key_weight1.weight = 1;
-      key_weight1.key = key;
-      new_authority.keys.push_back(key_weight1);
+      eosiobios::key_weight new_key = eosiobios::key_weight{.key = key, .weight = 1};
+      eosiobios::authority new_authority{.threshold = 1, .keys = {new_key}, .accounts = {}, .waits = {}};
 
       return new_authority;
+   }
+
+   eosiobios::permission_level create_eosio_code_permission_level(const name &account)
+   {
+      return eosiobios::permission_level(account, "eosio.code"_n);
    }
 
    void id::newperson(
@@ -98,8 +99,8 @@ namespace idtonomy
 
       // use the password public key for the owner authority
       eosiobios::authority password_authority = create_authory_with_key(password);
+      password_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
-      // create the account with the random account name, and the ower authority for both the owner and active permission
       // if the account name exists, this will fail
       eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
       newaccountaction.send(creator, random_name, password_authority, password_authority);
@@ -128,6 +129,7 @@ namespace idtonomy
                          public_key key)
    {
       eosiobios::authority authority = create_authory_with_key(key);
+      authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, permission});
       updateauthaction.send(account, permission, parent, authority);
