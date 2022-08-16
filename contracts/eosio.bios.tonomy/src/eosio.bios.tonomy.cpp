@@ -5,7 +5,7 @@ namespace eosiobiostonomy
    // This action can only be called by inline action from the {sender} account
    void check_sender(name sender)
    {
-      check(eosio::get_sender() == sender, "cannot call eosio action() directly, call from the " + sender.to_string() + " contract");
+      check(eosio::get_sender() == sender, "You cannot call this eosio action directly, call from the " + sender.to_string() + " contract");
    }
 
    void bios::newaccount(name creator, name name, ignore<authority> owner, ignore<authority> active)

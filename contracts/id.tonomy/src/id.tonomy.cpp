@@ -132,13 +132,13 @@ namespace idtonomy
       print(account);
       print("\nparent: ");
       print(parent);
+      print("\npermission: ");
+      print(permission);
 
-      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, parent});
       // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, permission});
-      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "active"_n});
+      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, parent});
+      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), "owner"_n});
       // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), "active"_n});
-      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), parent});
-      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), permission});
       updateauthaction.send(account, permission, parent, authority);
    }
 }
