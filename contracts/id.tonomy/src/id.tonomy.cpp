@@ -28,7 +28,7 @@ namespace idtonomy
       return num;
    }
 
-   static const char *charmap = "12345abcdefghijklmnopqrstuvwxyz";
+   static constexpr char *charmap = (char *)"12345abcdefghijklmnopqrstuvwxyz";
 
    name tidy_name(const name &account_name, const uint8_t random_number)
    {
@@ -103,15 +103,7 @@ namespace idtonomy
       eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
       newaccountaction.send(creator, random_name, password_authority, password_authority);
 
-      eosiobios::authority pin_authority = create_authory_with_key(pin);
-      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), "active"_n});
-      updateauthaction.send(random_name, "pin"_n, "owner"_n, pin_authority);
-      //    // TODO:
-      //    // update key with fingerprint
-      //    // may need to do this in separate action, or perhaps separate transaction... need to test
-      //    // may need to use status to lock the account till finished craeating
-
-      //    // Check the username is not already taken
+      // Check the username is not already taken
       auto accounts_by_username_hash_itr = _accounts.get_index<"usernamehash"_n>();
       const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
       if (username_itr != accounts_by_username_hash_itr.end())
@@ -119,7 +111,7 @@ namespace idtonomy
          check(false, "This username is already taken");
       }
 
-      //    // Store the salt and hashed username in table
+      // Store the salt and hashed username in table
       _accounts.emplace(get_self(), [&](auto &account_itr)
                         {
            account_itr.account_name = random_name;
@@ -127,5 +119,26 @@ namespace idtonomy
            account_itr.status = idtonomy::enum_account_status::Creating;
            account_itr.username_hash = username_hash;
            account_itr.salt = salt; });
+   }
+
+   void id::updateperson(name account,
+                         name permission,
+                         name parent,
+                         public_key key)
+   {
+      // eosio::require_auth({account, parent});
+      eosiobios::authority authority = create_authory_with_key(key);
+      print("\naccount: ");
+      print(account);
+      print("\nparent: ");
+      print(parent);
+
+      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, parent});
+      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, permission});
+      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "active"_n});
+      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), "active"_n});
+      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), parent});
+      // eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {get_self(), permission});
+      updateauthaction.send(account, permission, parent, authority);
    }
 }

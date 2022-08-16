@@ -56,6 +56,7 @@ namespace idtonomy
        * @details Creates a new account.
        *
        * @param creator - the creator of the account
+       * TODO
        */
       [[eosio::action]] void newperson(
           name creator,
@@ -64,6 +65,16 @@ namespace idtonomy
           checksum256 salt,
           public_key pin,
           public_key fingerprint);
+
+      /**
+       * Update a persons key
+       *
+       * @param TODO
+       */
+      [[eosio::action]] void updateperson(name account,
+                                          name permission,
+                                          name parent,
+                                          public_key key);
 
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
 

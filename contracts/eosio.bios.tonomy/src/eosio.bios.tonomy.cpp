@@ -10,7 +10,7 @@ namespace eosiobiostonomy
 
    void bios::newaccount(name creator, name name, ignore<authority> owner, ignore<authority> active)
    {
-      // require_auth(creator); // this is done implicity in apply_eosio_newaccount()...
+      // require_auth(creator); // this is done implicity in apply_eosio_newaccount() which checks the "active" permission...
       check_sender("id.tonomy"_n);
    }
 
@@ -19,12 +19,14 @@ namespace eosiobiostonomy
                          ignore<name> parent,
                          ignore<authority> auth)
    {
+      // require_auth({account, permission}); // this is done implicity in apply_eosio_updateauth()...
       check_sender("id.tonomy"_n);
    }
 
    void bios::deleteauth(ignore<name> account,
                          ignore<name> permission)
    {
+      // require_auth({account, permission}); // this is done implicity in apply_eosio_deleteauth()...
       check_sender("id.tonomy"_n);
    }
 
