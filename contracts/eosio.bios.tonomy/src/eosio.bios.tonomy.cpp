@@ -19,7 +19,7 @@ namespace eosiobiostonomy
                          ignore<name> parent,
                          ignore<authority> auth)
    {
-      // require_auth({account, permission}); // this is done implicity in apply_eosio_updateauth()...
+      // check(has_auth({account, permission}) || has_auth({account, parent}), "not authorized by parent or permission"); // this is done implicity in apply_eosio_updateauth()...
       check_sender("id.tonomy"_n);
    }
 

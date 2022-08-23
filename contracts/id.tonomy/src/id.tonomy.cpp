@@ -77,6 +77,8 @@ namespace idtonomy
       return new_authority;
    }
 
+   // add the eosio.code permission to allow the account to call the smart contract properly
+   // https://developers.eos.io/welcome/v2.1/smart-contract-guides/adding-inline-actions#step-1-adding-eosiocode-to-permissions
    eosiobios::permission_level create_eosio_code_permission_level(const name &account)
    {
       return eosiobios::permission_level(account, "eosio.code"_n);
@@ -101,7 +103,7 @@ namespace idtonomy
       eosiobios::authority password_authority = create_authory_with_key(password);
       password_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
-      // if the account name exists, this will fail
+      // If the account name exists, this will fail
       eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
       newaccountaction.send(creator, random_name, password_authority, password_authority);
 
@@ -131,7 +133,7 @@ namespace idtonomy
       eosiobios::authority authority = create_authory_with_key(key);
       authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
-      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, permission});
+      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, parent});
       updateauthaction.send(account, permission, parent, authority);
    }
 }
