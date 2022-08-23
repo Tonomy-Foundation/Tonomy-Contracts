@@ -116,20 +116,35 @@ namespace idtonomy
                         {
            account_itr.account_name = random_name;
            account_itr.type = idtonomy::enum_account_type::Person;
-           account_itr.status = idtonomy::enum_account_status::Creating;
+           account_itr.status = idtonomy::enum_account_status::Creating_Status;
            account_itr.username_hash = username_hash;
            account_itr.password_salt = password_salt; });
    }
 
-   void id::updateperson(name account,
-                         name permission,
-                         name parent,
-                         public_key key)
+   void id::updatekey(name account,
+                      permission_level permission_level,
+                      public_key key)
    {
       eosiobios::authority authority = create_authory_with_key(key);
       authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
-      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, parent});
-      updateauthaction.send(account, permission, parent, authority);
+      name permission;
+      switch (permission_level)
+      {
+      case idtonomy::enum_permission_level::Pin:
+         permission = "pin"_n;
+         break;
+      case idtonomy::enum_permission_level::Fingerprint:
+         permission = "fingerprint"_n;
+         break;
+      case idtonomy::enum_permission_level::Local:
+         permission = "local"_n;
+         break;
+      default:
+         check(false, "Invalid permission level");
+      }
+
+      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "owner"_n});
+      updateauthaction.send(account, permission, "owner"_n, authority);
    }
 }

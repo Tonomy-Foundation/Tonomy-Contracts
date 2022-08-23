@@ -24,12 +24,23 @@ namespace idtonomy
 
    enum enum_account_status
    {
-      Creating,
-      Active,
-      Deactivated,
-      Upgrading
+      Creating_Status,
+      Active_Status,
+      Deactivated_Status,
+      Upgrading_Status
    };
    typedef uint8_t account_status;
+
+   enum enum_permission_level
+   {
+      Owner,
+      Active,
+      Password,
+      Pin,
+      Fingerprint,
+      Local
+   };
+   typedef uint8_t permission_level;
 
    /**
     * @defgroup idtonomy id.tonomy
@@ -65,16 +76,18 @@ namespace idtonomy
           checksum256 password_salt);
 
       /**
-       * Update a persons key
+       * Update a key of a person
        *
-       * @param TODO
+       * @param account - name of the account to update
+       * @param permission - permission level of the key to update
+       * @param key - public key to update
        */
-      [[eosio::action]] void updateperson(name account,
-                                          name permission,
-                                          name parent,
-                                          public_key key);
+      [[eosio::action]] void updatekey(name account,
+                                       permission_level permission,
+                                       public_key key);
 
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
+      using updatekey_action = action_wrapper<"updatekey"_n, &id::updatekey>;
 
       TABLE account
       {
