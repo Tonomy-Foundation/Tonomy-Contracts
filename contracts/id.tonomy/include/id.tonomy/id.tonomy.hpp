@@ -51,20 +51,18 @@ namespace idtonomy
       id(name receiver, name code, eosio::datastream<const char *> ds);
 
       /**
-       * New account action
+       * Create a new account for a person
        *
        * @details Creates a new account.
        *
-       * @param creator - the creator of the account
-       * TODO
+       * @param username_hash - hash of the username of the account
+       * @param password_key - public key generated from the account's password
+       * @param password_salt - salt used to generate the password_key with the password
        */
       [[eosio::action]] void newperson(
-          name creator,
           checksum256 username_hash,
-          public_key password,
-          checksum256 salt,
-          public_key pin,
-          public_key fingerprint);
+          public_key password_key,
+          checksum256 password_salt);
 
       /**
        * Update a persons key
@@ -84,7 +82,7 @@ namespace idtonomy
          account_type type;
          account_status status;
          checksum256 username_hash;
-         checksum256 salt;
+         checksum256 password_salt;
 
          // primary key automatically added by EOSIO method
          uint64_t primary_key() const { return account_name.value; }

@@ -85,27 +85,23 @@ namespace idtonomy
    }
 
    void id::newperson(
-       name creator,
        checksum256 username_hash,
-       public_key password,
-       checksum256 salt,
-       public_key pin,
-       public_key fingerprint)
+       public_key password_key,
+       checksum256 password_salt)
    {
-      // check the transaction is signed by the `creator` account
-      // TODO remove this argument, and require authorization from id.tonomy account
-      eosio::require_auth(creator);
+      // check the transaction is signed by the `id.tonomy` account
+      eosio::require_auth(get_self());
 
       // generate new random account name
-      const name random_name = random_account_name(username_hash, salt);
+      const name random_name = random_account_name(username_hash, password_salt);
 
-      // use the password public key for the owner authority
-      eosiobios::authority password_authority = create_authory_with_key(password);
+      // use the password_key public key for the owner authority
+      eosiobios::authority password_authority = create_authory_with_key(password_key);
       password_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       // If the account name exists, this will fail
       eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      newaccountaction.send(creator, random_name, password_authority, password_authority);
+      newaccountaction.send(get_self(), random_name, password_authority, password_authority);
 
       // Check the username is not already taken
       auto accounts_by_username_hash_itr = _accounts.get_index<"usernamehash"_n>();
@@ -115,14 +111,14 @@ namespace idtonomy
          check(false, "This username is already taken");
       }
 
-      // Store the salt and hashed username in table
+      // Store the password_salt and hashed username in table
       _accounts.emplace(get_self(), [&](auto &account_itr)
                         {
            account_itr.account_name = random_name;
            account_itr.type = idtonomy::enum_account_type::Person;
            account_itr.status = idtonomy::enum_account_status::Creating;
            account_itr.username_hash = username_hash;
-           account_itr.salt = salt; });
+           account_itr.password_salt = password_salt; });
    }
 
    void id::updateperson(name account,
