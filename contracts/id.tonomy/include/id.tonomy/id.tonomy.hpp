@@ -5,7 +5,6 @@
 
 namespace idtonomy
 {
-
    using eosio::action_wrapper;
    using eosio::check;
    using eosio::checksum256;
@@ -18,7 +17,9 @@ namespace idtonomy
    enum enum_account_type
    {
       Person,
-      Organization
+      Organization,
+      SmartContract,
+      Goverment
    };
    typedef uint8_t account_type;
 
@@ -30,6 +31,12 @@ namespace idtonomy
       Upgrading_Status
    };
    typedef uint8_t account_status;
+
+   std::map<enum_account_type, char> account_type_letters = {
+       {enum_account_type::Person, 'p'},
+       {enum_account_type::SmartContract, 's'},
+       {enum_account_type::Organization, 'o'},
+       {enum_account_type::Goverment, 'g'}};
 
    enum enum_permission_level
    {

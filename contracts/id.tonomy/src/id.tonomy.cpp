@@ -30,10 +30,10 @@ namespace idtonomy
 
    static constexpr char *charmap = (char *)"12345abcdefghijklmnopqrstuvwxyz";
 
-   name tidy_name(const name &account_name, const uint8_t random_number)
+   name tidy_name(const name &account_name, const uint8_t random_number, const char &account_type)
    {
       std::string name_string = account_name.to_string();
-
+      name_string[0] = account_type;
       // Remove any . character and replace with random character
       for (int i = 0; i < name_string.length(); i++)
       {
@@ -49,7 +49,7 @@ namespace idtonomy
       return name(name_string);
    }
 
-   name random_account_name(const checksum256 &hash1, const checksum256 &hash2)
+   name random_account_name(const checksum256 &hash1, const checksum256 &hash2, const char &account_type)
    {
       // Put random input from the block header (32 bits) in the first and last 32 bits
       uint64_t tapos = eosio::tapos_block_prefix();
@@ -66,7 +66,7 @@ namespace idtonomy
 
       // TODO go through and change any '.' character for a random character
       name res = name(name_uint64_t);
-      return tidy_name(res, uint8_t(name_uint64_t));
+      return tidy_name(res, uint8_t(name_uint64_t), account_type);
    }
 
    eosiobios::authority create_authory_with_key(const eosio::public_key &key)
@@ -93,7 +93,7 @@ namespace idtonomy
       eosio::require_auth(get_self());
 
       // generate new random account name
-      const name random_name = random_account_name(username_hash, password_salt);
+      const name random_name = random_account_name(username_hash, password_salt, account_type_letters[enum_account_type::Person]);
 
       // use the password_key public key for the owner authority
       eosiobios::authority password_authority = create_authory_with_key(password_key);
