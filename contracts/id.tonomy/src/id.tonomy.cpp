@@ -115,7 +115,6 @@ namespace idtonomy
       _accounts.emplace(get_self(), [&](auto &account_itr)
                         {
            account_itr.account_name = random_name;
-           account_itr.type = idtonomy::enum_account_type::Person;
            account_itr.status = idtonomy::enum_account_status::Creating_Status;
            account_itr.username_hash = username_hash;
            account_itr.password_salt = password_salt; });

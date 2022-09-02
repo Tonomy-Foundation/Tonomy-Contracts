@@ -99,7 +99,6 @@ namespace idtonomy
       TABLE account
       {
          name account_name;
-         account_type type;
          account_status status;
          checksum256 username_hash;
          checksum256 password_salt;
