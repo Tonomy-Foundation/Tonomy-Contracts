@@ -96,6 +96,7 @@ namespace idtonomy
          account_status status;
          checksum256 username_hash;
          checksum256 password_salt;
+         uint16_t version; // used for upgrading the account structure
 
          // primary key automatically added by EOSIO method
          uint64_t primary_key() const { return account_name.value; }
