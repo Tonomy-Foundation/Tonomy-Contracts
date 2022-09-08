@@ -33,7 +33,10 @@ namespace idtonomy
    name tidy_name(const name &account_name, const uint8_t random_number, const enum_account_type &account_type)
    {
       std::string name_string = account_name.to_string();
+
+      // Set the first character to the account type
       name_string[0] = account_type_letters[account_type];
+
       // Remove any . character and replace with random character
       for (int i = 0; i < name_string.length(); i++)
       {
@@ -117,7 +120,8 @@ namespace idtonomy
            account_itr.account_name = random_name;
            account_itr.status = idtonomy::enum_account_status::Creating_Status;
            account_itr.username_hash = username_hash;
-           account_itr.password_salt = password_salt; });
+           account_itr.password_salt = password_salt;
+           account_itr.version = 1; });
    }
 
    void id::updatekey(name account,
