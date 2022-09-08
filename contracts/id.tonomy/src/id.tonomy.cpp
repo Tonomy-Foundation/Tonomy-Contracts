@@ -33,7 +33,10 @@ namespace idtonomy
    name tidy_name(const name &account_name, const uint8_t random_number, const enum_account_type &account_type)
    {
       std::string name_string = account_name.to_string();
+
+      // Set the first character to the account type
       name_string[0] = account_type_letters[account_type];
+
       // Remove any . character and replace with random character
       for (int i = 0; i < name_string.length(); i++)
       {
