@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${default}",
+                "./eosio.cdt/libraries/eosiolib"
+            ]
+        }
+    ],
+    "version": 4
+}
