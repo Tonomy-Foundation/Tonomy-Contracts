@@ -2,6 +2,7 @@
 #include <eosio.bios/eosio.bios.hpp>
 #include <eosio/transaction.hpp>
 #include <vector>
+#include "../../errors.cpp"
 
 namespace idtonomy
 {
@@ -111,7 +112,7 @@ namespace idtonomy
       const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
       if (username_itr != accounts_by_username_hash_itr.end())
       {
-         check(false, "This username is already taken");
+         throwError("TCON1000", "This username is already taken");
       }
 
       // Store the password_salt and hashed username in table
