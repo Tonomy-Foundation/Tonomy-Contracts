@@ -10,7 +10,8 @@ namespace idtonomy
    id::id(name receiver, name code, eosio::datastream<const char *> ds) : // contract base class contructor
                                                                           contract(receiver, code, ds),
                                                                           // instantiate multi-index instance as data member (find it defined below)
-                                                                          _people(receiver, receiver.value)
+                                                                          _people(receiver, receiver.value),
+                                                                          _apps(receiver, receiver.value)
    {
    }
 
@@ -108,21 +109,66 @@ namespace idtonomy
       newaccountaction.send(get_self(), random_name, password_authority, password_authority);
 
       // Check the username is not already taken
-      auto accounts_by_username_hash_itr = _people.get_index<"usernamehash"_n>();
-      const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
-      if (username_itr != accounts_by_username_hash_itr.end())
+      auto people_by_username_hash_itr = _people.get_index<"usernamehash"_n>();
+      const auto username_itr = people_by_username_hash_itr.find(username_hash);
+      if (username_itr != people_by_username_hash_itr.end())
       {
-         throwError("TCON1000", "This username is already taken");
+         throwError("TCON1000", "This people username is already taken");
       }
 
       // Store the password_salt and hashed username in table
-      _people.emplace(get_self(), [&](auto &account_itr)
+      _people.emplace(get_self(), [&](auto &people_itr)
                         {
-           account_itr.account_name = random_name;
-           account_itr.status = idtonomy::enum_account_status::Creating_Status;
-           account_itr.username_hash = username_hash;
-           account_itr.password_salt = password_salt;
-           account_itr.version = 1; });
+           people_itr.account_name = random_name;
+           people_itr.status = idtonomy::enum_account_status::Creating_Status;
+           people_itr.username_hash = username_hash;
+           people_itr.password_salt = password_salt;
+           people_itr.version = 1; });
+   }
+
+   void id::newapp(
+      string name,
+      string description,
+      checksum256 username_hash,
+      string logo_url,
+      string domain,
+      public_key key)
+   {
+      // check the transaction is signed by the `id.tonomy` account
+      eosio::require_auth(get_self());
+
+      checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
+
+      // generate new random account name
+      const eosio::name random_name = random_account_name(username_hash, description_hash, enum_account_type::App);
+
+      // use the password_key public key for the owner authority
+      eosiobios::authority key_authority = create_authory_with_key(key);
+      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
+
+      // If the account name exists, this will fail
+      eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
+      newaccountaction.send(get_self(), random_name, key_authority, key_authority);
+
+      // Check the username is not already taken
+      auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
+      const auto username_itr = apps_by_username_hash_itr.find(username_hash);
+      if (username_itr != apps_by_username_hash_itr.end())
+      {
+         throwError("TCON1001", "This app username is already taken");
+      }
+
+      // Store the password_salt and hashed username in table
+      _apps.emplace(get_self(), [&](auto &app_itr)
+                        {
+                           app_itr.account_name = random_name;
+                           app_itr.status = idtonomy::enum_account_status::Creating_Status;
+                           app_itr.app_name = name;
+                           app_itr.description = description;
+                           app_itr.logo_url = logo_url;
+                           app_itr.domain = domain;
+                           app_itr.username_hash = username_hash;
+                           app_itr.version = 1; });
    }
 
    void id::updatekeyper(name account,
