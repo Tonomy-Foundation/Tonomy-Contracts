@@ -10,7 +10,7 @@ namespace idtonomy
    id::id(name receiver, name code, eosio::datastream<const char *> ds) : // contract base class contructor
                                                                           contract(receiver, code, ds),
                                                                           // instantiate multi-index instance as data member (find it defined below)
-                                                                          _accounts(receiver, receiver.value)
+                                                                          _people(receiver, receiver.value)
    {
    }
 
@@ -108,7 +108,7 @@ namespace idtonomy
       newaccountaction.send(get_self(), random_name, password_authority, password_authority);
 
       // Check the username is not already taken
-      auto accounts_by_username_hash_itr = _accounts.get_index<"usernamehash"_n>();
+      auto accounts_by_username_hash_itr = _people.get_index<"usernamehash"_n>();
       const auto username_itr = accounts_by_username_hash_itr.find(username_hash);
       if (username_itr != accounts_by_username_hash_itr.end())
       {
@@ -116,7 +116,7 @@ namespace idtonomy
       }
 
       // Store the password_salt and hashed username in table
-      _accounts.emplace(get_self(), [&](auto &account_itr)
+      _people.emplace(get_self(), [&](auto &account_itr)
                         {
            account_itr.account_name = random_name;
            account_itr.status = idtonomy::enum_account_status::Creating_Status;
@@ -125,7 +125,7 @@ namespace idtonomy
            account_itr.version = 1; });
    }
 
-   void id::updatekey(name account,
+   void id::updatekeyper(name account,
                       permission_level permission_level,
                       public_key key)
    {

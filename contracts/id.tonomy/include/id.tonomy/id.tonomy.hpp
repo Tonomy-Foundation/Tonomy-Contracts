@@ -18,8 +18,8 @@ namespace idtonomy
    {
       Person,
       Organization,
-      SmartContract,
-      Goverment
+      App,
+      Gov
    };
    typedef uint8_t account_type;
 
@@ -34,9 +34,9 @@ namespace idtonomy
 
    std::map<enum_account_type, char> account_type_letters = {
        {enum_account_type::Person, 'p'},
-       {enum_account_type::SmartContract, 's'},
+       {enum_account_type::App, 's'},
        {enum_account_type::Organization, 'o'},
-       {enum_account_type::Goverment, 'g'}};
+       {enum_account_type::Gov, 'g'}};
 
    enum enum_permission_level
    {
@@ -89,14 +89,14 @@ namespace idtonomy
        * @param permission - permission level of the key to update
        * @param key - public key to update
        */
-      [[eosio::action]] void updatekey(name account,
+      [[eosio::action]] void updatekeyper(name account,
                                        permission_level permission,
                                        public_key key);
 
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
-      using updatekey_action = action_wrapper<"updatekey"_n, &id::updatekey>;
+      using updatekeyper_action = action_wrapper<"updatekeyper"_n, &id::updatekeyper>;
 
-      TABLE account
+      TABLE person
       {
          name account_name;
          account_status status;
@@ -111,12 +111,12 @@ namespace idtonomy
       };
 
       // Create a multi-index-table with two indexes
-      typedef eosio::multi_index<"accounts"_n, account,
-                                 eosio::indexed_by<"usernamehash"_n, eosio::const_mem_fun<account, checksum256, &account::index_by_username_hash>>>
-          accounts_table;
+      typedef eosio::multi_index<"people"_n, person,
+                                 eosio::indexed_by<"usernamehash"_n, eosio::const_mem_fun<person, checksum256, &person::index_by_username_hash>>>
+          people_table;
 
       // Create an instance of the table that can is initalized in the constructor
-      accounts_table _accounts;
+      people_table _people;
    };
    /** @}*/ // end of @defgroup idtonomy id.tonomy
 } /// namespace idtonomy
