@@ -7,7 +7,7 @@ set -e ## exit if any statement fails
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 echo "Installing c++ and libraries"
-sudo apt install c++ -y
+sudo apt install g++ -y
 
 echo "Setup Boost library"
 wget -O boost_1_67_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.67.0/boost_1_67_0.tar.gz/download
