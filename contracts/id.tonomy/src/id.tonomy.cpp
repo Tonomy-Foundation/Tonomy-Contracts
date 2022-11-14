@@ -163,7 +163,6 @@ namespace idtonomy
       _apps.emplace(get_self(), [&](auto &app_itr)
                         {
                            app_itr.account_name = random_name;
-                           app_itr.status = idtonomy::enum_account_status::Creating_Status;
                            app_itr.app_name = name;
                            app_itr.description = description;
                            app_itr.logo_url = logo_url;
@@ -188,7 +187,7 @@ namespace idtonomy
                            });
          }
       }
-      
+
       // setup the new key authoritie(s)
       eosiobios::authority authority = create_authory_with_key(key);
       authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});

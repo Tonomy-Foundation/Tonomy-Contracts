@@ -142,7 +142,6 @@ namespace idtonomy
       TABLE app
       {
          name account_name;
-         account_status status;
          string app_name;
          checksum256 username_hash;
          string description;
