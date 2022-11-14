@@ -101,7 +101,7 @@ namespace idtonomy
          checksum256 username_hash,
          string logo_url,
          string domain,
-         public_key password_key);
+         public_key key);
 
       /**
        * Update a key of a person
