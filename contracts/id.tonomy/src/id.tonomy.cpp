@@ -134,6 +134,7 @@ namespace idtonomy
       string domain,
       public_key key)
    {
+      // TODO in the future only an organization type can create an app
       // check the transaction is signed by the `id.tonomy` account
       eosio::require_auth(get_self());
 
@@ -175,6 +176,20 @@ namespace idtonomy
                       permission_level permission_level,
                       public_key key)
    {
+      // update the status if needed
+      auto people_itr = _people.find(account.value);
+      if (people_itr != _people.end())
+      {
+         if (people_itr->status == idtonomy::enum_account_status::Creating_Status)
+         {
+            _people.modify(people_itr, get_self(), [&](auto &people_itr)
+                           {
+                              people_itr.status = idtonomy::enum_account_status::Active_Status;
+                           });
+         }
+      }
+      
+      // setup the new key authoritie(s)
       eosiobios::authority authority = create_authory_with_key(key);
       authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
@@ -194,6 +209,7 @@ namespace idtonomy
          check(false, "Invalid permission level");
       }
 
+      // must be signed by the account's permission_level or parent (from eosio.bios::updateauth())
       eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "owner"_n});
       updateauthaction.send(account, permission, "owner"_n, authority);
    }
