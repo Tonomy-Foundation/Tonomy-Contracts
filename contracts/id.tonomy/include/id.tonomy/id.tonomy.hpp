@@ -5,6 +5,7 @@
 
 namespace idtonomy
 {
+   using std::string;
    using eosio::action_wrapper;
    using eosio::check;
    using eosio::checksum256;
@@ -18,8 +19,8 @@ namespace idtonomy
    {
       Person,
       Organization,
-      SmartContract,
-      Goverment
+      App,
+      Gov
    };
    typedef uint8_t account_type;
 
@@ -34,9 +35,9 @@ namespace idtonomy
 
    std::map<enum_account_type, char> account_type_letters = {
        {enum_account_type::Person, 'p'},
-       {enum_account_type::SmartContract, 's'},
+       {enum_account_type::App, 'a'},
        {enum_account_type::Organization, 'o'},
-       {enum_account_type::Goverment, 'g'}};
+       {enum_account_type::Gov, 'g'}};
 
    enum enum_permission_level
    {
@@ -71,7 +72,7 @@ namespace idtonomy
       /**
        * Create a new account for a person
        *
-       * @details Creates a new account.
+       * @details Creates a new account for a person.
        *
        * @param username_hash - hash of the username of the account
        * @param password_key - public key generated from the account's password
@@ -83,20 +84,40 @@ namespace idtonomy
           checksum256 password_salt);
 
       /**
+       * Create a new account for an app and registers it's details
+       *
+       * @details Creates a new account for an app and registers it's details.
+       *
+       * @param name - name of the app
+       * @param description - description of the app
+       * @param username_hash - hash of the username
+       * @param logo_url - url to the logo of the app
+       * @param origin - domain associated with the app
+       * @param password_key - public key generated from the account's password
+       */
+      [[eosio::action]] void newapp(
+         string name,
+         string description,
+         checksum256 username_hash,
+         string logo_url,
+         string origin,
+         public_key key);
+
+      /**
        * Update a key of a person
        *
        * @param account - name of the account to update
        * @param permission - permission level of the key to update
        * @param key - public key to update
        */
-      [[eosio::action]] void updatekey(name account,
+      [[eosio::action]] void updatekeyper(name account,
                                        permission_level permission,
                                        public_key key);
 
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
-      using updatekey_action = action_wrapper<"updatekey"_n, &id::updatekey>;
+      using updatekeyper_action = action_wrapper<"updatekeyper"_n, &id::updatekeyper>;
 
-      TABLE account
+      TABLE person
       {
          name account_name;
          account_status status;
@@ -111,12 +132,38 @@ namespace idtonomy
       };
 
       // Create a multi-index-table with two indexes
-      typedef eosio::multi_index<"accounts"_n, account,
-                                 eosio::indexed_by<"usernamehash"_n, eosio::const_mem_fun<account, checksum256, &account::index_by_username_hash>>>
-          accounts_table;
+      typedef eosio::multi_index<"people"_n, person,
+                                 eosio::indexed_by<"usernamehash"_n, eosio::const_mem_fun<person, checksum256, &person::index_by_username_hash>>>
+          people_table;
 
       // Create an instance of the table that can is initalized in the constructor
-      accounts_table _accounts;
+      people_table _people;
+
+      TABLE app
+      {
+         name account_name;
+         string app_name;
+         checksum256 username_hash;
+         string description;
+         string logo_url;
+         string origin;
+         uint16_t version; // used for upgrading the account structure
+
+         // primary key automatically added by EOSIO method
+         uint64_t primary_key() const { return account_name.value; }
+         // also index by username hash
+         checksum256 index_by_username_hash() const { return username_hash; }
+      };
+
+      // Create a multi-index-table with two indexes
+      typedef eosio::multi_index<"apps"_n, app,
+                                 eosio::indexed_by<"usernamehash"_n, eosio::const_mem_fun<app, checksum256, &app::index_by_username_hash>>>
+          apps_table;
+
+      // Create an instance of the table that can is initalized in the constructor
+      apps_table _apps;
    };
+   
    /** @}*/ // end of @defgroup idtonomy id.tonomy
+
 } /// namespace idtonomy
