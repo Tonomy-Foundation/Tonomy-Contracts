@@ -131,7 +131,7 @@ namespace idtonomy
       string description,
       checksum256 username_hash,
       string logo_url,
-      string domain,
+      string origin,
       public_key key)
    {
       // TODO in the future only an organization type can create an app
@@ -166,7 +166,7 @@ namespace idtonomy
                            app_itr.app_name = name;
                            app_itr.description = description;
                            app_itr.logo_url = logo_url;
-                           app_itr.domain = domain;
+                           app_itr.origin = origin;
                            app_itr.username_hash = username_hash;
                            app_itr.version = 1; });
    }

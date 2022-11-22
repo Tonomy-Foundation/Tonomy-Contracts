@@ -90,9 +90,9 @@ namespace idtonomy
        *
        * @param name - name of the app
        * @param description - description of the app
-       * @param username_prefix - username prefix
+       * @param username_hash - hash of the username
        * @param logo_url - url to the logo of the app
-       * @param domain - domain associated with the app
+       * @param origin - domain associated with the app
        * @param password_key - public key generated from the account's password
        */
       [[eosio::action]] void newapp(
@@ -100,7 +100,7 @@ namespace idtonomy
          string description,
          checksum256 username_hash,
          string logo_url,
-         string domain,
+         string origin,
          public_key key);
 
       /**
@@ -146,7 +146,7 @@ namespace idtonomy
          checksum256 username_hash;
          string description;
          string logo_url;
-         string domain;
+         string origin;
          uint16_t version; // used for upgrading the account structure
 
          // primary key automatically added by EOSIO method
