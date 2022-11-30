@@ -74,7 +74,7 @@ namespace idtonomy
       return tidy_name(res, uint8_t(name_uint64_t), account_type);
    }
 
-   eosiobios::authority create_authory_with_key(const eosio::public_key &key)
+   eosiobios::authority create_authority_with_key(const eosio::public_key &key)
    {
       eosiobios::key_weight new_key = eosiobios::key_weight{.key = key, .weight = 1};
       eosiobios::authority new_authority{.threshold = 1, .keys = {new_key}, .accounts = {}, .waits = {}};
@@ -101,7 +101,7 @@ namespace idtonomy
       const name random_name = random_account_name(username_hash, password_salt, enum_account_type::Person);
 
       // use the password_key public key for the owner authority
-      eosiobios::authority password_authority = create_authory_with_key(password_key);
+      eosiobios::authority password_authority = create_authority_with_key(password_key);
       password_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       // If the account name exists, this will fail
@@ -144,7 +144,7 @@ namespace idtonomy
       const eosio::name random_name = random_account_name(username_hash, description_hash, enum_account_type::App);
 
       // use the password_key public key for the owner authority
-      eosiobios::authority key_authority = create_authory_with_key(key);
+      eosiobios::authority key_authority = create_authority_with_key(key);
       key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       // If the account name exists, this will fail
@@ -189,7 +189,7 @@ namespace idtonomy
       }
 
       // setup the new key authoritie(s)
-      eosiobios::authority authority = create_authory_with_key(key);
+      eosiobios::authority authority = create_authority_with_key(key);
       authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       name permission;
@@ -212,4 +212,22 @@ namespace idtonomy
       eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "owner"_n});
       updateauthaction.send(account, permission, "owner"_n, authority);
    }
+
+   void id::loginwithapp(
+         name account,
+         name app,
+         public_key key) {
+            // check the app exists and is registered with status
+            auto app_itr = _apps.find(app.value);
+            check(app_itr != _apps.end(), "App does not exist");
+            // TODO uncomment when apps have status
+            // check(app_itr->status == idtonomy::enum_account_status::Active_Status, "App is not active");
+
+            // setup the new key authoritie(s)
+            eosiobios::authority authority = create_authority_with_key(key);
+
+            // must be signed by the account's permission_level or parent (from eosio.bios::updateauth())
+            eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "active"_n});
+            updateauthaction.send(account, app, "active"_n, authority);
+         }
 }
