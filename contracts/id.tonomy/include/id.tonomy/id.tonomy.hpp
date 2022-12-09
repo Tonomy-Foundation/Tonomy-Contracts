@@ -104,6 +104,18 @@ namespace idtonomy
          public_key key);
 
       /**
+       * Adds a new key to a person's account to log into an app with
+       *
+       * @param account - account of the person
+       * @param app - account of the app to authorize the key to
+       * @param key - public key to authorize
+       */
+      [[eosio::action]] void loginwithapp(
+         name account,
+         name app,
+         public_key key);
+
+      /**
        * Update a key of a person
        *
        * @param account - name of the account to update
