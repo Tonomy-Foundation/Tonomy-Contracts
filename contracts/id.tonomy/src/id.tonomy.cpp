@@ -127,7 +127,7 @@ namespace idtonomy
    }
 
    void id::newapp(
-      string name,
+      string app_name,
       string description,
       checksum256 username_hash,
       string logo_url,
@@ -163,7 +163,7 @@ namespace idtonomy
       _apps.emplace(get_self(), [&](auto &app_itr)
                         {
                            app_itr.account_name = random_name;
-                           app_itr.app_name = name;
+                           app_itr.app_name = app_name;
                            app_itr.description = description;
                            app_itr.logo_url = logo_url;
                            app_itr.origin = origin;
