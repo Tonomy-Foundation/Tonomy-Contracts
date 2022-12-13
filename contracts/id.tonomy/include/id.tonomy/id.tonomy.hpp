@@ -96,7 +96,7 @@ namespace idtonomy
        * @param password_key - public key generated from the account's password
        */
       [[eosio::action]] void newapp(
-         string name,
+         string app_name,
          string description,
          checksum256 username_hash,
          string logo_url,
