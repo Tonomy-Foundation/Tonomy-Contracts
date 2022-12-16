@@ -13,11 +13,11 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - name: Add built contracts to cache
-              uses: actions/cache@v3
-              with:
-                path: ./contracts/id.tonomy
-                key: id.tonomy
+            # - name: Add built contracts to cache
+            #   uses: actions/cache@v3
+            #   with:
+            #     path: ./contracts/id.tonomy
+            #     key: id.tonomy
 
             - name: Build id.tonomy contract
               run: |
@@ -32,6 +32,12 @@ jobs:
                     -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
                     "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
                 ls "${WORKING_DIR}"
+
+            - name: Add built contracts to artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: id.tonomy
+                path: ./contracts/id.tonomy
             
     deploy:
         needs: build
@@ -39,17 +45,24 @@ jobs:
         container: eosio/eosio:v2.0.13
 
         steps:
+            # - name: Get built contracts from cache
+            #   uses: actions/cache@v3
+            #   with:
+            #     path: ./
+            #     key: id.tonomy
+
             - name: Get built contracts from cache
-              uses: actions/cache@v3
+              uses: actions/download-artifact@v3
               with:
-                path: ./
-                key: id.tonomy
+                name: id.tonomy
+                path: contracts/id.tonomy
  
             - name: Deploy id.tonomy contract
               run: |
                 ls
+                ls ./contracts/id.tonomy
                 PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
                 cleos wallet create --file ./wallet.txt
                 cleos wallet import --private-key $PKEY_EOSIO
-                cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./ id.tonomy.wasm id.tonomy.abi
+                cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
                 # cleos set contract --help
