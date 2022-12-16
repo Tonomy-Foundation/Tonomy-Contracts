@@ -2,9 +2,8 @@ name: Deploy smart contracts
 
 on:
     push:
-        branches:
-            - '*'
-            - development
+        # branches:
+        #     - development
 
 jobs:
     build:
@@ -28,7 +27,7 @@ jobs:
                     "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
                 ls "${WORKING_DIR}"
             
-            - name: Add artifact to cache
+            - name: Add built contracts to cache
               uses: actions/cache@v3
               with:
                 path: ./contracts/id.tonomy
@@ -40,11 +39,13 @@ jobs:
         container: eosio/eosio:v2.0.13
 
         steps:
-            - name: Deploy id.tonomy contract
+            - name: Get built contracts from cache
               uses: actions/cache@v3
               with:
                 path: ./
                 key: id.tonomy
+ 
+            - name: Deploy id.tonomy contract
               run: |
                 ls
                 PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
