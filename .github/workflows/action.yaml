@@ -1,0 +1,53 @@
+name: Deploy smart contracts
+
+on:
+    push:
+        # branches:
+        #     - development
+
+jobs:
+    build:
+        runs-on: ubuntu-20.04
+        container: eosio/eosio.cdt:v1.8.1
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Build id.tonomy contract
+              run: |
+                WORKING_DIR="./contracts/id.tonomy"
+                CONTRACT_NAME="id.tonomy"
+                # eosio-cpp\
+                #     -abigen\
+                #     -I "${WORKING_DIR}/include"\
+                #     -I "./contracts/eosio.bios/include"\
+                #     -R "${WORKING_DIR}"/ricardian\
+                #     -contract "${CONTRACT_NAME}"\
+                #     -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
+                #     "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+                ls "${WORKING_DIR}"
+            
+            # - name: Add artifact to cache
+            #   uses: actions/cache@v3
+            #   with:
+            #     path: ./contracts/id.tonomy
+            #     key: id.tonomy
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-20.04
+        container: eosio/eosio:v2.0.13
+
+        steps:
+            - name: Deploy id.tonomy contract
+            #   uses: actions/cache@v3
+            #   with:
+            #     path: ./
+            #     key: id.tonomy
+              run: |
+                ls
+                PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
+                cleos wallet create --file ./wallet.txt
+                cleos wallet import --private-key $PKEY_EOSIO
+                cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./ id.tonomy.wasm id.tonomy.abi
+                # cleos set contract --help
