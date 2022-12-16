@@ -2,8 +2,9 @@ name: Deploy smart contracts
 
 on:
     push:
-        # branches:
-        #     - development
+        branches:
+            - '*'
+            - development
 
 jobs:
     build:
