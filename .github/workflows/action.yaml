@@ -13,6 +13,12 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
+            - name: Add built contracts to cache
+              uses: actions/cache@v3
+              with:
+                path: ./contracts/id.tonomy
+                key: id.tonomy
+
             - name: Build id.tonomy contract
               run: |
                 WORKING_DIR="./contracts/id.tonomy"
@@ -27,12 +33,6 @@ jobs:
                     "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
                 ls "${WORKING_DIR}"
             
-            - name: Add built contracts to cache
-              uses: actions/cache@v3
-              with:
-                path: ./contracts/id.tonomy
-                key: id.tonomy
-
     deploy:
         needs: build
         runs-on: ubuntu-20.04
