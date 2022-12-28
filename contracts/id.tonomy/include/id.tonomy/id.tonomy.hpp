@@ -165,11 +165,18 @@ namespace idtonomy
          uint64_t primary_key() const { return account_name.value; }
          // also index by username hash
          checksum256 index_by_username_hash() const { return username_hash; }
+         checksum256 index_by_origin_hash() const { return eosio::sha256(origin.c_str(), std::strlen(origin.c_str())); }
       };
 
       // Create a multi-index-table with two indexes
       typedef eosio::multi_index<"apps"_n, app,
-                                 eosio::indexed_by<"usernamehash"_n, eosio::const_mem_fun<app, checksum256, &app::index_by_username_hash>>>
+                                 eosio::indexed_by<"usernamehash"_n, 
+                                    eosio::const_mem_fun<app, checksum256, &app::index_by_username_hash>
+                                    >,
+                                 eosio::indexed_by<"originhash"_n, 
+                                    eosio::const_mem_fun<app, checksum256, &app::index_by_origin_hash>
+                                    >
+                                 >
           apps_table;
 
       // Create an instance of the table that can is initalized in the constructor
