@@ -118,7 +118,7 @@ namespace idtonomy
 
       // Store the password_salt and hashed username in table
       _people.emplace(get_self(), [&](auto &people_itr)
-                        {
+                      {
            people_itr.account_name = random_name;
            people_itr.status = idtonomy::enum_account_status::Creating_Status;
            people_itr.username_hash = username_hash;
@@ -127,12 +127,12 @@ namespace idtonomy
    }
 
    void id::newapp(
-      string app_name,
-      string description,
-      checksum256 username_hash,
-      string logo_url,
-      string origin,
-      public_key key)
+       string app_name,
+       string description,
+       checksum256 username_hash,
+       string logo_url,
+       string origin,
+       public_key key)
    {
       // TODO in the future only an organization type can create an app
       // check the transaction is signed by the `id.tonomy` account
@@ -161,7 +161,7 @@ namespace idtonomy
 
       // Store the password_salt and hashed username in table
       _apps.emplace(get_self(), [&](auto &app_itr)
-                        {
+                    {
                            app_itr.account_name = random_name;
                            app_itr.app_name = app_name;
                            app_itr.description = description;
@@ -172,8 +172,8 @@ namespace idtonomy
    }
 
    void id::updatekeyper(name account,
-                      permission_level permission_level,
-                      public_key key)
+                         permission_level permission_level,
+                         public_key key)
    {
       // update the status if needed
       auto people_itr = _people.find(account.value);
@@ -182,9 +182,7 @@ namespace idtonomy
          if (people_itr->status == idtonomy::enum_account_status::Creating_Status)
          {
             _people.modify(people_itr, get_self(), [&](auto &people_itr)
-                           {
-                              people_itr.status = idtonomy::enum_account_status::Active_Status;
-                           });
+                           { people_itr.status = idtonomy::enum_account_status::Active_Status; });
          }
       }
 
@@ -211,23 +209,34 @@ namespace idtonomy
       // must be signed by the account's permission_level or parent (from eosio.bios::updateauth())
       eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "owner"_n});
       updateauthaction.send(account, permission, "owner"_n, authority);
+
+      eosiobios::bios::linkauth_action linkauthaction("eosio"_n, {account, "owner"_n});
+      linkauthaction.send(account, get_self(), "loginwithapp"_n, permission);
+      // TODO also needs to link to any other actions that require the permission that we know of at this stage
    }
 
    void id::loginwithapp(
-         name account,
-         name app,
-         public_key key) {
-            // check the app exists and is registered with status
-            auto app_itr = _apps.find(app.value);
-            check(app_itr != _apps.end(), "App does not exist");
-            // TODO uncomment when apps have status
-            // check(app_itr->status == idtonomy::enum_account_status::Active_Status, "App is not active");
+       name account,
+       name app,
+       name parent,
+       public_key key)
+   {
+      // check the app exists and is registered with status
+      auto app_itr = _apps.find(app.value);
+      check(app_itr != _apps.end(), "App does not exist");
 
-            // setup the new key authoritie(s)
-            eosiobios::authority authority = create_authority_with_key(key);
+      // TODO uncomment when apps have status
+      // check(app_itr->status == idtonomy::enum_account_status::Active_Status, "App is not active");
 
-            // must be signed by the account's permission_level or parent (from eosio.bios::updateauth())
-            eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "active"_n});
-            updateauthaction.send(account, app, "active"_n, authority);
-         }
+      // TODO check parent is only from allowed parents : "local", "pin", "fingerprint", "active"
+
+      // TODO instead of "app" as the permission, use sha256(parent, app, name of key(TODO provide as argument with default = "main"))
+
+      // setup the new key authoritie(s)
+      eosiobios::authority authority = create_authority_with_key(key);
+
+      eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, parent});
+      updateauthaction.send(account, app, parent, authority);
+      // must be signed by the account's permission_level or parent (from eosio.bios::updateauth())
+   }
 }
