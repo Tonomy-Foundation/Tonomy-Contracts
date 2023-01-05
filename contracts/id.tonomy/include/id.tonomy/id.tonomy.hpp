@@ -113,6 +113,7 @@ namespace idtonomy
       [[eosio::action]] void loginwithapp(
          name account,
          name app,
+         name parent,
          public_key key);
 
       /**
