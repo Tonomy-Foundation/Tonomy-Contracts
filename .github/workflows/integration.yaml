@@ -11,7 +11,7 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - name: Build id.tonomy contract
+            - name: Compile eosio.bios
               run: |
                 CONTRACT_NAME="eosio.bios"
                 WORKING_DIR="./contracts/${CONTRACT_NAME}"
@@ -23,6 +23,8 @@ jobs:
                     -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
                     "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
                     
+            - name: Compile eosio.bios.tonomy
+              run: |
                 CONTRACT_NAME="eosio.bios.tonomy"
                 WORKING_DIR="./contracts/${CONTRACT_NAME}"
                 eosio-cpp\
@@ -33,6 +35,8 @@ jobs:
                     -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
                     "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
                     
+            - name: Compile eosio.boot
+              run: |
                 CONTRACT_NAME="eosio.boot"
                 WORKING_DIR="./contracts/${CONTRACT_NAME}"
                 eosio-cpp\
@@ -43,6 +47,8 @@ jobs:
                     -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
                     "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
                     
+            - name: Compile eosio.token
+              run: |
                 CONTRACT_NAME="eosio.token"
                 WORKING_DIR="./contracts/${CONTRACT_NAME}"
                 eosio-cpp\
@@ -53,6 +59,8 @@ jobs:
                     -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
                     "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
                     
+            - name: Compile id.tonomy
+              run: |
                 CONTRACT_NAME="id.tonomy"
                 WORKING_DIR="./contracts/${CONTRACT_NAME}"
                 eosio-cpp\
