@@ -221,11 +221,6 @@ namespace idtonomy
        name parent,
        public_key key)
    {
-      eosio::print(account);
-      eosio::print(app);
-      eosio::print(parent);
-      eosio::require_auth(eosio::permission_level(account, parent));
-
       // check the app exists and is registered with status
       auto app_itr = _apps.find(app.value);
       check(app_itr != _apps.end(), "App does not exist");
