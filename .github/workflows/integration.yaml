@@ -1,0 +1,73 @@
+name: Deploy smart contracts
+
+on:
+    pull_request
+
+jobs:
+    compile:
+        runs-on: ubuntu-20.04
+        container: eosio/eosio.cdt:v1.8.1
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Compile eosio.bios
+              run: |
+                CONTRACT_NAME="eosio.bios"
+                WORKING_DIR="./contracts/${CONTRACT_NAME}"
+                eosio-cpp\
+                    -abigen\
+                    -I "${WORKING_DIR}/include"\
+                    -R "${WORKING_DIR}"/ricardian\
+                    -contract "${CONTRACT_NAME}"\
+                    -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
+                    "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+                    
+            - name: Compile eosio.bios.tonomy
+              run: |
+                CONTRACT_NAME="eosio.bios.tonomy"
+                WORKING_DIR="./contracts/${CONTRACT_NAME}"
+                eosio-cpp\
+                    -abigen\
+                    -I "${WORKING_DIR}/include"\
+                    -R "${WORKING_DIR}"/ricardian\
+                    -contract "${CONTRACT_NAME}"\
+                    -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
+                    "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+                    
+            - name: Compile eosio.boot
+              run: |
+                CONTRACT_NAME="eosio.boot"
+                WORKING_DIR="./contracts/${CONTRACT_NAME}"
+                eosio-cpp\
+                    -abigen\
+                    -I "${WORKING_DIR}/include"\
+                    -R "${WORKING_DIR}"/ricardian\
+                    -contract "${CONTRACT_NAME}"\
+                    -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
+                    "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+                    
+            - name: Compile eosio.token
+              run: |
+                CONTRACT_NAME="eosio.token"
+                WORKING_DIR="./contracts/${CONTRACT_NAME}"
+                eosio-cpp\
+                    -abigen\
+                    -I "${WORKING_DIR}/include"\
+                    -R "${WORKING_DIR}"/ricardian\
+                    -contract "${CONTRACT_NAME}"\
+                    -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
+                    "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+                    
+            - name: Compile id.tonomy
+              run: |
+                CONTRACT_NAME="id.tonomy"
+                WORKING_DIR="./contracts/${CONTRACT_NAME}"
+                eosio-cpp\
+                    -abigen\
+                    -I "${WORKING_DIR}/include"\
+                    -I "./contracts/eosio.bios/include"\
+                    -R "${WORKING_DIR}"/ricardian\
+                    -contract "${CONTRACT_NAME}"\
+                    -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
+                    "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
