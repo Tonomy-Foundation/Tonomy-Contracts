@@ -12,9 +12,6 @@ CMD ./nodeos.sh
 ### Intialize the blockchain
 FROM base as initialized
 
-RUN touch ./nodeos21.log
-
-## TODO need to ensure contracts are built before building container
 RUN bash -c "./nodeos.sh &" && sleep 10 && ./initialize-blockchain.sh && ./nodeos.sh stop
 
 ### Install nodejs 16.4.1
