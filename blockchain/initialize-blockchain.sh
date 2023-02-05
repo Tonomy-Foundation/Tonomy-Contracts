@@ -20,11 +20,11 @@ sleep 1
 
 # Load the eosio.boot contract so with activate action
 # https://eosio.stackexchange.com/questions/5235/error-while-deploying-eosio-system-contract-to-eosio-account-while-setting-up-a
-cleos set contract eosio /var/repo/Tonomy-Contracts/contracts/eosio.boot eosio.boot.wasm eosio.boot.abi -p eosio@active
+cleos set contract eosio /var/repo/contracts/eosio.boot eosio.boot.wasm eosio.boot.abi -p eosio@active
 sleep .1
 
 ./initialize-features.sh
 sleep 1
 
-cleos set contract eosio /var/repo/Tonomy-Contracts/contracts/eosio.bios eosio.bios.wasm eosio.bios.abi -p eosio@active
+cleos set contract eosio /var/repo/contracts/eosio.bios eosio.bios.wasm eosio.bios.abi -p eosio@active
 sleep 1
