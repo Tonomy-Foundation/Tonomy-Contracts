@@ -18,14 +18,14 @@ function start {
 # https://github.com/EOSIO/eos/issues/4462#issuecomment-412772944
 function stop {
     nodeos_pid=$(pgrep -x nodeos)
-    echo "Nodeos pid: ${nodeosd_pid}"
+    echo "Nodeos pid: ${nodeos_pid}"
     
-    if [ -n "$(ps -p ${nodeosd_pid} -o pid=)" ]; then
+    if [ -n "$(ps -p ${nodeos_pid} -o pid=)" ]; then
         echo "Send SIGINT"
-        kill -SIGINT ${nodeosd_pid}
+        kill -SIGINT ${nodeos_pid}
     fi
 
-    while [ -n "$(ps -p ${nodeosd_pid} -o pid=)" ]
+    while [ -n "$(ps -p ${nodeos_pid} -o pid=)" ]
     do
         sleep 1
     done
@@ -35,7 +35,7 @@ function stop {
 
 if [ "${ARG1}" == "stop" ]
 then
-    stop2
+    stop
 else
     start
 fi
