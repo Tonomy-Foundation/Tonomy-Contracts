@@ -2,10 +2,9 @@
 
 Smart contracts to run the governance, identity, DAO, token and other ecosystem tools.
 
-## Dependancies
+## Dependencies
 
 - [Docker](http://docs.docker.com) v20.10+
-- [Docker Compose](http://docs.docker.com/compose/) v1.29+
 
 For development, you don't need these, but they allow you to have correctly configured intellisense in VS Code and other IDEs
 
@@ -24,3 +23,7 @@ git checkout v1.8.1
 ## Build
 
 `./build-contracts.sh`
+
+## Build blockchain node container
+
+`./blockchain/build-docker.sh`
