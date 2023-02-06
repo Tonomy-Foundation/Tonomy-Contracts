@@ -1,2 +1,1 @@
-# We don't need .git in the Docker build context
-/.git
+.git
