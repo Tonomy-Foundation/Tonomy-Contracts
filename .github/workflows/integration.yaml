@@ -14,40 +14,13 @@ jobs:
         run: ./contracts/eosio.bios/build.sh local
 
       - name: Compile eosio.bios.tonomy
-        run: |
-          CONTRACT_NAME="eosio.bios.tonomy"
-          WORKING_DIR="./contracts/${CONTRACT_NAME}"
-          eosio-cpp\
-              -abigen\
-              -I "${WORKING_DIR}/include"\
-              -R "${WORKING_DIR}"/ricardian\
-              -contract "${CONTRACT_NAME}"\
-              -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
-              "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+        run: ./contracts/eosio.bios.tonomy/build.sh local
 
       - name: Compile eosio.boot
-        run: |
-          CONTRACT_NAME="eosio.boot"
-          WORKING_DIR="./contracts/${CONTRACT_NAME}"
-          eosio-cpp\
-              -abigen\
-              -I "${WORKING_DIR}/include"\
-              -R "${WORKING_DIR}"/ricardian\
-              -contract "${CONTRACT_NAME}"\
-              -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
-              "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+        run: ./contracts/eosio.boot/build.sh local
 
       - name: Compile eosio.token
-        run: |
-          CONTRACT_NAME="eosio.token"
-          WORKING_DIR="./contracts/${CONTRACT_NAME}"
-          eosio-cpp\
-              -abigen\
-              -I "${WORKING_DIR}/include"\
-              -R "${WORKING_DIR}"/ricardian\
-              -contract "${CONTRACT_NAME}"\
-              -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
-              "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+        run: ./contracts/eosio.token/build.sh local
 
       - name: Compile id.tonomy
         run: |
