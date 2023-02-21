@@ -32,7 +32,7 @@ jobs:
           name: id.tonomy
           path: ./contracts/id.tonomy
 
-  deploy:
+  deploy-staging:
     needs: build
     runs-on: ubuntu-20.04
     container: eosio/eosio:v2.0.13
