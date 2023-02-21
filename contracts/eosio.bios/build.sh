@@ -1,15 +1,10 @@
 #!/bin/bash
 
-PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+BUILD_METHOD=$1
 
-DOCKER_WORKING_DIR="/contract"
-CONTRACT_NAME="eosio.bios"
-docker run -v "${PARENT_PATH}:${DOCKER_WORKING_DIR}"\
-    eosio/eosio.cdt:v1.8.1\
-    eosio-cpp\
-    -abigen\
-    -I "${DOCKER_WORKING_DIR}/include"\
-    -R "${DOCKER_WORKING_DIR}"/ricardian\
-    -contract "${CONTRACT_NAME}"\
-    -o "${DOCKER_WORKING_DIR}/${CONTRACT_NAME}.wasm"\
-    "${DOCKER_WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "${PARENT_PATH}"
+
+source ../compile_contract.sh
+
+compile_contract "${PARENT_PATH}" "eosio.bios" "${BUILD_METHOD}"
