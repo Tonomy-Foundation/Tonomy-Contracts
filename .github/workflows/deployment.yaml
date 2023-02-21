@@ -73,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: "{context}/blockchain/Dockerfile"
+          file: "{{defaultContext}}/blockchain/Dockerfile"
           target: tonomy_blockchain_base
           push: true
           tags: tonomyfoundation/tonomy_blockchain_initialized:development
