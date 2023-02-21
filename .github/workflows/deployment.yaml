@@ -1,12 +1,11 @@
-name: Deploy smart contracts
-
 on:
   push:
-    # branches:
-    #   - development
+    branches:
+      - development
 
 jobs:
   build:
+    name: Compile id.tonomy smart contract
     runs-on: ubuntu-20.04
     container: eosio/eosio.cdt:v1.8.1
 
@@ -23,6 +22,7 @@ jobs:
           path: ./contracts/id.tonomy
 
   deploy-staging:
+    name: Deploy id.tonomy contract to staging
     needs: build
     runs-on: ubuntu-20.04
     container: eosio/eosio:v2.0.13
@@ -42,6 +42,7 @@ jobs:
           cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
 
   build-eosio:
+    name: Compile eosio.boot and eosio.bios contracts
     runs-on: ubuntu-20.04
     container: eosio/eosio.cdt:v1.8.1
 
@@ -67,6 +68,7 @@ jobs:
           path: ./contracts/eosio.bios
 
   push-docker:
+    name: Builds docker image and push to Docker Hub
     needs: build-eosio
     runs-on: ubuntu-20.04
     steps:
