@@ -1,52 +1,77 @@
 name: Deploy smart contracts
 
 on:
-    push:
-        branches:
-            - development
+  push:
+    # branches:
+    #   - development
 
 jobs:
-    build:
-        runs-on: ubuntu-20.04
-        container: eosio/eosio.cdt:v1.8.1
+  # build:
+  #   runs-on: ubuntu-20.04
+  #   container: eosio/eosio.cdt:v1.8.1
 
-        steps:
-            - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-            - name: Build id.tonomy contract
-              run: |
-                WORKING_DIR="./contracts/id.tonomy"
-                CONTRACT_NAME="id.tonomy"
-                eosio-cpp\
-                    -abigen\
-                    -I "${WORKING_DIR}/include"\
-                    -I "./contracts/eosio.bios/include"\
-                    -R "${WORKING_DIR}"/ricardian\
-                    -contract "${CONTRACT_NAME}"\
-                    -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
-                    "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+  #     - name: Build id.tonomy contract
+  #       run: |
+  #         WORKING_DIR="./contracts/id.tonomy"
+  #         CONTRACT_NAME="id.tonomy"
+  #         eosio-cpp\
+  #             -abigen\
+  #             -I "${WORKING_DIR}/include"\
+  #             -I "./contracts/eosio.bios/include"\
+  #             -R "${WORKING_DIR}"/ricardian\
+  #             -contract "${CONTRACT_NAME}"\
+  #             -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
+  #             "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
 
-            - name: Add built contracts to artifacts
-              uses: actions/upload-artifact@v3
-              with:
-                name: id.tonomy
-                path: ./contracts/id.tonomy
-            
-    deploy:
-        needs: build
-        runs-on: ubuntu-20.04
-        container: eosio/eosio:v2.0.13
+  #     - name: Add built contracts to artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: id.tonomy
+  #         path: ./contracts/id.tonomy
 
-        steps:
-            - name: Get built contracts from cache
-              uses: actions/download-artifact@v3
-              with:
-                name: id.tonomy
-                path: contracts/id.tonomy
- 
-            - name: Deploy id.tonomy contract
-              run: |
-                PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
-                cleos wallet create --file ./wallet.txt
-                cleos wallet import --private-key $PKEY_EOSIO
-                cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-20.04
+  #   container: eosio/eosio:v2.0.13
+
+  #   steps:
+  #     - name: Get built contracts from cache
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: id.tonomy
+  #         path: contracts/id.tonomy
+
+  #     - name: Deploy id.tonomy contract
+  #       run: |
+  #         PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
+  #         cleos wallet create --file ./wallet.txt
+  #         cleos wallet import --private-key $PKEY_EOSIO
+  #         cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
+
+  push:
+    # needs: build
+    runs-on: ubuntu-20.04
+    steps:
+      # - name: Get built contracts from cache
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: id.tonomy
+      #     path: contracts/id.tonomy
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v2
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: "./blockchain"
+          push: true
+          tags: tonomyfoundation/tonomy_blockchain_initialized:development
