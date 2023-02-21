@@ -126,6 +126,6 @@ jobs:
         with:
           context: .
           file: ./blockchain/Dockerfile
-          target: tonomy_blockchain_initialized
+          target: tonomy_blockchain_nodejs
           push: true
-          tags: tonomyfoundation/tonomy_blockchain_initialized:development
+          tags: tonomyfoundation/tonomy_blockchain_nodejs:development
