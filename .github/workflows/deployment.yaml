@@ -2,8 +2,8 @@ name: Deploy smart contracts
 
 on:
   push:
-    branches:
-      - development
+    # branches:
+    #   - development
 
 jobs:
   build:
@@ -14,17 +14,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build id.tonomy contract
-        run: |
-          CONTRACT_NAME="id.tonomy"
-          WORKING_DIR="./contracts/${CONTRACT_NAME}"
-          eosio-cpp\
-              -abigen\
-              -I "${WORKING_DIR}/include"\
-              -I "./contracts/eosio.bios/include"\
-              -R "${WORKING_DIR}"/ricardian\
-              -contract "${CONTRACT_NAME}"\
-              -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
-              "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+        run: ./contracts/id.tonomy/build.sh local
 
       - name: Add built contracts to artifacts
         uses: actions/upload-artifact@v3
@@ -59,28 +49,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build eosio.boot contract
-        run: |
-          CONTRACT_NAME="eosio.boot"
-          WORKING_DIR="./contracts/${CONTRACT_NAME}"
-          eosio-cpp\
-              -abigen\
-              -I "${WORKING_DIR}/include"\
-              -R "${WORKING_DIR}"/ricardian\
-              -contract "${CONTRACT_NAME}"\
-              -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
-              "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+        run: ./contracts/eosio.boot/build.sh local
 
       - name: Build eosio.bios contract
-        run: |
-          CONTRACT_NAME="eosio.bios"
-          WORKING_DIR="./contracts/${CONTRACT_NAME}"
-          eosio-cpp\
-              -abigen\
-              -I "${WORKING_DIR}/include"\
-              -R "${WORKING_DIR}"/ricardian\
-              -contract "${CONTRACT_NAME}"\
-              -o "${WORKING_DIR}/${CONTRACT_NAME}.wasm"\
-              "${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
+        run: ./contracts/eosio.bios/build.sh local
 
       - name: Add eosio.boot contracts to artifacts
         uses: actions/upload-artifact@v3
