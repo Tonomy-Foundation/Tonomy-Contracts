@@ -55,10 +55,7 @@ jobs:
     # needs: build
     runs-on: ubuntu-20.04
     steps:
-      # - uses: actions/checkout@v3
-
-      # - name: Show context
-      #   run: ls ${{ github.workspace }}
+      - uses: actions/checkout@v3
 
       # - name: Get built contracts from cache
       #   uses: actions/download-artifact@v3
@@ -78,7 +75,8 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: "${{ github.workspace }}/blockchain/Dockerfile"
+          # file: "${{ github.workspace }}/blockchain/Dockerfile"
+          file: ./blockchain/Dockerfile
           target: tonomy_blockchain_base
           push: true
           tags: tonomyfoundation/tonomy_blockchain_initialized:development
