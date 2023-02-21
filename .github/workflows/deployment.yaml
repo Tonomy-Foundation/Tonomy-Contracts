@@ -2,8 +2,8 @@ name: Deploy smart contracts
 
 on:
   push:
-    # branches:
-    #   - development
+    branches:
+      - development
 
 jobs:
   build:
@@ -32,24 +32,24 @@ jobs:
           name: id.tonomy
           path: ./contracts/id.tonomy
 
-  # deploy:
-  #   needs: build
-  #   runs-on: ubuntu-20.04
-  #   container: eosio/eosio:v2.0.13
+  deploy:
+    needs: build
+    runs-on: ubuntu-20.04
+    container: eosio/eosio:v2.0.13
 
-  #   steps:
-  #     - name: Get built contracts from cache
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: id.tonomy
-  #         path: contracts/id.tonomy
+    steps:
+      - name: Get built contracts from cache
+        uses: actions/download-artifact@v3
+        with:
+          name: id.tonomy
+          path: contracts/id.tonomy
 
-  #     - name: Deploy id.tonomy contract
-  #       run: |
-  #         PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
-  #         cleos wallet create --file ./wallet.txt
-  #         cleos wallet import --private-key $PKEY_EOSIO
-  #         cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
+      - name: Deploy id.tonomy contract
+        run: |
+          PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
+          cleos wallet create --file ./wallet.txt
+          cleos wallet import --private-key $PKEY_EOSIO
+          cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
 
   build-eosio:
     runs-on: ubuntu-20.04
