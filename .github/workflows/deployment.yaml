@@ -72,6 +72,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: "./blockchain"
+          context: .
+          file: ./blockchain/Dockerfile
           push: true
           tags: tonomyfoundation/tonomy_blockchain_initialized:development
