@@ -55,10 +55,10 @@ jobs:
     # needs: build
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      # - uses: actions/checkout@v3
 
-      - name: Show context
-        run: ls ${{ github.workspace }}
+      # - name: Show context
+      #   run: ls ${{ github.workspace }}
 
       # - name: Get built contracts from cache
       #   uses: actions/download-artifact@v3
