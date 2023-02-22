@@ -102,4 +102,4 @@ jobs:
           file: ./blockchain/Dockerfile
           target: tonomy_blockchain_nodejs
           push: true
-          tags: tonomyfoundation/tonomy_blockchain_nodejs:development
+          tags: tonomy/blockchain:nodejs-development
