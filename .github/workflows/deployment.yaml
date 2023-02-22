@@ -100,6 +100,24 @@ jobs:
         with:
           context: .
           file: ./blockchain/Dockerfile
+          target: tonomy_blockchain_base
+          push: true
+          tags: tonomy/blockchain:base-development
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./blockchain/Dockerfile
+          target: tonomy_blockchain_initialized
+          push: true
+          tags: tonomy/blockchain:initialized-development
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./blockchain/Dockerfile
           target: tonomy_blockchain_nodejs
           push: true
           tags: tonomy/blockchain:nodejs-development
