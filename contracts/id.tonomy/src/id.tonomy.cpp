@@ -159,6 +159,15 @@ namespace idtonomy
          throwError("TCON1001", "This app username is already taken");
       }
 
+      // Check the origin is not already taken
+      auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
+      auto apps_by_origin_hash_itr = _apps.get_index<"originhash"_n>();
+      const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
+      if (origin_itr != apps_by_origin_hash_itr.end())
+      {
+         throwError("TCON1002", "This app origin is already taken");
+      }
+
       // Store the password_salt and hashed username in table
       _apps.emplace(get_self(), [&](auto &app_itr)
                     {
