@@ -12,4 +12,4 @@ cd "${PARENT_PATH}/.."
 
 # Create docker image
 docker rm -f tonomy_blockchain_initialized || true
-docker image build --target tonomy_blockchain_nodejs . -f ./blockchain/Dockerfile --force-rm -t tonomy_blockchain_nodejs
+docker image build --target tonomy_blockchain_initialized . -f ./blockchain/Dockerfile --force-rm -t tonomy_blockchain_initialized
