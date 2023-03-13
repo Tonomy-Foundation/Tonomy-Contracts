@@ -1,0 +1,26 @@
+name: Compile all smart contracts
+
+on: pull_request
+
+jobs:
+  compile:
+    runs-on: ubuntu-20.04
+    container: eosio/eosio.cdt:v1.8.1
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Compile eosio.bios
+        run: ./contracts/eosio.bios/build.sh local
+
+      - name: Compile eosio.bios.tonomy
+        run: ./contracts/eosio.bios.tonomy/build.sh local
+
+      - name: Compile eosio.boot
+        run: ./contracts/eosio.boot/build.sh local
+
+      - name: Compile eosio.token
+        run: ./contracts/eosio.token/build.sh local
+
+      - name: Compile id.tonomy
+        run: ./contracts/id.tonomy/build.sh local
