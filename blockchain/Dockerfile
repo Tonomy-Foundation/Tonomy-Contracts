@@ -20,5 +20,5 @@ RUN bash -c "./nodeos.sh &" && sleep 10 && ./initialize-blockchain.sh && ./nodeo
 ### Install nodejs
 FROM tonomy_blockchain_initialized as tonomy_blockchain_nodejs
 
-RUN wget nodejs.org/dist/v16.4.1/node-v16.4.1-linux-x64.tar.gz
-RUN tar -C /usr/local --strip-components 1 -xzf node-v16.4.1-linux-x64.tar.gz
+RUN wget nodejs.org/dist/v18.12.1/node-v18.12.1-linux-x64.tar.gz
+RUN tar -C /usr/local --strip-components 1 -xzf node-v18.12.1-linux-x64.tar.gz
