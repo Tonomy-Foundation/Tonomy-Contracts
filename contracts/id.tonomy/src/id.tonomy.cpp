@@ -222,6 +222,7 @@ namespace idtonomy
 
       if (link_auth)
       {
+         // link the permission to the `loginwithapp` action
          eosiobios::bios::linkauth_action linkauthaction("eosio"_n, {account, "owner"_n});
          linkauthaction.send(account, get_self(), "loginwithapp"_n, permission);
          // TODO also needs to link to any other actions that require the permission that we know of at this stage
