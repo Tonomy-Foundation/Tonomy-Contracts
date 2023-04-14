@@ -5,13 +5,13 @@
 
 namespace idtonomy
 {
-   using std::string;
    using eosio::action_wrapper;
    using eosio::check;
    using eosio::checksum256;
    using eosio::name;
    using eosio::print;
    using eosio::public_key;
+   using std::string;
 
    // Create an enum type and an eosio type for enums
    // https://eosio.stackexchange.com/questions/4950/store-enum-value-in-table
@@ -45,7 +45,7 @@ namespace idtonomy
       Active,
       Password,
       Pin,
-      Fingerprint,
+      Biometric,
       Local
    };
    typedef uint8_t permission_level;
@@ -96,12 +96,12 @@ namespace idtonomy
        * @param password_key - public key generated from the account's password
        */
       [[eosio::action]] void newapp(
-         string app_name,
-         string description,
-         checksum256 username_hash,
-         string logo_url,
-         string origin,
-         public_key key);
+          string app_name,
+          string description,
+          checksum256 username_hash,
+          string logo_url,
+          string origin,
+          public_key key);
 
       /**
        * Adds a new key to a person's account to log into an app with
@@ -111,10 +111,10 @@ namespace idtonomy
        * @param key - public key to authorize
        */
       [[eosio::action]] void loginwithapp(
-         name account,
-         name app,
-         name parent,
-         public_key key);
+          name account,
+          name app,
+          name parent,
+          public_key key);
 
       /**
        * Update a key of a person
@@ -124,8 +124,9 @@ namespace idtonomy
        * @param key - public key to update
        */
       [[eosio::action]] void updatekeyper(name account,
-                                       permission_level permission,
-                                       public_key key);
+                                          permission_level permission,
+                                          public_key key,
+                                          bool link_auth = false);
 
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &id::updatekeyper>;
@@ -171,19 +172,16 @@ namespace idtonomy
 
       // Create a multi-index-table with two indexes
       typedef eosio::multi_index<"apps"_n, app,
-                                 eosio::indexed_by<"usernamehash"_n, 
-                                    eosio::const_mem_fun<app, checksum256, &app::index_by_username_hash>
-                                    >,
-                                 eosio::indexed_by<"originhash"_n, 
-                                    eosio::const_mem_fun<app, checksum256, &app::index_by_origin_hash>
-                                    >
-                                 >
+                                 eosio::indexed_by<"usernamehash"_n,
+                                                   eosio::const_mem_fun<app, checksum256, &app::index_by_username_hash>>,
+                                 eosio::indexed_by<"originhash"_n,
+                                                   eosio::const_mem_fun<app, checksum256, &app::index_by_origin_hash>>>
           apps_table;
 
       // Create an instance of the table that can is initalized in the constructor
       apps_table _apps;
    };
-   
+
    /** @}*/ // end of @defgroup idtonomy id.tonomy
 
 } /// namespace idtonomy
