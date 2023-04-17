@@ -15,7 +15,7 @@ mkdir boost
 tar xzvf boost_1_67_0.tar.gz -C boost
 rm boost_1_67_0.tar.gz
 
-echo "Cloning eosio.cdt for libraries"
+echo "Cloning Antelope cdt for libraries"
 git clone git@github.com:AntelopeIO/cdt.git
 cd cdt
 git checkout v3.1.0

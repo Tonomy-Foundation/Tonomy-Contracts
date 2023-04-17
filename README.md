@@ -12,13 +12,9 @@ For development, you don't need these, but they allow you to have correctly conf
 
 Run `./setup-cpp.sh` to install these.
 
-### Install the eosio.cdt locally so that the VS Code Intellisense will be able to follow EOSIO library classes and assets
+### Install the Antelope cdt locally so that the VS Code Intellisense will be able to follow Antelope library classes and assets
 
-```bash
-git clone git@github.com:EOSIO/eosio.cdt.git
-cd eosio.cdt
-git checkout v1.8.1
-```
+Run `./setup-cpp.sh` to install these.
 
 ## Build
 
