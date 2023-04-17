@@ -1,19 +1,37 @@
 on:
   push:
-    branches:
-      - development
+    # branches:
+    #   - development
 
 jobs:
   build:
-    name: Compile id.tonomy smart contract
+    name: Compile eosio.boot and eosio.bios contracts
     runs-on: ubuntu-20.04
     container: tonomy/antelope
 
     steps:
       - uses: actions/checkout@v3
 
+      - name: Build eosio.boot contract
+        run: ./contracts/eosio.boot/build.sh local
+
+      - name: Build eosio.bios contract
+        run: ./contracts/eosio.bios/build.sh local
+
       - name: Build id.tonomy contract
         run: ./contracts/id.tonomy/build.sh local
+
+      - name: Add eosio.boot contracts to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: eosio.boot
+          path: ./contracts/eosio.boot
+
+      - name: Add eosio.bios contracts to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: eosio.bios
+          path: ./contracts/eosio.bios
 
       - name: Add built contracts to artifacts
         uses: actions/upload-artifact@v3
@@ -39,37 +57,12 @@ jobs:
           PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
           cleos wallet create --file ./wallet.txt
           cleos wallet import --private-key $PKEY_EOSIO
+          ls ./contracts/id.tonomy
           cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
-
-  build-all:
-    name: Compile eosio.boot and eosio.bios contracts
-    runs-on: ubuntu-20.04
-    container: tonomy/antelope
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build eosio.boot contract
-        run: ./contracts/eosio.boot/build.sh local
-
-      - name: Build eosio.bios contract
-        run: ./contracts/eosio.bios/build.sh local
-
-      - name: Add eosio.boot contracts to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: eosio.boot
-          path: ./contracts/eosio.boot
-
-      - name: Add eosio.bios contracts to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: eosio.bios
-          path: ./contracts/eosio.bios
 
   push-docker:
     name: Builds docker image and push to Docker Hub
-    needs: build-all
+    needs: build
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
