@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    name: Compile eosio.boot and eosio.bios contracts
+    name: Compile eosio.boot, eosio.bios and id.tonomy contracts
     runs-on: ubuntu-20.04
     container: tonomy/antelope
 
