@@ -7,7 +7,7 @@ jobs:
   build:
     name: Compile id.tonomy smart contract
     runs-on: ubuntu-20.04
-    container: eosio/eosio.cdt:v1.8.1
+    container: tonomy/antelope
 
     steps:
       - uses: actions/checkout@v3
@@ -25,7 +25,7 @@ jobs:
     name: Deploy id.tonomy contract to staging
     needs: build
     runs-on: ubuntu-20.04
-    container: eosio/eosio:v2.0.13
+    container: tonomy/antelope
 
     steps:
       - name: Get built contracts from cache
@@ -41,10 +41,10 @@ jobs:
           cleos wallet import --private-key $PKEY_EOSIO
           cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
 
-  build-eosio:
+  build-all:
     name: Compile eosio.boot and eosio.bios contracts
     runs-on: ubuntu-20.04
-    container: eosio/eosio.cdt:v1.8.1
+    container: tonomy/antelope
 
     steps:
       - uses: actions/checkout@v3
@@ -69,7 +69,7 @@ jobs:
 
   push-docker:
     name: Builds docker image and push to Docker Hub
-    needs: build-eosio
+    needs: build-all
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
