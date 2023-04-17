@@ -5,8 +5,8 @@
             "includePath": [
                 "${default}",
                 "${workspaceFolder}/contracts/**",
-                "${workspaceFolder}/eosio.cdt/libraries/eosiolib/**",
-                "${workspaceFolder}/eosio.cdt/libraries/boost/include/boost/**",
+                "${workspaceFolder}/cdt/libraries/eosiolib/**",
+                "${workspaceFolder}/cdt/libraries/boost/include/boost/**",
                 "${workspaceFolder}/boost_1_67_0/boost/**",
                 "/usr/include/**",
             ],
@@ -15,7 +15,6 @@
             "cStandard": "gnu17",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-gcc-x64",
-
         }
     ],
     "version": 4

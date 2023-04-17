@@ -27,7 +27,7 @@ function compile_contract_id_tonomy {
         docker run\
             -v "${PARENT_PATH}:${WORKING_DIR}"\
             -v "${PARENT_PATH}/..:${WORKING_DIR}/.."\
-            eosio/eosio.cdt:v1.8.1 bash -c "${BUILD_COMMAND}"
+            tonomy/antelope bash -c "${BUILD_COMMAND}"
     fi
     rm -rf "${PARENT_PATH}/include/eosio.bios"
 }
