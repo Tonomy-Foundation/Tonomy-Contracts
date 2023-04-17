@@ -41,7 +41,7 @@ jobs:
           cleos wallet import --private-key $PKEY_EOSIO
           cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
 
-  build-eosio:
+  build-all:
     name: Compile eosio.boot and eosio.bios contracts
     runs-on: ubuntu-20.04
     container: tonomy/antelope
@@ -69,7 +69,7 @@ jobs:
 
   push-docker:
     name: Builds docker image and push to Docker Hub
-    needs: build-eosio
+    needs: build-all
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
