@@ -9,6 +9,9 @@ RUN apt install -y ./leap_3.2.3-ubuntu20.04_amd64.deb
 # RUN wget https://github.com/AntelopeIO/leap/releases/download/v4.0.0-rc3/leap_4.0.0-rc3-ubuntu20.04_amd64.deb
 # RUN apt install -y ./leap_4.0.0-rc3-ubuntu20.04_amd64.deb
 
+RUN wget https://github.com/AntelopeIO/cdt/releases/download/v3.1.0/cdt_3.1.0_amd64.deb
+RUN apt install ./cdt_3.1.0_amd64.deb
+
 CMD nodeos
 
 FROM antelope_blockchain as tonomy_blockchain_base
@@ -19,9 +22,6 @@ COPY . /var/contracts
 WORKDIR /var/contracts/blockchain
 
 RUN cp ./config.ini /var/config/config.ini
-
-RUN wget https://github.com/AntelopeIO/cdt/releases/download/v3.1.0/cdt_3.1.0_amd64.deb
-RUN apt install ./cdt_3.1.0_amd64.deb
 
 CMD ./nodeos.sh
 
