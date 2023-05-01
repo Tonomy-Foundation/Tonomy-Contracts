@@ -5,46 +5,9 @@ on:
 
 jobs:
   build:
-    name: Compile id.tonomy smart contract
+    name: Compile eosio.boot, eosio.bios and id.tonomy contracts
     runs-on: ubuntu-20.04
-    container: eosio/eosio.cdt:v1.8.1
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build id.tonomy contract
-        run: ./contracts/id.tonomy/build.sh local
-
-      - name: Add built contracts to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: id.tonomy
-          path: ./contracts/id.tonomy
-
-  deploy-staging:
-    name: Deploy id.tonomy contract to staging
-    needs: build
-    runs-on: ubuntu-20.04
-    container: eosio/eosio:v2.0.13
-
-    steps:
-      - name: Get built contracts from cache
-        uses: actions/download-artifact@v3
-        with:
-          name: id.tonomy
-          path: contracts/id.tonomy
-
-      - name: Deploy id.tonomy contract
-        run: |
-          PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
-          cleos wallet create --file ./wallet.txt
-          cleos wallet import --private-key $PKEY_EOSIO
-          cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
-
-  build-eosio:
-    name: Compile eosio.boot and eosio.bios contracts
-    runs-on: ubuntu-20.04
-    container: eosio/eosio.cdt:v1.8.1
+    container: tonomy/antelope
 
     steps:
       - uses: actions/checkout@v3
@@ -54,6 +17,9 @@ jobs:
 
       - name: Build eosio.bios contract
         run: ./contracts/eosio.bios/build.sh local
+
+      - name: Build id.tonomy contract
+        run: ./contracts/id.tonomy/build.sh local
 
       - name: Add eosio.boot contracts to artifacts
         uses: actions/upload-artifact@v3
@@ -67,9 +33,36 @@ jobs:
           name: eosio.bios
           path: ./contracts/eosio.bios
 
+      - name: Add built contracts to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: id.tonomy
+          path: ./contracts/id.tonomy
+
+  deploy-staging:
+    name: Deploy id.tonomy contract to staging
+    needs: build
+    runs-on: ubuntu-20.04
+    container: tonomy/antelope
+
+    steps:
+      - name: Get built contracts from cache
+        uses: actions/download-artifact@v3
+        with:
+          name: id.tonomy
+          path: contracts/id.tonomy
+
+      - name: Deploy id.tonomy contract
+        run: |
+          PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
+          cleos wallet create --file ./wallet.txt
+          cleos wallet import --private-key $PKEY_EOSIO
+          ls ./contracts/id.tonomy
+          cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
+
   push-docker:
     name: Builds docker image and push to Docker Hub
-    needs: build-eosio
+    needs: build
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3

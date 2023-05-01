@@ -7,6 +7,9 @@ set -e ## exit if any statement fails
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "${PARENT_PATH}/.."
 
+docker rm -f antelope_blockchain || true
+docker image build --target antelope_blockchain . -f ./blockchain/Dockerfile --force-rm -t antelope_blockchain
+
 # Build Tonomy Contracts
 ./build-contracts.sh
 

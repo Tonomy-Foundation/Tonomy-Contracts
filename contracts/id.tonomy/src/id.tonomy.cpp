@@ -182,7 +182,8 @@ namespace idtonomy
 
    void id::updatekeyper(name account,
                          permission_level permission_level,
-                         public_key key)
+                         public_key key,
+                         bool link_auth)
    {
       // update the status if needed
       auto people_itr = _people.find(account.value);
@@ -205,8 +206,8 @@ namespace idtonomy
       case idtonomy::enum_permission_level::Pin:
          permission = "pin"_n;
          break;
-      case idtonomy::enum_permission_level::Fingerprint:
-         permission = "fingerprint"_n;
+      case idtonomy::enum_permission_level::Biometric:
+         permission = "biometric"_n;
          break;
       case idtonomy::enum_permission_level::Local:
          permission = "local"_n;
@@ -219,9 +220,13 @@ namespace idtonomy
       eosiobios::bios::updateauth_action updateauthaction("eosio"_n, {account, "owner"_n});
       updateauthaction.send(account, permission, "owner"_n, authority);
 
-      eosiobios::bios::linkauth_action linkauthaction("eosio"_n, {account, "owner"_n});
-      linkauthaction.send(account, get_self(), "loginwithapp"_n, permission);
-      // TODO also needs to link to any other actions that require the permission that we know of at this stage
+      if (link_auth)
+      {
+         // link the permission to the `loginwithapp` action
+         eosiobios::bios::linkauth_action linkauthaction("eosio"_n, {account, "owner"_n});
+         linkauthaction.send(account, get_self(), "loginwithapp"_n, permission);
+         // TODO also needs to link to any other actions that require the permission that we know of at this stage
+      }
    }
 
    void id::loginwithapp(
@@ -237,7 +242,7 @@ namespace idtonomy
       // TODO uncomment when apps have status
       // check(app_itr->status == idtonomy::enum_account_status::Active_Status, "App is not active");
 
-      // TODO check parent is only from allowed parents : "local", "pin", "fingerprint", "active"
+      // TODO check parent is only from allowed parents : "local", "pin", "biometric", "active"
 
       // TODO instead of "app" as the permission, use sha256(parent, app, name of key(TODO provide as argument with default = "main"))
 
