@@ -86,7 +86,7 @@ namespace eosio
       auto perm = permissions.find(1);
       const name per = perm->permission_name;
 
-      require_auth({st.issuer, per});
+      require_auth({from, per});
       check(is_account(to), "to account does not exist");
       auto sym = quantity.symbol.code();
       stats statstable(get_self(), sym.raw());
@@ -163,11 +163,11 @@ namespace eosio
       acnts.erase(it);
    }
 
-   void token::addperm(const name &permission_name)
+   void token::addperm(const name &per)
    {
       require_auth(get_self());
       permission permissions(get_self(), get_first_receiver().value);
       permissions.emplace(get_self(), [&](auto &row)
-                          { row.permission_name = permission_name; });
+                          { row.permission_name = per; });
    }
 } /// namespace eosio

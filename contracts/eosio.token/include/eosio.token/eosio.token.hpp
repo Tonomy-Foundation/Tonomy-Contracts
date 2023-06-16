@@ -101,9 +101,9 @@ namespace eosio
        * This action is for saving origins of application from outside the blockchain
        * to be used for authentications later.
        *
-       * @param permission_name - name of the origin to be saved by
+       * @param per - name of the origin to be saved by
        */
-      ACTION addperm(const name &permission_name);
+      ACTION addperm(const name &per);
 
       static asset get_supply(const name &token_contract_account, const symbol_code &sym_code)
       {
