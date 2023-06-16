@@ -36,7 +36,7 @@ namespace eosio
       const auto &st = *existing;
       check(to == st.issuer, "tokens can only be issued to issuer account");
 
-      permission permissions(get_self(), get_first_receiver().value);
+      permission permissions(get_self(), get_self().value);
       auto perm = permissions.find(1);
       const name per = perm->permission_name;
 
@@ -82,7 +82,7 @@ namespace eosio
                         const string &memo)
    {
       check(from != to, "cannot transfer to self");
-      permission permissions(get_self(), get_first_receiver().value);
+      permission permissions(get_self(), get_self().value);
       auto perm = permissions.find(1);
       const name per = perm->permission_name;
 
@@ -166,7 +166,7 @@ namespace eosio
    void token::addperm(const name &per)
    {
       require_auth(get_self());
-      permission permissions(get_self(), get_first_receiver().value);
+      permission permissions(get_self(), get_self().value);
       permissions.emplace(get_self(), [&](auto &row)
                           { row.permission_name = per; });
    }

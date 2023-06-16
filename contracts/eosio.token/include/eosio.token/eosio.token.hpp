@@ -148,7 +148,7 @@ namespace eosio
       {
          name permission_name;
 
-         uint64_t primary_key() const { return 1; }
+         uint64_t primary_key() const { return 0; }
       };
 
       typedef eosio::multi_index<"accounts"_n, account> accounts;
