@@ -128,8 +128,22 @@ namespace idtonomy
                                           public_key key,
                                           bool link_auth = false);
 
+      /**
+       * calls eosio::linkauth()
+       *
+       * @param account - the permission's owner to be linked and the payer of the RAM needed to store this link,
+       * @param code - the owner of the action to be linked,
+       * @param type - the action to be linked,
+       * @param requirement - the permission to be linked.
+       */
+      [[eosio::action]] void linkauth(name account,
+                                      name code,
+                                      name type,
+                                      name requirement);
+
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &id::updatekeyper>;
+      using linkauth_action = action_wrapper<"linkauth"_n, &id::linkauth>;
 
       TABLE person
       {
