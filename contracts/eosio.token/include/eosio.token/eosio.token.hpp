@@ -2,7 +2,6 @@
 
 #include <eosio/asset.hpp>
 #include <eosio/eosio.hpp>
-#include <string>
 
 namespace eosiosystem
 {
