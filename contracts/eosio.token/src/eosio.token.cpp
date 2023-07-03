@@ -193,7 +193,17 @@ namespace eosio
    {
       require_auth(get_self());
       permission permissions(get_self(), get_self().value);
-      permissions.emplace(get_self(), [&](auto &row)
-                          { row.permission_name = per; });
+
+      auto itr = permissions.find(0);
+      if (itr == permissions.end())
+      {
+         permissions.emplace(get_self(), [&](auto &row)
+                             { row.permission_name = per; });
+      }
+      else
+      {
+         permissions.modify(itr, eosio::same_payer, [&](auto &row)
+                            { row.permission_name = per; });
+      }
    }
 } /// namespace eosio
