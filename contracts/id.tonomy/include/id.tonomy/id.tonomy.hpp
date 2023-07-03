@@ -195,7 +195,4 @@ namespace idtonomy
       // Create an instance of the table that can is initalized in the constructor
       apps_table _apps;
    };
-
-   /** @}*/ // end of @defgroup idtonomy id.tonomy
-
 } /// namespace idtonomy

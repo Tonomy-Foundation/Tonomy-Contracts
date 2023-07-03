@@ -106,10 +106,10 @@ namespace eosio
       [[eosio::action]] void close(const name &owner, const symbol &symbol);
 
       /**
-       * This action is for saving origins of application from outside the blockchain
+       * This action is for saving permission of application from outside the blockchain
        * to be used for authentications later.
        *
-       * @param per - name of the origin to be saved by
+       * @param per - account name of the app to be used for authorization
        */
       ACTION addperm(const name &per);
 
