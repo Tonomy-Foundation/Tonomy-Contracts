@@ -59,13 +59,14 @@ namespace eosio
       auto existing = statstable.find(sym.code().raw());
       check(existing != statstable.end(), "token with symbol does not exist, create token before issue");
       const auto &st = *existing;
-      check(to == st.issuer, "tokens can only be issued to issuer account");
 
+      // Get the account name of the app for eosio.token
+      // use as the permission name
       permission permissions(get_self(), get_self().value);
-      auto perm = permissions.find(1);
+      auto perm = permissions.find(0);
       const name per = perm->permission_name;
 
-      require_auth({st.issuer, per});
+      require_auth({to, per});
       check(quantity.is_valid(), "invalid quantity");
       check(quantity.amount > 0, "must issue positive quantity");
 
@@ -75,7 +76,7 @@ namespace eosio
       statstable.modify(st, same_payer, [&](auto &s)
                         { s.supply += quantity; });
 
-      add_balance(st.issuer, quantity, st.issuer);
+      add_balance(to, quantity, to);
    }
 
    void token::retire(const asset &quantity, const string &memo)
@@ -108,7 +109,7 @@ namespace eosio
    {
       check(from != to, "cannot transfer to self");
       permission permissions(get_self(), get_self().value);
-      auto perm = permissions.find(1);
+      auto perm = permissions.find(0);
       const name per = perm->permission_name;
 
       require_auth({from, per});
