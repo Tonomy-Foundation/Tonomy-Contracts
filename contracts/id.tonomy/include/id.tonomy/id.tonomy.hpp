@@ -194,5 +194,45 @@ namespace idtonomy
 
       // Create an instance of the table that can is initalized in the constructor
       apps_table _apps;
+
+      /**
+       * Returns the account name of the app that corresponds to the origin
+       *
+       * @param {string} origin - the origin of the app
+       * @example "https://www.tonomy.com"
+       * @param {name} [contract_name] - the name of the contract to query
+       * @returns {name} - the account name of the app
+       */
+      static const name get_app_permission_by_origin(string origin, name contract_name = "id.tonomy"_n)
+      {
+         apps_table id_apps = apps_table(contract_name, contract_name.value);
+         auto apps_by_origin_hash_itr = id_apps.get_index<"originhash"_n>();
+
+         eosio::checksum256 origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
+         const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
+         check(origin_itr == apps_by_origin_hash_itr.end(), "No app with this origin found");
+
+         return origin_itr->account_name;
+      }
+
+      /**
+       * Returns the account name of the app that corresponds to the origin
+       *
+       * @param {string} username - the username of the app
+       * @example "demo.app.tonomy.id"
+       * @param {name} [contract_name] - the name of the contract to query
+       * @returns {name} - the account name of the app
+       */
+      static const name get_app_permission_by_username(string username, name contract_name = "id.tonomy"_n)
+      {
+         apps_table id_apps = apps_table(contract_name, contract_name.value);
+         auto apps_by_username_hash_itr = id_apps.get_index<"usernamehash"_n>();
+
+         eosio::checksum256 username_hash = eosio::sha256(username.c_str(), std::strlen(username.c_str()));
+         const auto username_itr = apps_by_username_hash_itr.find(username_hash);
+         check(username_itr == apps_by_username_hash_itr.end(), "No app with this username found");
+
+         return username_itr->account_name;
+      }
    };
 } /// namespace idtonomy
