@@ -229,6 +229,17 @@ namespace idtonomy
       }
    }
 
+   void id::linkauth(name account,
+                     name code,
+                     name type,
+                     name req)
+   {
+      // TODO check that "code" account is a registered, active app
+
+      eosiobios::bios::linkauth_action linkauthaction("eosio"_n, {account, "active"_n});
+      linkauthaction.send(account, code, type, req);
+   }
+
    void id::loginwithapp(
        name account,
        name app,
