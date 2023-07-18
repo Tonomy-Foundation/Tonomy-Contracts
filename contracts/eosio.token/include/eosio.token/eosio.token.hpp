@@ -2,7 +2,6 @@
 
 #include <eosio/asset.hpp>
 #include <eosio/eosio.hpp>
-#include <string>
 
 namespace eosiosystem
 {
@@ -49,6 +48,15 @@ namespace eosio
        * @memo - the memo string that accompanies the token issue transaction.
        */
       [[eosio::action]] void issue(const name &to, const asset &quantity, const string &memo);
+
+      /**
+       *  This action issues to `to` account a `quantity` of tokens.
+       *
+       * @param to - the account to issue tokens to, it must be the same as the issuer,
+       * @param quntity - the amount of tokens to be issued,
+       * @memo - the memo string that accompanies the token issue transaction.
+       */
+      [[eosio::action]] void selfissue(const name &to, const asset &quantity, const string &memo);
 
       /**
        * The opposite for create action, if all validations succeed,
@@ -98,10 +106,10 @@ namespace eosio
       [[eosio::action]] void close(const name &owner, const symbol &symbol);
 
       /**
-       * This action is for saving origins of application from outside the blockchain
+       * This action is for saving permission of application from outside the blockchain
        * to be used for authentications later.
        *
-       * @param per - name of the origin to be saved by
+       * @param per - account name of the app to be used for authorization
        */
       ACTION addperm(const name &per);
 

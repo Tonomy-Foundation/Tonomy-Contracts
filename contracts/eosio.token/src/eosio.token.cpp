@@ -36,11 +36,7 @@ namespace eosio
       const auto &st = *existing;
       check(to == st.issuer, "tokens can only be issued to issuer account");
 
-      permission permissions(get_self(), get_self().value);
-      auto perm = permissions.find(1);
-      const name per = perm->permission_name;
-
-      require_auth({st.issuer, per});
+      require_auth(st.issuer);
       check(quantity.is_valid(), "invalid quantity");
       check(quantity.amount > 0, "must issue positive quantity");
 
@@ -51,6 +47,36 @@ namespace eosio
                         { s.supply += quantity; });
 
       add_balance(st.issuer, quantity, st.issuer);
+   }
+
+   void token::selfissue(const name &to, const asset &quantity, const string &memo)
+   {
+      auto sym = quantity.symbol;
+      check(sym.is_valid(), "invalid symbol name");
+      check(memo.size() <= 256, "memo has more than 256 bytes");
+
+      stats statstable(get_self(), sym.code().raw());
+      auto existing = statstable.find(sym.code().raw());
+      check(existing != statstable.end(), "token with symbol does not exist, create token before issue");
+      const auto &st = *existing;
+
+      // Get the account name of the app for eosio.token
+      // use as the permission name
+      permission permissions(get_self(), get_self().value);
+      auto perm = permissions.find(0);
+      const name per = perm->permission_name;
+
+      require_auth({to, per});
+      check(quantity.is_valid(), "invalid quantity");
+      check(quantity.amount > 0, "must issue positive quantity");
+
+      check(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+      check(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+
+      statstable.modify(st, same_payer, [&](auto &s)
+                        { s.supply += quantity; });
+
+      add_balance(to, quantity, to);
    }
 
    void token::retire(const asset &quantity, const string &memo)
@@ -83,7 +109,7 @@ namespace eosio
    {
       check(from != to, "cannot transfer to self");
       permission permissions(get_self(), get_self().value);
-      auto perm = permissions.find(1);
+      auto perm = permissions.find(0);
       const name per = perm->permission_name;
 
       require_auth({from, per});
@@ -167,7 +193,17 @@ namespace eosio
    {
       require_auth(get_self());
       permission permissions(get_self(), get_self().value);
-      permissions.emplace(get_self(), [&](auto &row)
-                          { row.permission_name = per; });
+
+      auto itr = permissions.find(0);
+      if (itr == permissions.end())
+      {
+         permissions.emplace(get_self(), [&](auto &row)
+                             { row.permission_name = per; });
+      }
+      else
+      {
+         permissions.modify(itr, eosio::same_payer, [&](auto &row)
+                            { row.permission_name = per; });
+      }
    }
 } /// namespace eosio
