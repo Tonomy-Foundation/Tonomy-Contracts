@@ -44,6 +44,8 @@ jobs:
     needs: build
     runs-on: ubuntu-20.04
     container: tonomy/antelope
+    env:
+      ID_TONOMY_PRIVATE_KEY: ${{ secrets.ID_TONOMY_PRIVATE_KEY }}
 
     steps:
       - name: Get built contracts from cache
@@ -54,9 +56,8 @@ jobs:
 
       - name: Deploy id.tonomy contract
         run: |
-          PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
           cleos wallet create --file ./wallet.txt
-          cleos wallet import --private-key $PKEY_EOSIO
+          cleos wallet import --private-key $ID_TONOMY_PRIVATE_KEY
           ls ./contracts/id.tonomy
           cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
 
