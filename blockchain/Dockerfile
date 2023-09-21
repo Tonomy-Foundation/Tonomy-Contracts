@@ -3,12 +3,14 @@ FROM ubuntu:20.04 as antelope_blockchain
 RUN apt update
 RUN apt install -y wget curl
 
+# Install nodeos (required for running blockchain)
 RUN wget https://github.com/AntelopeIO/leap/releases/download/v3.2.3/leap_3.2.3-ubuntu20.04_amd64.deb
 RUN apt install -y ./leap_3.2.3-ubuntu20.04_amd64.deb
 # TODO update to use stable 4.x release
-# RUN wget https://github.com/AntelopeIO/leap/releases/download/v4.0.0-rc3/leap_4.0.0-rc3-ubuntu20.04_amd64.deb
-# RUN apt install -y ./leap_4.0.0-rc3-ubuntu20.04_amd64.deb
+# RUN wget https://github.com/AntelopeIO/leap/releases/download/v4.0.4/leap_4.0.4-ubuntu20.04_amd64.deb
+# RUN apt install -y ./leap_4.0.4-ubuntu20.04_amd64.deb
 
+# Install eosio.cdt (required for building contracts)
 RUN wget https://github.com/AntelopeIO/cdt/releases/download/v3.1.0/cdt_3.1.0_amd64.deb
 RUN apt install ./cdt_3.1.0_amd64.deb
 
