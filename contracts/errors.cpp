@@ -12,5 +12,5 @@ void throwError(string error_code, string message)
 /*
 List of which files have which error codes, to avoid duplicates:export function throwError(string error_code, string message) {
 
-TCON10## = id.tonomy.cpp
+TCON10## = id.tmy.cpp
 */

@@ -11,7 +11,7 @@ namespace eosiobiostonomy
    void bios::newaccount(name creator, name name, ignore<authority> owner, ignore<authority> active)
    {
       // require_auth(creator); // this is done implicity in apply_eosio_newaccount() which checks the "active" permission...
-      check_sender("id.tonomy"_n);
+      check_sender("id.tmy"_n);
    }
 
    void bios::updateauth(ignore<name> account,
@@ -20,14 +20,14 @@ namespace eosiobiostonomy
                          ignore<authority> auth)
    {
       // check(has_auth({account, permission}) || has_auth({account, parent}), "not authorized by parent or permission"); // this is done implicity in apply_eosio_updateauth()...
-      check_sender("id.tonomy"_n);
+      check_sender("id.tmy"_n);
    }
 
    void bios::deleteauth(ignore<name> account,
                          ignore<name> permission)
    {
       // require_auth({account, permission}); // this is done implicity in apply_eosio_deleteauth()...
-      check_sender("id.tonomy"_n);
+      check_sender("id.tmy"_n);
    }
 
    void bios::linkauth(ignore<name> account,
@@ -35,14 +35,14 @@ namespace eosiobiostonomy
                        ignore<name> type,
                        ignore<name> requirement)
    {
-      check_sender("id.tonomy"_n);
+      check_sender("id.tmy"_n);
    }
 
    void bios::unlinkauth(ignore<name> account,
                          ignore<name> code,
                          ignore<name> type)
    {
-      check_sender("id.tonomy"_n);
+      check_sender("id.tmy"_n);
    }
 
    // TODO need to change so that other functions can only be called by tonomy logic

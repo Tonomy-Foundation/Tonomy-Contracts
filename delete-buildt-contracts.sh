@@ -13,7 +13,7 @@ CONTRACTS=(
     "eosio.bios"
     "eosio.bios.tonomy"
     "eosio.token"
-    "id.tonomy"
+    "id.tmy"
 )
 for CONTRACT in "${CONTRACTS[@]}"
 do

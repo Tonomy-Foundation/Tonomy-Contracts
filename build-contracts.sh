@@ -40,10 +40,10 @@ else
     ./build.sh
 fi
 
-cd "${PARENT_PATH}/contracts/id.tonomy"
-if [ -e id.tonomy.wasm ]
+cd "${PARENT_PATH}/contracts/id.tmy"
+if [ -e id.tmy.wasm ]
 then
-    echo "id.tonomy already built"
+    echo "id.tmy already built"
 else
     ./build.sh
 fi

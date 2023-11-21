@@ -3,7 +3,7 @@
 #include <eosio/crypto.hpp>
 #include <eosio/eosio.hpp>
 
-namespace idtonomy
+namespace idtmy
 {
    using eosio::action_wrapper;
    using eosio::check;
@@ -51,15 +51,15 @@ namespace idtonomy
    typedef uint8_t permission_level;
 
    /**
-    * @defgroup idtonomy id.tonomy
+    * @defgroup id.tmy id.tmy
     * @ingroup tonomycontracts
     *
-    * id.tonomy controls the identity management system for Tonomy ecosystems. It allows people and organizations
+    * id.tmy controls the identity management system for Tonomy ecosystems. It allows people and organizations
     * to create and manage their account, resources and smart contracts
     *
     * @{
     */
-   class [[eosio::contract("id.tonomy")]] id : public eosio::contract
+   class [[eosio::contract("id.tmy")]] id : public eosio::contract
    {
    public:
       using contract::contract;
@@ -203,7 +203,7 @@ namespace idtonomy
        * @param {name} [contract_name] - the name of the contract to query
        * @returns {name} - the account name of the app
        */
-      static const name get_app_permission_by_origin(string origin, name contract_name = "id.tonomy"_n)
+      static const name get_app_permission_by_origin(string origin, name contract_name = "id.tmy"_n)
       {
          apps_table id_apps = apps_table(contract_name, contract_name.value);
          auto apps_by_origin_hash_itr = id_apps.get_index<"originhash"_n>();
@@ -223,7 +223,7 @@ namespace idtonomy
        * @param {name} [contract_name] - the name of the contract to query
        * @returns {name} - the account name of the app
        */
-      static const name get_app_permission_by_username(string username, name contract_name = "id.tonomy"_n)
+      static const name get_app_permission_by_username(string username, name contract_name = "id.tmy"_n)
       {
          apps_table id_apps = apps_table(contract_name, contract_name.value);
          auto apps_by_username_hash_itr = id_apps.get_index<"usernamehash"_n>();
@@ -235,4 +235,4 @@ namespace idtonomy
          return username_itr->account_name;
       }
    };
-} /// namespace idtonomy
+} /// namespace idtmy
