@@ -94,19 +94,19 @@ namespace idtmy
        public_key password_key,
        checksum256 password_salt)
    {
-      // check the transaction is signed by the `id.tonomy` account
-      eosio::require_auth("id.tmy"_n);
+      // check the transaction is signed by the `id.tmy` account
+      eosio::require_auth(get_self());
 
       // generate new random account name
       const name random_name = random_account_name(username_hash, password_salt, enum_account_type::Person);
 
       // use the password_key public key for the owner authority
       eosiobios::authority password_authority = create_authority_with_key(password_key);
-      password_authority.accounts.push_back({.permission = create_eosio_code_permission_level("id.tmy"_n), .weight = 1});
+      password_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       // If the account name exists, this will fail
-      eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {"id.tmy"_n, "active"_n});
-      newaccountaction.send("id.tmy"_n, random_name, password_authority, password_authority);
+      eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
+      newaccountaction.send(get_self(), random_name, password_authority, password_authority);
 
       // Check the username is not already taken
       auto people_by_username_hash_itr = _people.get_index<"usernamehash"_n>();
@@ -117,7 +117,7 @@ namespace idtmy
       }
 
       // Store the password_salt and hashed username in table
-      _people.emplace("id.tmy"_n, [&](auto &people_itr)
+      _people.emplace(get_self(), [&](auto &people_itr)
                       {
            people_itr.account_name = random_name;
            people_itr.status = idtmy::enum_account_status::Creating_Status;
@@ -135,8 +135,8 @@ namespace idtmy
        public_key key)
    {
       // TODO in the future only an organization type can create an app
-      // check the transaction is signed by the `id.tonomy` account
-      eosio::require_auth("id.tmy"_n);
+      // check the transaction is signed by the `id.tmy` account
+      eosio::require_auth(get_self());
 
       checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
 
@@ -145,11 +145,11 @@ namespace idtmy
 
       // use the password_key public key for the owner authority
       eosiobios::authority key_authority = create_authority_with_key(key);
-      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level("id.tmy"_n), .weight = 1});
+      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       // If the account name exists, this will fail
-      eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {"id.tmy"_n, "active"_n});
-      newaccountaction.send("id.tmy"_n, random_name, key_authority, key_authority);
+      eosiobios::bios::newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
+      newaccountaction.send(get_self(), random_name, key_authority, key_authority);
 
       // Check the username is not already taken
       auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
@@ -169,7 +169,7 @@ namespace idtmy
       }
 
       // Store the password_salt and hashed username in table
-      _apps.emplace("id.tmy"_n, [&](auto &app_itr)
+      _apps.emplace(get_self(), [&](auto &app_itr)
                     {
                            app_itr.account_name = random_name;
                            app_itr.app_name = app_name;
@@ -191,14 +191,14 @@ namespace idtmy
       {
          if (people_itr->status == idtmy::enum_account_status::Creating_Status)
          {
-            _people.modify(people_itr, "id.tmy"_n, [&](auto &people_itr)
+            _people.modify(people_itr, get_self(), [&](auto &people_itr)
                            { people_itr.status = idtmy::enum_account_status::Active_Status; });
          }
       }
 
       // setup the new key authoritie(s)
       eosiobios::authority authority = create_authority_with_key(key);
-      authority.accounts.push_back({.permission = create_eosio_code_permission_level("id.tmy"_n), .weight = 1});
+      authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       name permission;
       switch (permission_level)
@@ -224,7 +224,7 @@ namespace idtmy
       {
          // link the permission to the `loginwithapp` action
          eosiobios::bios::linkauth_action linkauthaction("eosio"_n, {account, "owner"_n});
-         linkauthaction.send(account, "id.tmy"_n, "loginwithapp"_n, permission);
+         linkauthaction.send(account, get_self(), "loginwithapp"_n, permission);
          // TODO also needs to link to any other actions that require the permission that we know of at this stage
       }
    }
