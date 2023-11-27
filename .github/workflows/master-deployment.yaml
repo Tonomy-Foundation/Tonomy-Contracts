@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    name: Compile eosio.boot, eosio.bios and id.tonomy contracts
+    name: Compile eosio.boot, eosio.bios and id.tmy contracts
     runs-on: ubuntu-20.04
     container: tonomy/antelope
 
@@ -18,8 +18,8 @@ jobs:
       - name: Build eosio.bios contract
         run: ./contracts/eosio.bios/build.sh local
 
-      - name: Build id.tonomy contract
-        run: ./contracts/id.tonomy/build.sh local
+      - name: Build id.tmy contract
+        run: ./contracts/id.tmy/build.sh local
 
       - name: Add eosio.boot contracts to artifacts
         uses: actions/upload-artifact@v3
@@ -36,11 +36,11 @@ jobs:
       - name: Add built contracts to artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: id.tonomy
-          path: ./contracts/id.tonomy
+          name: id.tmy
+          path: ./contracts/id.tmy
 
   deploy-demo:
-    name: Deploy id.tonomy contract to demo
+    name: Deploy id.tmy contract to demo
     needs: build
     runs-on: ubuntu-20.04
     container: tonomy/antelope
@@ -51,15 +51,15 @@ jobs:
       - name: Get built contracts from cache
         uses: actions/download-artifact@v3
         with:
-          name: id.tonomy
-          path: contracts/id.tonomy
+          name: id.tmy
+          path: contracts/id.tmy
 
-      - name: Deploy id.tonomy contract
+      - name: Deploy id.tmy contract
         run: |
           cleos wallet create --file ./wallet.txt
           cleos wallet import --private-key $ID_TONOMY_PRIVATE_KEY
-          ls ./contracts/id.tonomy
-          cleos -u "https://blockchain-api-demo.tonomy.foundation" set contract id.tonomy ./contracts/id.tonomy id.tonomy.wasm id.tonomy.abi
+          ls ./contracts/id.tmy
+          cleos -u "https://blockchain-api-demo.tonomy.foundation" set contract id.tmy ./contracts/id.tmy id.tmy.wasm id.tmy.abi
 
   push-docker:
     name: Builds docker image and push to Docker Hub

@@ -22,5 +22,5 @@ jobs:
       - name: Compile eosio.token
         run: ./contracts/eosio.token/build.sh local
 
-      - name: Compile id.tonomy
-        run: ./contracts/id.tonomy/build.sh local
+      - name: Compile id.tmy
+        run: ./contracts/id.tmy/build.sh local

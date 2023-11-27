@@ -1,10 +1,10 @@
-#include <id.tonomy/id.tonomy.hpp>
+#include <id.tmy/id.tmy.hpp>
 #include <eosio.bios/eosio.bios.hpp>
 #include <eosio/transaction.hpp>
 #include <vector>
 #include "../../errors.cpp"
 
-namespace idtonomy
+namespace idtmy
 {
    // contract class constructor
    id::id(name receiver, name code, eosio::datastream<const char *> ds) : // contract base class contructor
@@ -94,7 +94,7 @@ namespace idtonomy
        public_key password_key,
        checksum256 password_salt)
    {
-      // check the transaction is signed by the `id.tonomy` account
+      // check the transaction is signed by the `id.tmy` account
       eosio::require_auth(get_self());
 
       // generate new random account name
@@ -120,7 +120,7 @@ namespace idtonomy
       _people.emplace(get_self(), [&](auto &people_itr)
                       {
            people_itr.account_name = random_name;
-           people_itr.status = idtonomy::enum_account_status::Creating_Status;
+           people_itr.status = idtmy::enum_account_status::Creating_Status;
            people_itr.username_hash = username_hash;
            people_itr.password_salt = password_salt;
            people_itr.version = 1; });
@@ -135,7 +135,7 @@ namespace idtonomy
        public_key key)
    {
       // TODO in the future only an organization type can create an app
-      // check the transaction is signed by the `id.tonomy` account
+      // check the transaction is signed by the `id.tmy` account
       eosio::require_auth(get_self());
 
       checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
@@ -189,10 +189,10 @@ namespace idtonomy
       auto people_itr = _people.find(account.value);
       if (people_itr != _people.end())
       {
-         if (people_itr->status == idtonomy::enum_account_status::Creating_Status)
+         if (people_itr->status == idtmy::enum_account_status::Creating_Status)
          {
             _people.modify(people_itr, get_self(), [&](auto &people_itr)
-                           { people_itr.status = idtonomy::enum_account_status::Active_Status; });
+                           { people_itr.status = idtmy::enum_account_status::Active_Status; });
          }
       }
 
@@ -203,13 +203,13 @@ namespace idtonomy
       name permission;
       switch (permission_level)
       {
-      case idtonomy::enum_permission_level::Pin:
+      case idtmy::enum_permission_level::Pin:
          permission = "pin"_n;
          break;
-      case idtonomy::enum_permission_level::Biometric:
+      case idtmy::enum_permission_level::Biometric:
          permission = "biometric"_n;
          break;
-      case idtonomy::enum_permission_level::Local:
+      case idtmy::enum_permission_level::Local:
          permission = "local"_n;
          break;
       default:
@@ -251,7 +251,7 @@ namespace idtonomy
       check(app_itr != _apps.end(), "App does not exist");
 
       // TODO uncomment when apps have status
-      // check(app_itr->status == idtonomy::enum_account_status::Active_Status, "App is not active");
+      // check(app_itr->status == idtmy::enum_account_status::Active_Status, "App is not active");
 
       // TODO check parent is only from allowed parents : "local", "pin", "biometric", "active"
 
