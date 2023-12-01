@@ -13,7 +13,7 @@ function compile_contract_id_tonomy {
     if [ "$BUILD_METHOD" == "local" ]; then
         WORKING_DIR="."
     else
-        WORKING_DIR="/contracts/id.tonomy"
+        WORKING_DIR="/contracts/id.tmy"
     fi
 
     BUILD_COMMAND="cdt-cpp -abigen -I ${WORKING_DIR}/include -R ${WORKING_DIR}/ricardian -contract ${CONTRACT_NAME} -o ${WORKING_DIR}/${CONTRACT_NAME}.wasm ${WORKING_DIR}/src/${CONTRACT_NAME}.cpp"
@@ -32,4 +32,4 @@ function compile_contract_id_tonomy {
     rm -rf "${PARENT_PATH}/include/eosio.bios"
 }
 
-compile_contract_id_tonomy "${PARENT_PATH}" "id.tonomy" "${BUILD_METHOD}"
+compile_contract_id_tonomy "${PARENT_PATH}" "id.tmy" "${BUILD_METHOD}"
