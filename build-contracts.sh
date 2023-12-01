@@ -32,10 +32,10 @@ else
     ./build.sh
 fi
 
-cd "${PARENT_PATH}/contracts/eosio.token"
-if [ -e eosio.token.wasm ]
+cd "${PARENT_PATH}/contracts/demo.tmy"
+if [ -e demo.tmy.wasm ]
 then
-    echo "eosio.token already built"
+    echo "demo.tmy already built"
 else
     ./build.sh
 fi

@@ -6,5 +6,5 @@ git checkout develop
 cp ./contracts/eosio.boot/ ../ -ur
 git checkout v1.9.2
 cp ./contracts/eosio.bios/ ../ -ur
-cp ./contracts/eosio.token/ ../ -ur
+cp ./contracts/demo.tmy/ ../ -ur
 rm eosio.contracts -rf

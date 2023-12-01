@@ -1,4 +1,4 @@
-#include <eosio.token/eosio.token.hpp>
+#include <demo.tmy/demo.tmy.hpp>
 
 namespace eosio
 {
@@ -60,7 +60,7 @@ namespace eosio
       check(existing != statstable.end(), "token with symbol does not exist, create token before issue");
       const auto &st = *existing;
 
-      // Get the account name of the app for eosio.token
+      // Get the account name of the app for demo.tmy
       // use as the permission name
       permission permissions(get_self(), get_self().value);
       auto perm = permissions.find(0);
