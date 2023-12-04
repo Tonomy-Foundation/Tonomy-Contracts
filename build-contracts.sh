@@ -41,7 +41,7 @@ else
 fi
 
 cd "${PARENT_PATH}/contracts/onocoin.tmy"
-if [ -e demo.tmy.wasm ]
+if [ -e onocoin.tmy.wasm ]
 then
     echo "onocoin.tmy already built"
 else
