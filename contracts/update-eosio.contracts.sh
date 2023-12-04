@@ -7,4 +7,5 @@ cp ./contracts/eosio.boot/ ../ -ur
 git checkout v1.9.2
 cp ./contracts/eosio.bios/ ../ -ur
 cp ./contracts/demo.tmy/ ../ -ur
+cp ./contracts/onocoin.tmy/ ../ -ur
 rm eosio.contracts -rf
