@@ -26,7 +26,6 @@ void token::create( const name&   issuer,
 void token::issue( const name& to, const asset& quantity, const string& memo )
 {
     auto sym = quantity.symbol;
-    require_auth({to, "eosio.token"_n});
 
     check( sym.is_valid(), "invalid symbol name" );
     check( memo.size() <= 256, "memo has more than 256 bytes" );
