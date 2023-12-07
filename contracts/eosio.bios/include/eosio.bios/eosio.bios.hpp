@@ -178,6 +178,32 @@ namespace eosiobios
       [[eosio::action]] void setabi(name account, const std::vector<char> &abi);
 
       /**
+      * Set ram price action sets the price for RAM identified by `new_price`. 
+      * Finds an entry in the resource_config_table index, with `get_self()` as key, 
+      * if it is not already present and sets its value with the new RAM price.
+      * Otherwise it is updating the current RAM price value for the existing `get_self()` key.
+      *
+      * @param new_price - the new price of RAM
+      */
+      [[eosio::action]] void setramprice(double new_price);
+      
+      /**
+      * Buy RAM action allows an app to purchase RAM. 
+      * It checks the account type of the app, ensures the RAM is being purchased with the correct token, 
+      * and that the amount of tokens being used for the purchase is positive. 
+      * It then calculates the amount of RAM to purchase based on the current RAM price, 
+      * checks if there is enough available RAM, and allocates the purchased RAM to the app.
+      * Finally, it updates the total RAM used and available in the system, and 
+      * transfers the tokens used for the purchase.
+      *
+      * @param dao_owner - the name of the DAO owner account
+      * @param app - the name of the app account purchasing the RAM
+      * @param quant - the amount and symbol of the tokens used for the purchase
+      */
+      [[eosio::action]] void buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant);
+
+
+      /**
        * On error action, notification of this action is delivered to the sender of a deferred transaction
        * when an objective error occurs while executing the deferred transaction.
        * This action is not meant to be called directly.
@@ -253,6 +279,18 @@ namespace eosiobios
       };
 
       typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
+
+      struct [[eosio::table]] resource_config {
+         uint64_t ram_price;
+         uint64_t total_ram_available;
+         uint64_t total_ram_used;
+         uint64_t total_cpu_weight_allocated;
+         uint64_t total_net_weight_allocated;
+
+         uint64_t primary_key() const { return ram_price; }
+      };
+
+      typedef eosio::multi_index<"resourceconfig"_n, resource_config> resource_config_table;
 
       using newaccount_action = action_wrapper<"newaccount"_n, &bios::newaccount>;
       using updateauth_action = action_wrapper<"updateauth"_n, &bios::updateauth>;
