@@ -20,7 +20,8 @@ namespace idtmy
       Person,
       Organization,
       App,
-      Gov
+      Gov,
+      Service
    };
    typedef uint8_t account_type;
 
@@ -61,8 +62,13 @@ namespace idtmy
     */
    class [[eosio::contract("id.tmy")]] id : public eosio::contract
    {
+   private:
+      uint64_t initial_cpu_weight_allocation = 1000;
+      uint64_t initial_net_weight_allocation = 1000;
+
    public:
       using contract::contract;
+
 
       /**
        * Constructor for the contract, which initializes the _accounts table
@@ -144,6 +150,16 @@ namespace idtmy
       using newperson_action = action_wrapper<"newperson"_n, &id::newperson>;
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &id::updatekeyper>;
       using linkauth_action = action_wrapper<"linkauth"_n, &id::linkauth>;
+
+      struct [[eosio::table]] account_types {
+         name account_name; 
+         enum_account_type account_type; 
+
+         uint64_t primary_key() const { return account_name.value; } 
+         EOSLIB_SERIALIZE(account_types, (account_name)(account_type)) 
+      };
+
+      typedef eosio::multi_index<"acctypes"_n, account_types> account_types_table;
 
       TABLE person
       {

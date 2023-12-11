@@ -124,8 +124,27 @@ namespace idtmy
            people_itr.username_hash = username_hash;
            people_itr.password_salt = password_salt;
            people_itr.version = 1; });
-   }
 
+      // Store the account type in the account_types table
+      account_types_table account_types(get_self(), get_self().value);
+      account_types.emplace(get_self(), [&](auto& row) {
+         row.account_name = random_name;
+         row.account_type = enum_account_type::Person;
+      });
+
+      //Set the resource limits for the new account
+      eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
+      int64_t myRAM, net, cpu;
+      eosio::get_resource_limits( random_name, myRAM, net, cpu );
+      _resource_config.emplace(get_self(), [&](auto &row) {
+         row.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
+         row.total_net_weight_allocated = this->initial_net_weight_allocation;
+      });
+
+      eosio::set_resource_limits(random_name, myRAM, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+
+   }
+   
    void id::newapp(
        string app_name,
        string description,
@@ -178,6 +197,24 @@ namespace idtmy
                            app_itr.origin = origin;
                            app_itr.username_hash = username_hash;
                            app_itr.version = 1; });
+
+      // Store the account type in the account_types table
+      account_types_table account_types(get_self(), get_self().value);
+      account_types.emplace(get_self(), [&](auto& row) {
+         row.account_name = random_name;
+         row.account_type = enum_account_type::App;
+      });
+      
+      eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
+      int64_t myRAM, net, cpu;
+      eosio::get_resource_limits( app_name, myRAM, net, cpu );
+      _resource_config.emplace(get_self(), [&](auto &row) {
+         row.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
+         row.total_net_weight_allocated = this->initial_net_weight_allocation;
+      });
+
+      eosio::set_resource_limits(app_name, myRAM, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+
    }
 
    void id::updatekeyper(name account,

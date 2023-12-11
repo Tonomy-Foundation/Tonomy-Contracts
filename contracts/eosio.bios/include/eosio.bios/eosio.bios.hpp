@@ -6,6 +6,7 @@
 #include <eosio/fixed_bytes.hpp>
 #include <eosio/privileged.hpp>
 #include <eosio/producer_schedule.hpp>
+#include <eosio/asset.hpp>
 
 namespace eosiobios
 {
@@ -17,6 +18,7 @@ namespace eosiobios
    using eosio::name;
    using eosio::permission_level;
    using eosio::public_key;
+   using eosio::asset;
 
    struct permission_level_weight
    {
@@ -78,8 +80,14 @@ namespace eosiobios
     */
    class [[eosio::contract("eosio.bios")]] bios : public eosio::contract
    {
+   private:
+      eosio::symbol system_resource_currency;
+      eosio::name resource_token_contract;
    public:
       using contract::contract;
+      eosio::symbol core_symbol() const {
+            return system_resource_currency;
+        }
       /**
        * New account action, called after a new account is created. This code enforces resource-limits rules
        * for new accounts as well as new account naming conventions.
@@ -176,6 +184,12 @@ namespace eosiobios
        * @param abi     - the abi hash represented as a vector of characters
        */
       [[eosio::action]] void setabi(name account, const std::vector<char> &abi);
+
+       /**
+       * System Currency action, initializes the system resource currency.
+       * This function should be called during the setup of the blockchain.
+       */
+      [[eosio::action]] void syscurrency();
 
       /**
       * Set ram price action sets the price for RAM identified by `new_price`. 
@@ -281,16 +295,21 @@ namespace eosiobios
       typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
 
       struct [[eosio::table]] resource_config {
+         uint64_t key; // This will be the primary key
          uint64_t ram_price;
          uint64_t total_ram_available;
          uint64_t total_ram_used;
          uint64_t total_cpu_weight_allocated;
          uint64_t total_net_weight_allocated;
+         
+         uint64_t primary_key() const { return key; } 
 
-         uint64_t primary_key() const { return ram_price; }
+         EOSLIB_SERIALIZE(resource_config, (ram_price)(total_ram_available)(total_ram_used)
+         (total_cpu_weight_allocated)(total_net_weight_allocated)
+         )
       };
 
-      typedef eosio::multi_index<"resourceconfig"_n, resource_config> resource_config_table;
+      typedef eosio::multi_index<"resconfig"_n, resource_config> resource_config_table;
 
       using newaccount_action = action_wrapper<"newaccount"_n, &bios::newaccount>;
       using updateauth_action = action_wrapper<"updateauth"_n, &bios::updateauth>;
@@ -307,5 +326,8 @@ namespace eosiobios
       using reqauth_action = action_wrapper<"reqauth"_n, &bios::reqauth>;
       using activate_action = action_wrapper<"activate"_n, &bios::activate>;
       using reqactivated_action = action_wrapper<"reqactivated"_n, &bios::reqactivated>;
+      using syscurrency_action = action_wrapper<"syscurrency"_n, &bios::syscurrency>; 
+      using setramprice_action = action_wrapper<"setramprice"_n, &bios::setramprice>;
+      using buyram_action = action_wrapper<"buyram"_n, &bios::buyram>;
    };
 }
