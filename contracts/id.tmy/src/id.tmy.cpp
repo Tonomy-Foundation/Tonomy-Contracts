@@ -115,6 +115,17 @@ namespace idtmy
       {
          throwError("TCON1000", "This people username is already taken");
       }
+      
+      //Set the resource limits for the new account
+      eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
+      int64_t myRAM, net, cpu;
+      eosio::get_resource_limits( random_name, myRAM, net, cpu );
+      _resource_config.emplace(get_self(), [&](auto &row) {
+         row.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
+         row.total_net_weight_allocated = this->initial_net_weight_allocation;
+      });
+
+      eosio::set_resource_limits(random_name, myRAM, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
 
       // Store the password_salt and hashed username in table
       _people.emplace(get_self(), [&](auto &people_itr)
@@ -132,17 +143,7 @@ namespace idtmy
          row.account_type = enum_account_type::Person;
       });
 
-      //Set the resource limits for the new account
-      eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
-      int64_t myRAM, net, cpu;
-      eosio::get_resource_limits( random_name, myRAM, net, cpu );
-      _resource_config.emplace(get_self(), [&](auto &row) {
-         row.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
-         row.total_net_weight_allocated = this->initial_net_weight_allocation;
-      });
-
-      eosio::set_resource_limits(random_name, myRAM, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
-
+     
    }
    
    void id::newapp(
@@ -187,6 +188,17 @@ namespace idtmy
          throwError("TCON1002", "This app origin is already taken");
       }
 
+      eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
+      int64_t myRAM, net, cpu;
+      eosio::get_resource_limits( app_name, myRAM, net, cpu );
+      _resource_config.emplace(get_self(), [&](auto &row) {
+         row.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
+         row.total_net_weight_allocated = this->initial_net_weight_allocation;
+      });
+
+      eosio::set_resource_limits(app_name, myRAM, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+
+
       // Store the password_salt and hashed username in table
       _apps.emplace(get_self(), [&](auto &app_itr)
                     {
@@ -205,16 +217,7 @@ namespace idtmy
          row.account_type = enum_account_type::App;
       });
       
-      eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
-      int64_t myRAM, net, cpu;
-      eosio::get_resource_limits( app_name, myRAM, net, cpu );
-      _resource_config.emplace(get_self(), [&](auto &row) {
-         row.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
-         row.total_net_weight_allocated = this->initial_net_weight_allocation;
-      });
-
-      eosio::set_resource_limits(app_name, myRAM, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
-
+     
    }
 
    void id::updatekeyper(name account,
