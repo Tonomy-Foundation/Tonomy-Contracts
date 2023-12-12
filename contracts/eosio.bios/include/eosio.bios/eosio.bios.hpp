@@ -85,6 +85,8 @@ namespace eosiobios
    public:
       using contract::contract;
       static constexpr eosio::symbol system_resource_currency = eosio::symbol("ONO", 4);
+      static constexpr eosio::name idtmy_name = "id.tmy"_n;
+      static constexpr eosio::name gov_name = "gov.tmy"_n;
 
       /**
        * New account action, called after a new account is created. This code enforces resource-limits rules
@@ -183,17 +185,17 @@ namespace eosiobios
        */
       [[eosio::action]] void setabi(name account, const std::vector<char> &abi);
 
-      /**
-      * The setresparams action sets the price for RAM and the total RAM available.
+     /**
+      * The setresparams action sets the price for RAM, the total RAM available, and the RAM fee.
       * It checks for an entry in the resource_config_table singleton, with `get_self()` as key.
-      * If the entry does not exist, it creates a new entry with the provided RAM price, total RAM available, and sets other parameters to 0.
-      * If the entry exists, it updates the RAM price and total RAM available values for the existing `get_self()` key.
+      * If the entry does not exist, it creates a new entry with the provided RAM price, total RAM available, RAM fee, and sets other parameters to 0.
+      * If the entry exists, it updates the RAM price, total RAM available, and RAM fee values for the existing `get_self()` key.
       *
       * @param ram_price - the new price of RAM
       * @param total_ram_available - the new total RAM available
+      * @param ram_fee - the new RAM fee
       */
-       [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available);
-
+      [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, uint64_t ram_fee);
       
       /**
       * Buy RAM action allows an app to purchase RAM. 
@@ -221,9 +223,9 @@ namespace eosiobios
       *
       * @param dao_owner - the name of the DAO owner account
       * @param app - the name of the app account selling the RAM
-      * @param bytes - the amount of RAM in bytes to sell
+      * @param quant - the amount and symbol of the tokens used to sell
       */
-      [[eosio::action]] void sellram(eosio::name dao_owner, eosio::name app, int64_t bytes);
+      [[eosio::action]] void sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant);
 
 
 
