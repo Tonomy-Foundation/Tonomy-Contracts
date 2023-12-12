@@ -210,6 +210,22 @@ namespace eosiobios
       */
       [[eosio::action]] void buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant);
 
+      /**
+      * Sell RAM action allows an app to sell RAM. 
+      * It checks the account type of the app, ensures the RAM is being sold for the correct token, 
+      * and that the amount of RAM being sold is positive. 
+      * It then calculates the amount of tokens to return based on the current RAM price, 
+      * checks if there is enough RAM being used by the app, and deallocates the sold RAM from the app.
+      * Finally, it updates the total RAM used in the system, and 
+      * transfers the tokens from the sale.
+      *
+      * @param dao_owner - the name of the DAO owner account
+      * @param app - the name of the app account selling the RAM
+      * @param bytes - the amount of RAM in bytes to sell
+      */
+      [[eosio::action]] void sellram(eosio::name dao_owner, eosio::name app, int64_t bytes);
+
+
 
       /**
        * On error action, notification of this action is delivered to the sender of a deferred transaction
@@ -289,6 +305,7 @@ namespace eosiobios
       typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
 
       struct [[eosio::table]] resource_config {
+          uint64_t ram_fee; // RAM fee
           uint64_t ram_price; // RAM price in units
           uint64_t total_ram_available; // Total available RAM in bytes
           uint64_t total_ram_used; // Total RAM used in bytes
@@ -296,7 +313,7 @@ namespace eosiobios
           uint64_t total_net_weight_allocated; // Total allocated NET weight
          
          EOSLIB_SERIALIZE(resource_config, (ram_price)(total_ram_available)(total_ram_used)
-         (total_cpu_weight_allocated)(total_net_weight_allocated)
+         (total_cpu_weight_allocated)(total_net_weight_allocated)(ram_fee)
          )
       };
       typedef eosio::singleton<"resconfig"_n, resource_config> resource_config_table;

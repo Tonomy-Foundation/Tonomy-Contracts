@@ -104,12 +104,14 @@ void bios::buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
 
     // Get the RAM price
    resource_config_table resource_config_singleton(get_self(), get_self().value);
-    resource_config default_config{0, 0, 0};
+    resource_config default_config{0, 0, 0, 0, 0, 0 };
     auto config = resource_config_singleton.get_or_create(get_self(), default_config);
 
     // Read values from the table
     double ram_price = config.ram_price;
-    uint64_t ram_purchase = ram_price * quant.amount;
+    uint64_t ram_fee = (1.0 + config.ram_fee);
+    uint64_t ram_purchase = (ram_price / ram_fee) * quant.amount;
+
     eosio::check(config.total_ram_available >= config.total_ram_used + ram_purchase, "Not enough RAM available");
 
     // modify the values and save them back to the table,
@@ -128,6 +130,48 @@ void bios::buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
                "transfer"_n,
         std::make_tuple(dao_owner, "gov.tmy"_n, quant, std::string("buy ram")))
             .send();
+}
+
+void bios::sellram(eosio::name dao_owner, eosio::name app, int64_t bytes) {
+    require_auth(app); // Check that the app has the necessary authorization
+
+    // Access the account table from id.tmy.hpp
+    idtmy::id::account_type_table account_type("id.tmy"_n, "id.tmy"_n.value);
+    // Check the account type of the app
+    auto itr = account_type.find(app.value);
+    eosio::check(itr != account_type.end(), "Could not find account");
+    eosio::check(itr->account_type == idtmy::enum_account_type::App, "Only apps can buy and sell RAM");
+
+    // Check that the amount of bytes being sold is positive
+    eosio::check(bytes > 0, "Bytes must be positive");
+
+    // Get the RAM price
+    resource_config_table resource_config_singleton(get_self(), get_self().value);
+    resource_config default_config{0, 0, 0, 0, 0, 0};
+    auto config = resource_config_singleton.get_or_create(get_self(), default_config);
+
+    // Read values from the table
+    double ram_price = config.ram_price;
+    uint64_t ram_fee = (1.0 + config.ram_fee);
+    uint64_t ram_sold = ram_price * ram_fee * bytes;
+
+    eosio::check(config.total_ram_used >= ram_sold, "Not enough RAM to sell");
+
+    // Modify the values and save them back to the table
+    config.total_ram_used -= ram_sold;
+    resource_config_singleton.set(config, get_self());
+
+    // Deallocate the RAM
+    int64_t myRAM, myNET, myCPU;
+    eosio::get_resource_limits(app, myRAM, myNET, myCPU);
+    eosio::set_resource_limits(app, myRAM - bytes, myNET, myNET);
+
+    // Transfer token and sell RAM
+    eosio::action(permission_level{get_self(), "active"_n},
+                  "onocoin.tmy"_n,
+                  "transfer"_n,
+                  std::make_tuple("gov.tmy"_n, dao_owner, eosio::asset(ram_sold, bios::system_resource_currency), std::string("sell ram")))
+        .send();
 }
 
 }
