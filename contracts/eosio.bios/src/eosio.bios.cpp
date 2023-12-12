@@ -57,14 +57,11 @@ void bios::reqactivated( const eosio::checksum256& feature_digest ) {
 }
 
 
-void bios::setresparams(double ram_price, uint64_t total_ram_available, uint64_t ram_fee) {
+void bios::setresparams(double ram_price, uint64_t total_ram_available, double ram_fee) {
    require_auth(gov_name); // check authorization is gov.tmy
 
    // check ram_price is within bounds, not negative or too high
    eosio::check(ram_price >= 0, "RAM price must be non-negative");
-
-   // check total_ram_available is non-negative
-   eosio::check(total_ram_available >= 0, "Total RAM available must be non-negative");
 
    // check ram_fee is non-negative
    eosio::check(ram_fee >= 0, "RAM fee must be non-negative");
@@ -80,7 +77,7 @@ void bios::setresparams(double ram_price, uint64_t total_ram_available, uint64_t
       config.ram_fee = ram_fee;
    } else {
       // Singleton does not exist, set the values and also set other values to 0
-      config = resource_config{ram_price, total_ram_available, ram_fee, 0, 0};
+      config = resource_config{ram_price, ram_fee, total_ram_available, 0, 0, 0};
    }
 
    // Save the modified or new config back to the singleton
@@ -102,12 +99,9 @@ void bios::buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
 
    // Check that the amount of tokens being used for the purchase is positive
    eosio::check(quant.amount > 0, "Amount must be positive");
-    // Check the decimal place of the token amount
-    eosio::check(quant.symbol.precision() != 4, "Token amount must have up to 4 decimal places");
-
+  
     // Get the RAM price
    resource_config_table resource_config_singleton(get_self(), get_self().value);
-   eosio::check(resource_config_singleton.exists(), "Resource config must be initialized before use");
     auto config = resource_config_singleton.get();
 
     // Read values from the table
@@ -145,18 +139,20 @@ void bios::sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
     eosio::check(itr != account_type.end(), "Could not find account");
     eosio::check(itr->account_type == idtmy::enum_account_type::App, "Only apps can buy and sell RAM");
 
+   // Check that the RAM is being purchased with the correct token
+   eosio::check(quant.symbol == bios::system_resource_currency, "must buy ram with core token");
+
     // Check that the amount of bytes being sold is positive
     eosio::check(quant.amount > 0, "Amount must be positive");
 
     // Get the RAM price
     resource_config_table resource_config_singleton(get_self(), get_self().value);
-    eosio::check(resource_config_singleton.exists(), "Resource config must be initialized before use");
     auto config = resource_config_singleton.get();
 
     // Read values from the table
     double ram_price = config.ram_price;
-    uint64_t ram_fee = (1.0 + config.ram_fee);
-    uint64_t ram_cost = ram_price * ram_fee * quant.amount;
+    double ram_fee = (1.0 + config.ram_fee);
+    uint64_t ram_sold  = ram_price * ram_fee * quant.amount;
 
     eosio::check(config.total_ram_used >= quant.amount, "Not enough RAM to sell");
     // Modify the values and save them back to the table
@@ -172,7 +168,7 @@ void bios::sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
     eosio::action(permission_level{get_self(), "active"_n},
                   "onocoin.tmy"_n,
                   "transfer"_n,
-                  std::make_tuple(gov_name, dao_owner, eosio::asset(ram_cost , bios::system_resource_currency), std::string("sell ram")))
+                  std::make_tuple(gov_name, dao_owner, eosio::asset(ram_sold  , bios::system_resource_currency), std::string("sell ram")))
         .send();
 }
 

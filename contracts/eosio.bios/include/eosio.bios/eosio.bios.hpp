@@ -195,7 +195,7 @@ namespace eosiobios
       * @param total_ram_available - the new total RAM available
       * @param ram_fee - the new RAM fee
       */
-      [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, uint64_t ram_fee);
+      [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, double ram_fee);
       
       /**
       * Buy RAM action allows an app to purchase RAM. 
@@ -307,8 +307,8 @@ namespace eosiobios
       typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
 
       struct [[eosio::table]] resource_config {
-          uint64_t ram_fee; // RAM fee
-          uint64_t ram_price; // RAM price in units
+          double ram_fee; // RAM fee
+          double ram_price; // RAM price in units
           uint64_t total_ram_available; // Total available RAM in bytes
           uint64_t total_ram_used; // Total RAM used in bytes
           uint64_t total_cpu_weight_allocated; // Total allocated CPU weight
