@@ -38,7 +38,8 @@ namespace idtmy
        {enum_account_type::Person, 'p'},
        {enum_account_type::App, 'a'},
        {enum_account_type::Organization, 'o'},
-       {enum_account_type::Gov, 'g'}};
+       {enum_account_type::Gov, 'g'},
+       {enum_account_type:Service, 's'}};
 
    enum enum_permission_level
    {
