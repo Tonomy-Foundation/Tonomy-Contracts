@@ -3,7 +3,6 @@
 #include <id.tmy/id.tmy.hpp>
 
 namespace eosiobios {
-const eosio::symbol bios::system_resource_currency = eosio::symbol("ONO", 4);
 void bios::setabi( name account, const std::vector<char>& abi ) {
    abi_hash_table table(get_self(), get_self().value);
    auto itr = table.find( account.value );
@@ -68,22 +67,30 @@ void bios::setresparams(double ram_price, uint64_t total_ram_available) {
     eosio::check(total_ram_available >= 0, "Total RAM available must be non-negative");
 
     resource_config_table resource_config_singleton(get_self(), get_self().value);
-    resource_config default_config{0, 0, 0};
-    auto config = resource_config_singleton.get_or_create(get_self(), default_config);
+    resource_config config;
 
-    // Modify existing record or create a new one
-    config.ram_price = ram_price;
-    config.total_ram_available = total_ram_available;
+    if (resource_config_singleton.exists()) {
+        // Singleton exists, get the existing config and modify the two values
+        config = resource_config_singleton.get();
+        config.ram_price = ram_price;
+        config.total_ram_available = total_ram_available;
+    } else {
+        // Singleton does not exist, set the two values and also set other values to 0
+        config = resource_config{ram_price, total_ram_available, 0, 0, 0};
+    }
+
+    // Save the modified or new config back to the singleton
+    resource_config_singleton.set(config, get_self());
 }
 
 void bios::buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
     require_auth(app); // Check that the app has the necessary authorization
 
    // Access the account table from id.tmy.hpp
-   idtmy::id::account_types_table account_types("id.tmy"_n, "id.tmy"_n.value);
+   idtmy::id::account_type_table account_type("id.tmy"_n, "id.tmy"_n.value);
    // Check the account type of the app
-   auto itr = account_types.find(app.value);
-   eosio::check(itr != account_types.end(), "Could not find account");
+   auto itr = account_type.find(app.value);
+   eosio::check(itr != account_type.end(), "Could not find account");
    eosio::check(itr->account_type == idtmy::enum_account_type::App, "Only apps can buy and sell RAM");
 
    // Check that the RAM is being purchased with the correct token
@@ -119,7 +126,7 @@ void bios::buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
      eosio::action(permission_level{get_self(), "active"_n},
                "onocoin.tmy"_n,
                "transfer"_n,
-        std::make_tuple(app, "gov.tmy"_n, quant, std::string("buy ram")))
+        std::make_tuple(dao_owner, "gov.tmy"_n, quant, std::string("buy ram")))
             .send();
 }
 

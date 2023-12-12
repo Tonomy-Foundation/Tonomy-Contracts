@@ -151,15 +151,15 @@ namespace idtmy
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &id::updatekeyper>;
       using linkauth_action = action_wrapper<"linkauth"_n, &id::linkauth>;
 
-      struct [[eosio::table]] account_types {
+      struct [[eosio::table]] account_type {
          name account_name; 
          enum_account_type account_type; 
 
          uint64_t primary_key() const { return account_name.value; } 
-         EOSLIB_SERIALIZE(account_types, (account_name)(account_type)) 
+         EOSLIB_SERIALIZE(account_type, (account_name)(account_type)) 
       };
 
-      typedef eosio::multi_index<"acctypes"_n, account_types> account_types_table;
+      typedef eosio::multi_index<"acctypes"_n, account_type> account_type_table;
 
       TABLE person
       {

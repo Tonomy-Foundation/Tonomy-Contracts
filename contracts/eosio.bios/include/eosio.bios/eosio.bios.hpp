@@ -84,7 +84,7 @@ namespace eosiobios
 
    public:
       using contract::contract;
-      static const eosio::symbol system_resource_currency;
+      static constexpr eosio::symbol system_resource_currency = eosio::symbol("ONO", 4);
 
       /**
        * New account action, called after a new account is created. This code enforces resource-limits rules
@@ -184,12 +184,13 @@ namespace eosiobios
       [[eosio::action]] void setabi(name account, const std::vector<char> &abi);
 
       /**
-      * Set ram price action sets the price for RAM identified by `new_price`. 
-      * Finds an entry in the resource_config_table index, with `get_self()` as key, 
-      * if it is not already present and sets its value with the new RAM price.
-      * Otherwise it is updating the current RAM price value for the existing `get_self()` key.
+      * The setresparams action sets the price for RAM and the total RAM available.
+      * It checks for an entry in the resource_config_table singleton, with `get_self()` as key.
+      * If the entry does not exist, it creates a new entry with the provided RAM price, total RAM available, and sets other parameters to 0.
+      * If the entry exists, it updates the RAM price and total RAM available values for the existing `get_self()` key.
       *
-      * @param new_price - the new price of RAM
+      * @param ram_price - the new price of RAM
+      * @param total_ram_available - the new total RAM available
       */
        [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available);
 

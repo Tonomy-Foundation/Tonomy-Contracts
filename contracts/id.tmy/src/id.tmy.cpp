@@ -136,9 +136,9 @@ namespace idtmy
            people_itr.password_salt = password_salt;
            people_itr.version = 1; });
 
-      // Store the account type in the account_types table
-      account_types_table account_types(get_self(), get_self().value);
-      account_types.emplace(get_self(), [&](auto& row) {
+      // Store the account type in the account_type table
+      account_type_table account_type(get_self(), get_self().value);
+      account_type.emplace(get_self(), [&](auto& row) {
          row.account_name = random_name;
          row.account_type = enum_account_type::Person;
       });
@@ -210,9 +210,9 @@ namespace idtmy
                            app_itr.username_hash = username_hash;
                            app_itr.version = 1; });
 
-      // Store the account type in the account_types table
-      account_types_table account_types(get_self(), get_self().value);
-      account_types.emplace(get_self(), [&](auto& row) {
+      // Store the account type in the account_type table
+      account_type_table account_type(get_self(), get_self().value);
+      account_type.emplace(get_self(), [&](auto& row) {
          row.account_name = random_name;
          row.account_type = enum_account_type::App;
       });
