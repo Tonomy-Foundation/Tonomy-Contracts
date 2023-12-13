@@ -106,7 +106,7 @@ void bios::buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
 
     // Read values from the table
     double ram_price = config.ram_price;
-    uint64_t ram_fee = (1.0 + config.ram_fee);
+    double ram_fee = (1.0 + config.ram_fee);
     uint64_t ram_purchase = (ram_price / ram_fee) * quant.amount;
 
     eosio::check(config.total_ram_available >= config.total_ram_used + ram_purchase, "Not enough RAM available");
