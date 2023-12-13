@@ -307,8 +307,8 @@ namespace eosiobios
       typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
 
       struct [[eosio::table]] resource_config {
-          double ram_fee; // RAM fee
-          double ram_price; // RAM price in units
+          double ram_fee; // RAM fee fraction (0.01 = 1% fee)
+          double ram_price; // RAM price in tokens/byte
           uint64_t total_ram_available; // Total available RAM in bytes
           uint64_t total_ram_used; // Total RAM used in bytes
           uint64_t total_cpu_weight_allocated; // Total allocated CPU weight
