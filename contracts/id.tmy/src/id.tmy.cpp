@@ -115,18 +115,22 @@ namespace idtmy
       {
          throwError("TCON1000", "This people username is already taken");
       }
-      
+      // If the account name exists, set resources and return
+      auto existing_person = _people.find(random_name.value);
+      if (existing_person != _people.end())
+      {
+         eosio::set_resource_limits(random_name, 0, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+         return;
+      }
+
       //Set the resource limits for the new account
-      eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
-      auto config = _resource_config.get_or_create(get_self(), eosiobios::bios::resource_config());
-      config.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
-      config.total_net_weight_allocated = this->initial_net_weight_allocation;
-      _resource_config.set(config, get_self());
+      //uncomment this in task TODOS #77 
 
-      int64_t myRAM, net, cpu;
-      eosio::get_resource_limits( random_name, myRAM, net, cpu );
-
-      eosio::set_resource_limits(random_name, myRAM, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+      // eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
+      // auto config = _resource_config.get_or_create(get_self(), eosiobios::bios::resource_config());
+      // config.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
+      // config.total_net_weight_allocated = this->initial_net_weight_allocation;
+      // _resource_config.set(config, get_self());
 
       // Store the password_salt and hashed username in table
       _people.emplace(get_self(), [&](auto &people_itr)
@@ -141,9 +145,10 @@ namespace idtmy
       account_type_table account_type(get_self(), get_self().value);
       account_type.emplace(get_self(), [&](auto& row) {
          row.account_name = random_name;
-         row.account_type = enum_account_type::Person;
+         row.acc_type = enum_account_type::Person;
          row.version = 1;
       });
+
    }
    
    void id::newapp(
@@ -188,17 +193,20 @@ namespace idtmy
          throwError("TCON1002", "This app origin is already taken");
       }
 
+      // If the account name exists, set resources and return
+      auto existing_person = _people.find(random_name.value);
+      if (existing_person != _people.end())
+      {
+         eosio::set_resource_limits(random_name, 0, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+         return;
+      }
       //Set the resource limits for the new app
-      eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
-      auto config = _resource_config.get_or_create(get_self(), eosiobios::bios::resource_config());
-      config.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
-      config.total_net_weight_allocated = this->initial_net_weight_allocation;
-      _resource_config.set(config, get_self());
-
-      int64_t myRAM, net, cpu;
-      eosio::get_resource_limits( eosio::name{app_name}, myRAM, net, cpu );
-      eosio::set_resource_limits(eosio::name{app_name}, myRAM, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
-
+      //uncomment this in task TODOS #77 
+      // eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
+      // auto config = _resource_config.get_or_create(get_self(), eosiobios::bios::resource_config());
+      // config.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
+      // config.total_net_weight_allocated = this->initial_net_weight_allocation;
+      // _resource_config.set(config, get_self());
 
       // Store the password_salt and hashed username in table
       _apps.emplace(get_self(), [&](auto &app_itr)
@@ -215,7 +223,7 @@ namespace idtmy
       account_type_table account_type(get_self(), get_self().value);
       account_type.emplace(get_self(), [&](auto& row) {
          row.account_name = random_name;
-         row.account_type = enum_account_type::App;
+         row.acc_type = enum_account_type::App;
          row.version = 1;
       });
       

@@ -152,16 +152,16 @@ namespace idtmy
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &id::updatekeyper>;
       using linkauth_action = action_wrapper<"linkauth"_n, &id::linkauth>;
 
-      struct [[eosio::table]] account_type {
+      struct [[eosio::table]] account_type_struct {
          name account_name; 
-         enum_account_type account_type; 
+         account_type acc_type; 
          uint16_t version; // used for upgrading the account structure
 
          uint64_t primary_key() const { return account_name.value; } 
-         EOSLIB_SERIALIZE(struct account_type, (account_name)(account_type)(version)) 
+         EOSLIB_SERIALIZE(struct account_type_struct, (account_name)(acc_type)(version)) 
       };
 
-      typedef eosio::multi_index<"acctypes"_n, account_type> account_type_table;
+      typedef eosio::multi_index<"acctypes"_n, account_type_struct> account_type_table;
 
       TABLE person
       {
