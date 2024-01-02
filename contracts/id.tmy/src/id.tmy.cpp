@@ -230,6 +230,23 @@ namespace idtmy
      
    }
 
+   void id::setacctype(name account_name, account_type acc_type) {
+         account_type_table account_type(get_self(), get_self().value);
+         auto itr = account_type.find(account_name.value);
+         if (itr != account_type.end()) {
+            account_type.modify(itr, get_self(), [&](auto& row) {
+               row.acc_type = acc_type;
+               row.version = 1;
+            });
+         } else {
+            account_type.emplace(get_self(), [&](auto& row) {
+               row.account_name = account_name;
+               row.acc_type = acc_type;
+               row.version = 1;
+            });
+         }
+      }
+
    void id::updatekeyper(name account,
                          permission_level permission_level,
                          public_key key,

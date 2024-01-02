@@ -84,7 +84,7 @@ void bios::setresparams(double ram_price, uint64_t total_ram_available, double r
    resource_config_singleton.set(config, get_self());
 }
 
-void bios::buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
+void bios::buyram(const name& dao_owner, const name& app, const asset& quant) {
     require_auth(app); // Check that the app has the necessary authorization
 
    // Access the account table from id.tmy.hpp
@@ -92,7 +92,7 @@ void bios::buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
    // Check the account type of the app
    auto itr = account_type.find(app.value);
    eosio::check(itr != account_type.end(), "Could not find account");
-   eosio::check(itr->account_type == idtmy::enum_account_type::App, "Only apps can buy and sell RAM");
+   eosio::check(itr->acc_type == idtmy::enum_account_type::App, "Only apps can buy and sell RAM");
 
    // Check that the RAM is being purchased with the correct token
    eosio::check(quant.symbol == bios::system_resource_currency, "must buy ram with core token");
@@ -137,7 +137,7 @@ void bios::sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
     // Check the account type of the app
     auto itr = account_type.find(app.value);
     eosio::check(itr != account_type.end(), "Could not find account");
-    eosio::check(itr->account_type == idtmy::enum_account_type::App, "Only apps can buy and sell RAM");
+    eosio::check(itr->acc_type == idtmy::enum_account_type::App, "Only apps can buy and sell RAM");
 
    // Check that the RAM is being purchased with the correct token
    eosio::check(quant.symbol == bios::system_resource_currency, "must buy ram with core token");

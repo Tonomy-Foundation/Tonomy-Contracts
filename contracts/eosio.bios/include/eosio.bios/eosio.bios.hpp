@@ -210,7 +210,7 @@ namespace eosiobios
       * @param app - the name of the app account purchasing the RAM
       * @param quant - the amount and symbol of the tokens used for the purchase
       */
-      [[eosio::action]] void buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant);
+      [[eosio::action]] void buyram(const name& dao_owner, const name& app, const asset& quant);
 
       /**
       * Sell RAM action allows an app to sell RAM. 

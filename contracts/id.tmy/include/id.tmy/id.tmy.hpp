@@ -91,6 +91,15 @@ namespace idtmy
           checksum256 password_salt);
 
       /**
+      * Sets the account type for a given account
+      *
+      * @param account_name - name of the account
+      * @param acc_type - account type to be set
+      */
+      [[eosio::action]] void setacctype(name account_name, account_type acc_type);
+
+
+      /**
        * Create a new account for an app and registers it's details
        *
        * @details Creates a new account for an app and registers it's details.
