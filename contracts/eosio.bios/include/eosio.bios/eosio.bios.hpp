@@ -7,7 +7,7 @@
 #include <eosio/privileged.hpp>
 #include <eosio/producer_schedule.hpp>
 #include <eosio/asset.hpp>
-#include <eosio/singleton.hpp>
+
 
 namespace eosiobios
 {
@@ -84,10 +84,6 @@ namespace eosiobios
 
    public:
       using contract::contract;
-      static constexpr eosio::symbol system_resource_currency = eosio::symbol("ONO", 4);
-      static constexpr eosio::name idtmy_name = "id.tmy"_n;
-      static constexpr eosio::name gov_name = "gov.tmy"_n;
-
       /**
        * New account action, called after a new account is created. This code enforces resource-limits rules
        * for new accounts as well as new account naming conventions.
@@ -185,50 +181,6 @@ namespace eosiobios
        */
       [[eosio::action]] void setabi(name account, const std::vector<char> &abi);
 
-     /**
-      * The setresparams action sets the price for RAM, the total RAM available, and the RAM fee.
-      * It checks for an entry in the resource_config_table singleton, with `get_self()` as key.
-      * If the entry does not exist, it creates a new entry with the provided RAM price, total RAM available, RAM fee, and sets other parameters to 0.
-      * If the entry exists, it updates the RAM price, total RAM available, and RAM fee values for the existing `get_self()` key.
-      *
-      * @param ram_price - the new price of RAM
-      * @param total_ram_available - the new total RAM available
-      * @param ram_fee - the new RAM fee
-      */
-      [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, double ram_fee);
-      
-      /**
-      * Buy RAM action allows an app to purchase RAM. 
-      * It checks the account type of the app, ensures the RAM is being purchased with the correct token, 
-      * and that the amount of tokens being used for the purchase is positive. 
-      * It then calculates the amount of RAM to purchase based on the current RAM price, 
-      * checks if there is enough available RAM, and allocates the purchased RAM to the app.
-      * Finally, it updates the total RAM used and available in the system, and 
-      * transfers the tokens used for the purchase.
-      *
-      * @param dao_owner - the name of the DAO owner account
-      * @param app - the name of the app account purchasing the RAM
-      * @param quant - the amount and symbol of the tokens used for the purchase
-      */
-      [[eosio::action]] void buyram(const name& dao_owner, const name& app, const asset& quant);
-
-      /**
-      * Sell RAM action allows an app to sell RAM. 
-      * It checks the account type of the app, ensures the RAM is being sold for the correct token, 
-      * and that the amount of RAM being sold is positive. 
-      * It then calculates the amount of tokens to return based on the current RAM price, 
-      * checks if there is enough RAM being used by the app, and deallocates the sold RAM from the app.
-      * Finally, it updates the total RAM used in the system, and 
-      * transfers the tokens from the sale.
-      *
-      * @param dao_owner - the name of the DAO owner account
-      * @param app - the name of the app account selling the RAM
-      * @param quant - the amount and symbol of the tokens used to sell
-      */
-      [[eosio::action]] void sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant);
-
-
-
       /**
        * On error action, notification of this action is delivered to the sender of a deferred transaction
        * when an objective error occurs while executing the deferred transaction.
@@ -306,20 +258,7 @@ namespace eosiobios
 
       typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
 
-      struct [[eosio::table]] resource_config {
-          double ram_fee; // RAM fee fraction (0.01 = 1% fee)
-          double ram_price; // RAM price in tokens/byte
-          uint64_t total_ram_available; // Total available RAM in bytes
-          uint64_t total_ram_used; // Total RAM used in bytes
-          uint64_t total_cpu_weight_allocated; // Total allocated CPU weight
-          uint64_t total_net_weight_allocated; // Total allocated NET weight
-         
-         EOSLIB_SERIALIZE(resource_config, (ram_price)(total_ram_available)(total_ram_used)
-         (total_cpu_weight_allocated)(total_net_weight_allocated)(ram_fee)
-         )
-      };
-      typedef eosio::singleton<"resconfig"_n, resource_config> resource_config_table;
-
+      
       using newaccount_action = action_wrapper<"newaccount"_n, &bios::newaccount>;
       using updateauth_action = action_wrapper<"updateauth"_n, &bios::updateauth>;
       using deleteauth_action = action_wrapper<"deleteauth"_n, &bios::deleteauth>;
@@ -335,7 +274,6 @@ namespace eosiobios
       using reqauth_action = action_wrapper<"reqauth"_n, &bios::reqauth>;
       using activate_action = action_wrapper<"activate"_n, &bios::activate>;
       using reqactivated_action = action_wrapper<"reqactivated"_n, &bios::reqactivated>;
-      using setresourceparams_action = action_wrapper<"setresparams"_n, &bios::setresparams>;
-      using buyram_action = action_wrapper<"buyram"_n, &bios::buyram>;
+      
    };
 }
