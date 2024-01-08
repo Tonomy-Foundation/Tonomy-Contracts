@@ -166,13 +166,20 @@ void bios::buyram(const name& dao_owner, const name& app, const asset& quant) {
       resource_config config;
       if (config_table.exists()) {
          config = config_table.get();
+      } else {
+         eosio::check(false, "Resource config does not exist");
       }
-    // Read values from the table
-    double ram_price = config.ram_price;
-    double ram_fee = (1.0 + config.ram_fee);
-    uint64_t ram_purchase = (ram_price / ram_fee) * quant.amount;
 
-    eosio::check(config.total_ram_available >= config.total_ram_used + ram_purchase, "Not enough RAM available");
+      // Check if the values are retrieved successfully
+      eosio::check(config.ram_price != 0, "Failed to retrieve ram_price from resource config");
+      eosio::check(config.ram_fee != 0, "Failed to retrieve ram_fee from resource config");
+
+      // Read values from the table
+      double ram_price = config.ram_price;
+      double ram_fee = (1.0 + config.ram_fee);
+      uint64_t ram_purchase = (ram_price / ram_fee) * quant.amount;
+
+   eosio::check(config.total_ram_available >= config.total_ram_used + ram_purchase, "Not enough RAM available");
 
     // modify the values and save them back to the table,
     config.total_ram_used += ram_purchase;

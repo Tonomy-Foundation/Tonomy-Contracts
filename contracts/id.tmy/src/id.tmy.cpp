@@ -115,13 +115,7 @@ namespace idtmy
       {
          throwError("TCON1000", "This people username is already taken");
       }
-      // If the account name exists, set resources and return
-      auto existing_person = _people.find(random_name.value);
-      if (existing_person != _people.end())
-      {
-         eosio::set_resource_limits(random_name, 0, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
-         return;
-      }
+      
 
       //Set the resource limits for the new account
       //uncomment this in task TODOS #77 
@@ -140,6 +134,7 @@ namespace idtmy
            people_itr.username_hash = username_hash;
            people_itr.password_salt = password_salt;
             });
+      
 
       // Store the account type in the account_type table
       account_type_table account_type(get_self(), get_self().value);
@@ -150,6 +145,8 @@ namespace idtmy
       });
 
    }
+
+
    
    void id::newapp(
        string app_name,
@@ -193,13 +190,7 @@ namespace idtmy
          throwError("TCON1002", "This app origin is already taken");
       }
 
-      // If the account name exists, set resources and return
-      auto existing_person = _people.find(random_name.value);
-      if (existing_person != _people.end())
-      {
-         eosio::set_resource_limits(random_name, 0, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
-         return;
-      }
+      
       //Set the resource limits for the new app
       //uncomment this in task TODOS #77 
       // eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
@@ -260,6 +251,7 @@ namespace idtmy
          {
             _people.modify(people_itr, get_self(), [&](auto &people_itr)
                            { people_itr.status = idtmy::enum_account_status::Active_Status; });
+            eosio::set_resource_limits(account, 6000, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
          }
       }
 
