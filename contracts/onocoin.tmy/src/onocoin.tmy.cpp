@@ -20,6 +20,7 @@ void token::create( const name&   issuer,
        s.max_supply    = maximum_supply;
        s.issuer        = issuer;
     });
+    
 }
 
 
@@ -94,7 +95,7 @@ void token::transfer( const name&    from,
     check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
     check( memo.size() <= 256, "memo has more than 256 bytes" );
 
-    auto payer = has_auth( to ) ? to : from;
+    auto payer = get_self();
 
     sub_balance( from, quantity );
     add_balance( to, quantity, payer );
@@ -106,7 +107,7 @@ void token::sub_balance( const name& owner, const asset& value ) {
    const auto& from = from_acnts.get( value.symbol.code().raw(), "no balance object found" );
    check( from.balance.amount >= value.amount, "overdrawn balance" );
 
-   from_acnts.modify( from, owner, [&]( auto& a ) {
+   from_acnts.modify( from, get_self(), [&]( auto& a ) {
          a.balance -= value;
       });
 }
