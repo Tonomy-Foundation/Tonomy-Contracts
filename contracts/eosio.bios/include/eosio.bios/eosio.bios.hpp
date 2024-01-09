@@ -99,7 +99,8 @@ namespace eosiobios
       [[eosio::action]] void newaccount(name creator,
                                         name name,
                                         ignore<authority> owner,
-                                        ignore<authority> active) {}
+                                        ignore<authority> active) {
+                                        }
       /**
        * Update authorization action updates pemission for an account.
        *
@@ -111,7 +112,8 @@ namespace eosiobios
       [[eosio::action]] void updateauth(ignore<name> account,
                                         ignore<name> permission,
                                         ignore<name> parent,
-                                        ignore<authority> auth) {}
+                                        ignore<authority> auth) {
+                                        }
 
       /**
        * Delete authorization action deletes the authorization for an account's permission.
@@ -120,7 +122,9 @@ namespace eosiobios
        * @param permission - the permission name been deleted.
        */
       [[eosio::action]] void deleteauth(ignore<name> account,
-                                        ignore<name> permission) {}
+                                        ignore<name> permission) {
+
+                                        }
 
       /**
        * Link authorization action assigns a specific action from a contract to a permission you have created. Five system
@@ -140,7 +144,8 @@ namespace eosiobios
       [[eosio::action]] void linkauth(ignore<name> account,
                                       ignore<name> code,
                                       ignore<name> type,
-                                      ignore<name> requirement) {}
+                                      ignore<name> requirement) {
+                                      }
 
       /**
        * Unlink authorization action it's doing the reverse of linkauth action, by unlinking the given action.
@@ -151,7 +156,8 @@ namespace eosiobios
        */
       [[eosio::action]] void unlinkauth(ignore<name> account,
                                         ignore<name> code,
-                                        ignore<name> type) {}
+                                        ignore<name> type) {
+                                        }
 
       /**
        * Cancel delay action cancels a deferred transaction.
@@ -159,7 +165,8 @@ namespace eosiobios
        * @param canceling_auth - the permission that authorizes this action,
        * @param trx_id - the deferred transaction id to be cancelled.
        */
-      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id) {}
+      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id) {
+      }
 
       /**
        * Set code action sets the contract code for an account.
@@ -169,7 +176,8 @@ namespace eosiobios
        * @param vmversion - reserved, set it to zero.
        * @param code - the code content to be set, in the form of a blob binary..
        */
-      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code) {}
+      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code) {
+      }
 
       /**
        * Set abi action sets the abi for contract identified by `account` name. Creates an entry in the abi_hash_table
