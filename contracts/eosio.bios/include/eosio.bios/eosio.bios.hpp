@@ -6,6 +6,8 @@
 #include <eosio/fixed_bytes.hpp>
 #include <eosio/privileged.hpp>
 #include <eosio/producer_schedule.hpp>
+#include <eosio/asset.hpp>
+
 
 namespace eosiobios
 {
@@ -17,6 +19,7 @@ namespace eosiobios
    using eosio::name;
    using eosio::permission_level;
    using eosio::public_key;
+   using eosio::asset;
 
    struct permission_level_weight
    {
@@ -78,6 +81,7 @@ namespace eosiobios
     */
    class [[eosio::contract("eosio.bios")]] bios : public eosio::contract
    {
+
    public:
       using contract::contract;
       /**
@@ -254,6 +258,7 @@ namespace eosiobios
 
       typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
 
+      
       using newaccount_action = action_wrapper<"newaccount"_n, &bios::newaccount>;
       using updateauth_action = action_wrapper<"updateauth"_n, &bios::updateauth>;
       using deleteauth_action = action_wrapper<"deleteauth"_n, &bios::deleteauth>;
@@ -269,5 +274,6 @@ namespace eosiobios
       using reqauth_action = action_wrapper<"reqauth"_n, &bios::reqauth>;
       using activate_action = action_wrapper<"activate"_n, &bios::activate>;
       using reqactivated_action = action_wrapper<"reqactivated"_n, &bios::reqactivated>;
+      
    };
 }

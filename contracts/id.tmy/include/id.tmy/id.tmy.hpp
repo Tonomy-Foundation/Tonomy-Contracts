@@ -20,7 +20,8 @@ namespace idtmy
       Person,
       Organization,
       App,
-      Gov
+      Gov,
+      Service
    };
    typedef uint8_t account_type;
 
@@ -37,7 +38,8 @@ namespace idtmy
        {enum_account_type::Person, 'p'},
        {enum_account_type::App, 'a'},
        {enum_account_type::Organization, 'o'},
-       {enum_account_type::Gov, 'g'}};
+       {enum_account_type::Gov, 'g'},
+       {enum_account_type::Service, 's'}};
 
    enum enum_permission_level
    {
@@ -61,8 +63,13 @@ namespace idtmy
     */
    class [[eosio::contract("id.tmy")]] id : public eosio::contract
    {
+   private:
+      uint64_t initial_cpu_weight_allocation = 1000;
+      uint64_t initial_net_weight_allocation = 1000;
+
    public:
       using contract::contract;
+
 
       /**
        * Constructor for the contract, which initializes the _accounts table
@@ -82,6 +89,15 @@ namespace idtmy
           checksum256 username_hash,
           public_key password_key,
           checksum256 password_salt);
+
+      /**
+      * Sets the account type for a given account
+      *
+      * @param account_name - name of the account
+      * @param acc_type - account type to be set
+      */
+      [[eosio::action]] void setacctype(name account_name, account_type acc_type);
+
 
       /**
        * Create a new account for an app and registers it's details
@@ -145,13 +161,23 @@ namespace idtmy
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &id::updatekeyper>;
       using linkauth_action = action_wrapper<"linkauth"_n, &id::linkauth>;
 
+      struct [[eosio::table]] account_type_struct {
+         name account_name; 
+         account_type acc_type; 
+         uint16_t version; // used for upgrading the account structure
+
+         uint64_t primary_key() const { return account_name.value; } 
+         EOSLIB_SERIALIZE(struct account_type_struct, (account_name)(acc_type)(version)) 
+      };
+
+      typedef eosio::multi_index<"acctypes"_n, account_type_struct> account_type_table;
+
       TABLE person
       {
          name account_name;
          account_status status;
          checksum256 username_hash;
          checksum256 password_salt;
-         uint16_t version; // used for upgrading the account structure
 
          // primary key automatically added by EOSIO method
          uint64_t primary_key() const { return account_name.value; }
@@ -175,7 +201,6 @@ namespace idtmy
          string description;
          string logo_url;
          string origin;
-         uint16_t version; // used for upgrading the account structure
 
          // primary key automatically added by EOSIO method
          uint64_t primary_key() const { return account_name.value; }
