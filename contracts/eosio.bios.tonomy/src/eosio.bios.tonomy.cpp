@@ -12,7 +12,7 @@ namespace eosiobiostonomy
 
    void bios::newaccount(name creator, name name, ignore<authority> owner, ignore<authority> active)
    {
-      // require_auth(creator); // this is done implicity in apply_eosio_newaccount() which checks the "active" permission...
+      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
@@ -21,14 +21,14 @@ namespace eosiobiostonomy
                          ignore<name> parent,
                          ignore<authority> auth)
    {
-      // check(has_auth({account, permission}) || has_auth({account, parent}), "not authorized by parent or permission"); // this is done implicity in apply_eosio_updateauth()...
+      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
    void bios::deleteauth(ignore<name> account,
                          ignore<name> permission)
    {
-      // require_auth({account, permission}); // this is done implicity in apply_eosio_deleteauth()...
+      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
@@ -37,6 +37,7 @@ namespace eosiobiostonomy
                        ignore<name> type,
                        ignore<name> requirement)
    {
+      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
@@ -44,6 +45,7 @@ namespace eosiobiostonomy
                          ignore<name> code,
                          ignore<name> type)
    {
+      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
@@ -51,6 +53,7 @@ namespace eosiobiostonomy
 
    void bios::setabi(name account, const std::vector<char> &abi)
    {
+      require_auth(gov_name);
       abi_hash_table table(get_self(), get_self().value);
       auto itr = table.find(account.value);
       if (itr == table.end())
