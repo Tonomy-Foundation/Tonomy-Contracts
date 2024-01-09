@@ -99,7 +99,8 @@ namespace eosiobios
       [[eosio::action]] void newaccount(name creator,
                                         name name,
                                         ignore<authority> owner,
-                                        ignore<authority> active);
+                                        ignore<authority> active) {
+                                        }
       /**
        * Update authorization action updates pemission for an account.
        *
@@ -111,7 +112,8 @@ namespace eosiobios
       [[eosio::action]] void updateauth(ignore<name> account,
                                         ignore<name> permission,
                                         ignore<name> parent,
-                                        ignore<authority> auth);
+                                        ignore<authority> auth) {
+                                        }
 
       /**
        * Delete authorization action deletes the authorization for an account's permission.
@@ -120,7 +122,9 @@ namespace eosiobios
        * @param permission - the permission name been deleted.
        */
       [[eosio::action]] void deleteauth(ignore<name> account,
-                                        ignore<name> permission);
+                                        ignore<name> permission) {
+
+                                        }
 
       /**
        * Link authorization action assigns a specific action from a contract to a permission you have created. Five system
@@ -140,7 +144,8 @@ namespace eosiobios
       [[eosio::action]] void linkauth(ignore<name> account,
                                       ignore<name> code,
                                       ignore<name> type,
-                                      ignore<name> requirement);
+                                      ignore<name> requirement) {
+                                      }
 
       /**
        * Unlink authorization action it's doing the reverse of linkauth action, by unlinking the given action.
@@ -151,7 +156,8 @@ namespace eosiobios
        */
       [[eosio::action]] void unlinkauth(ignore<name> account,
                                         ignore<name> code,
-                                        ignore<name> type);
+                                        ignore<name> type) {
+                                        }
 
       /**
        * Cancel delay action cancels a deferred transaction.
@@ -159,7 +165,8 @@ namespace eosiobios
        * @param canceling_auth - the permission that authorizes this action,
        * @param trx_id - the deferred transaction id to be cancelled.
        */
-      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id);
+      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id) {
+      }
 
       /**
        * Set code action sets the contract code for an account.
@@ -169,7 +176,9 @@ namespace eosiobios
        * @param vmversion - reserved, set it to zero.
        * @param code - the code content to be set, in the form of a blob binary..
        */
-      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code);
+      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code) {
+      }
+
       /**
        * Set abi action sets the abi for contract identified by `account` name. Creates an entry in the abi_hash_table
        * index, with `account` name as key, if it is not already present and sets its value with the abi hash.
@@ -180,6 +189,51 @@ namespace eosiobios
        */
       [[eosio::action]] void setabi(name account, const std::vector<char> &abi);
 
+<<<<<<< HEAD
+     /**
+      * The setresparams action sets the price for RAM, the total RAM available, and the RAM fee.
+      * It checks for an entry in the resource_config_table singleton, with `get_self()` as key.
+      * If the entry does not exist, it creates a new entry with the provided RAM price, total RAM available, RAM fee, and sets other parameters to 0.
+      * If the entry exists, it updates the RAM price, total RAM available, and RAM fee values for the existing `get_self()` key.
+      *
+      * @param ram_price - the new price of RAM
+      * @param total_ram_available - the new total RAM available
+      * @param ram_fee - the new RAM fee
+      */
+      [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, double ram_fee);
+      
+      /**
+      * Buy RAM action allows an app to purchase RAM. 
+      * It checks the account type of the app, ensures the RAM is being purchased with the correct token, 
+      * and that the amount of tokens being used for the purchase is positive. 
+      * It then calculates the amount of RAM to purchase based on the current RAM price, 
+      * checks if there is enough available RAM, and allocates the purchased RAM to the app.
+      * Finally, it updates the total RAM used and available in the system, and 
+      * transfers the tokens used for the purchase.
+      *
+      * @param dao_owner - the name of the DAO owner account
+      * @param app - the name of the app account purchasing the RAM
+      * @param quant - the amount and symbol of the tokens used for the purchase
+      */
+      [[eosio::action]] void buyram(eosio::name dao_owner, eosio::name app, eosio::asset quant);
+
+      /**
+      * Sell RAM action allows an app to sell RAM. 
+      * It checks the account type of the app, ensures the RAM is being sold for the correct token, 
+      * and that the amount of RAM being sold is positive. 
+      * It then calculates the amount of tokens to return based on the current RAM price, 
+      * checks if there is enough RAM being used by the app, and deallocates the sold RAM from the app.
+      * Finally, it updates the total RAM used in the system, and 
+      * transfers the tokens from the sale.
+      *
+      * @param dao_owner - the name of the DAO owner account
+      * @param app - the name of the app account selling the RAM
+      * @param quant - the amount and symbol of the tokens used to sell
+      */
+      [[eosio::action]] void sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant);
+
+=======
+>>>>>>> feature/70-resource-model
       /**
        * On error action, notification of this action is delivered to the sender of a deferred transaction
        * when an objective error occurs while executing the deferred transaction.
