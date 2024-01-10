@@ -12,7 +12,6 @@ namespace eosiobiostonomy
 
    void bios::newaccount(name creator, name name, ignore<authority> owner, ignore<authority> active)
    {
-      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
@@ -21,14 +20,12 @@ namespace eosiobiostonomy
                          ignore<name> parent,
                          ignore<authority> auth)
    {
-      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
    void bios::deleteauth(ignore<name> account,
                          ignore<name> permission)
    {
-      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
@@ -37,7 +34,6 @@ namespace eosiobiostonomy
                        ignore<name> type,
                        ignore<name> requirement)
    {
-      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
@@ -45,7 +41,6 @@ namespace eosiobiostonomy
                          ignore<name> code,
                          ignore<name> type)
    {
-      require_auth(gov_name);
       check_sender("id.tmy"_n);
    }
 
@@ -112,6 +107,7 @@ namespace eosiobiostonomy
 
    void bios::reqactivated(const eosio::checksum256 &feature_digest)
    {
+      require_auth(gov_name);
       check(is_feature_activated(feature_digest), "protocol feature is not activated");
    }
 
