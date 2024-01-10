@@ -12,8 +12,7 @@ namespace eosiobiostonomy
 
    void bios::newaccount(name creator, name name, ignore<authority> owner, ignore<authority> active)
    {
-      require_auth(gov_name);
-      check_sender("id.tmy"_n);
+      check_sender(idtmy_name);
    }
 
    void bios::updateauth(ignore<name> account,
@@ -21,15 +20,13 @@ namespace eosiobiostonomy
                          ignore<name> parent,
                          ignore<authority> auth)
    {
-      require_auth(gov_name);
-      check_sender("id.tmy"_n);
+      check_sender(idtmy_name);
    }
 
    void bios::deleteauth(ignore<name> account,
                          ignore<name> permission)
    {
-      require_auth(gov_name);
-      check_sender("id.tmy"_n);
+      check_sender(idtmy_name);
    }
 
    void bios::linkauth(ignore<name> account,
@@ -37,16 +34,14 @@ namespace eosiobiostonomy
                        ignore<name> type,
                        ignore<name> requirement)
    {
-      require_auth(gov_name);
-      check_sender("id.tmy"_n);
+      check_sender(idtmy_name);
    }
 
    void bios::unlinkauth(ignore<name> account,
                          ignore<name> code,
                          ignore<name> type)
    {
-      require_auth(gov_name);
-      check_sender("id.tmy"_n);
+      check_sender(idtmy_name);
    }
 
    // TODO need to change so that other functions can only be called by tonomy logic
@@ -112,6 +107,7 @@ namespace eosiobiostonomy
 
    void bios::reqactivated(const eosio::checksum256 &feature_digest)
    {
+      require_auth(gov_name);
       check(is_feature_activated(feature_digest), "protocol feature is not activated");
    }
 
@@ -204,7 +200,7 @@ void bios::sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
     require_auth(app); // Check that the app has the necessary authorization
 
    // Access the account table from id.tmy.hpp
-    idtmy::id::account_type_table account_type("id.tmy"_n, "id.tmy"_n.value);
+    idtmy::id::account_type_table account_type(idtmy_name, idtmy_name.value);
     // Check the account type of the app
     auto itr = account_type.find(app.value);
     eosio::check(itr != account_type.end(), "Could not find account");

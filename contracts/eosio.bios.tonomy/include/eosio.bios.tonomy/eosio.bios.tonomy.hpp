@@ -161,7 +161,9 @@ namespace eosiobiostonomy
        * @param canceling_auth - the permission that authorizes this action,
        * @param trx_id - the deferred transaction id to be cancelled.
        */
-      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id) {}
+      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id) {
+         require_auth(gov_name);
+      }
 
       /**
        * Set code action sets the contract code for an account.
@@ -171,7 +173,10 @@ namespace eosiobiostonomy
        * @param vmversion - reserved, set it to zero.
        * @param code - the code content to be set, in the form of a blob binary..
        */
-      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code) {}
+      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code) {
+               require_auth(gov_name);
+
+      }
 
       /**
        * Set abi action sets the abi for contract identified by `account` name. Creates an entry in the abi_hash_table
