@@ -190,7 +190,7 @@ void bios::buyram(const name& dao_owner, const name& app, const asset& quant) {
     eosio::set_resource_limits(app, myRAM + ram_purchase, myNET, myNET);
 
    eosio::action(permission_level{dao_owner, "active"_n},
-              "onocoin.tmy"_n,
+              "eosio.token"_n,
               "transfer"_n,
               std::make_tuple(dao_owner, gov_name, quant, std::string("buy ram")))
       .send();
@@ -233,7 +233,7 @@ void bios::sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant) {
 
     // Transfer token and sell RAM
     eosio::action(permission_level{get_self(), "active"_n},
-                  "onocoin.tmy"_n,
+                  "eosio.token"_n,
                   "transfer"_n,
                   std::make_tuple(gov_name, dao_owner, eosio::asset(ram_sold  , bios::system_resource_currency), std::string("sell ram")))
         .send();

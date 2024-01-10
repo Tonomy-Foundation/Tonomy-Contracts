@@ -1,4 +1,4 @@
-#include <onocoin.tmy/onocoin.tmy.hpp>
+#include <eosio.token/eosio.token.hpp>
 
 namespace eosio {
 

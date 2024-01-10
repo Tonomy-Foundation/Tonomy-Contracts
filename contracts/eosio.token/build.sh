@@ -7,4 +7,4 @@ cd "${PARENT_PATH}"
 
 source ../compile_contract.sh
 
-compile_contract "${PARENT_PATH}" "onocoin.tmy" "${BUILD_METHOD}"
+compile_contract "${PARENT_PATH}" "eosio.token" "${BUILD_METHOD}"

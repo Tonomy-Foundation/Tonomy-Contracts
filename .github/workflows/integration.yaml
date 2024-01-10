@@ -22,8 +22,8 @@ jobs:
       - name: Compile demo.tmy
         run: ./contracts/demo.tmy/build.sh local
       
-      - name: Compile onocoin.tmy
-        run: ./contracts/onocoin.tmy/build.sh local
+      - name: Compile eosio.token
+        run: ./contracts/eosio.token/build.sh local
 
       - name: Compile id.tmy
         run: ./contracts/id.tmy/build.sh local
