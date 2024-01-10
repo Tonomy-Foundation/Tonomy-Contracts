@@ -115,10 +115,9 @@ namespace idtmy
       {
          throwError("TCON1000", "This people username is already taken");
       }
-      
 
-      //Set the resource limits for the new account
-      //uncomment this in task TODOS #77 
+      // Set the resource limits for the new account
+      // uncomment this in task TODOS #77
 
       // eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
       // auto config = _resource_config.get_or_create(get_self(), eosiobios::bios::resource_config());
@@ -132,22 +131,17 @@ namespace idtmy
            people_itr.account_name = random_name;
            people_itr.status = idtmy::enum_account_status::Creating_Status;
            people_itr.username_hash = username_hash;
-           people_itr.password_salt = password_salt;
-            });
-      
+           people_itr.password_salt = password_salt; });
 
       // Store the account type in the account_type table
       account_type_table account_type(get_self(), get_self().value);
-      account_type.emplace(get_self(), [&](auto& row) {
+      account_type.emplace(get_self(), [&](auto &row)
+                           {
          row.account_name = random_name;
          row.acc_type = enum_account_type::Person;
-         row.version = 1;
-      });
-
+         row.version = 1; });
    }
 
-
-   
    void id::newapp(
        string app_name,
        string description,
@@ -190,14 +184,13 @@ namespace idtmy
          throwError("TCON1002", "This app origin is already taken");
       }
 
-      
-      //Set the resource limits for the new app
-      //uncomment this in task TODOS #77 
-      // eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
-      // auto config = _resource_config.get_or_create(get_self(), eosiobios::bios::resource_config());
-      // config.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
-      // config.total_net_weight_allocated = this->initial_net_weight_allocation;
-      // _resource_config.set(config, get_self());
+      // Set the resource limits for the new app
+      // uncomment this in task TODOS #77
+      //  eosiobios::bios::resource_config_table _resource_config("eosio.bios"_n, "eosio.bios"_n.value);
+      //  auto config = _resource_config.get_or_create(get_self(), eosiobios::bios::resource_config());
+      //  config.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
+      //  config.total_net_weight_allocated = this->initial_net_weight_allocation;
+      //  _resource_config.set(config, get_self());
 
       // Store the password_salt and hashed username in table
       _apps.emplace(get_self(), [&](auto &app_itr)
@@ -207,42 +200,48 @@ namespace idtmy
                            app_itr.description = description;
                            app_itr.logo_url = logo_url;
                            app_itr.origin = origin;
-                           app_itr.username_hash = username_hash;
-                            });
+                           app_itr.username_hash = username_hash; });
 
       // Store the account type in the account_type table
       account_type_table account_type(get_self(), get_self().value);
-      account_type.emplace(get_self(), [&](auto& row) {
+      account_type.emplace(get_self(), [&](auto &row)
+                           {
          row.account_name = random_name;
          row.acc_type = enum_account_type::App;
-         row.version = 1;
-      });
-      
-     
+         row.version = 1; });
    }
 
-   void id::setacctype(name account_name, account_type acc_type) {
-         account_type_table account_type(get_self(), get_self().value);
-         auto itr = account_type.find(account_name.value);
-         if (itr != account_type.end()) {
-            account_type.modify(itr, get_self(), [&](auto& row) {
+   void id::setacctype(name account_name, account_type acc_type)
+   {
+      eosio::require_auth(get_self()); // signed by active@id.tmy permission
+
+      account_type_table account_type(get_self(), get_self().value);
+
+      auto itr = account_type.find(account_name.value);
+      if (itr != account_type.end())
+      {
+         account_type.modify(itr, get_self(), [&](auto &row)
+                             {
                row.acc_type = acc_type;
-               row.version = 1;
-            });
-         } else {
-            account_type.emplace(get_self(), [&](auto& row) {
+               row.version = 1; });
+      }
+      else
+      {
+         account_type.emplace(get_self(), [&](auto &row)
+                              {
                row.account_name = account_name;
                row.acc_type = acc_type;
-               row.version = 1;
-            });
-         }
+               row.version = 1; });
       }
+   }
 
    void id::updatekeyper(name account,
                          permission_level permission_level,
                          public_key key,
                          bool link_auth)
    {
+      // eosio::require_auth(account); // this is not needed as eosiobios::bios::updateauth_action checks the permission
+
       // update the status if needed
       auto people_itr = _people.find(account.value);
       if (people_itr != _people.end())
@@ -293,6 +292,7 @@ namespace idtmy
                      name type,
                      name req)
    {
+      // eosio::require_auth(account); // this is not needed as eosiobios::bios::linkauth_action checks the permission
       // TODO check that "code" account is a registered, active app
 
       eosiobios::bios::linkauth_action linkauthaction("eosio"_n, {account, "active"_n});
@@ -305,6 +305,8 @@ namespace idtmy
        name parent,
        public_key key)
    {
+      // eosio::require_auth(account); // this is not needed as eosiobios::bios::updateauth_action checks the permission
+
       // check the app exists and is registered with status
       auto app_itr = _apps.find(app.value);
       check(app_itr != _apps.end(), "App does not exist");
