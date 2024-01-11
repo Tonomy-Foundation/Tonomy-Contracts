@@ -135,7 +135,7 @@ namespace eosiobiostonomy
        */
       bios(name receiver, name code, eosio::datastream<const char *> ds);
 
-      static constexpr eosio::symbol system_resource_currency = eosio::symbol("ONO", 4);
+      static constexpr eosio::symbol system_resource_currency = eosio::symbol("SYS", 4);
       static constexpr eosio::name gov_name = "gov.tmy"_n;
       /**
        * New account action, called after a new account is created. This code enforces resource-limits rules
@@ -305,7 +305,7 @@ namespace eosiobiostonomy
        * If the entry does not exist, it creates a new entry with the provided RAM price, total RAM available, RAM fee, and sets other parameters to 0.
        * If the entry exists, it updates the RAM price, total RAM available, and RAM fee values for the existing `get_self()` key.
        *
-       * @param ram_price - the new price of RAM
+       * @param ram_price - the new price of RAM (bytes per token)
        * @param total_ram_available - the new total RAM available
        * @param ram_fee - the new RAM fee
        */
@@ -529,11 +529,11 @@ namespace eosiobiostonomy
       struct [[eosio::table]] resource_config
       {
          double ram_fee;                      // RAM fee fraction (0.01 = 1% fee)
-         double ram_price;                    // RAM price in tokens/byte
-         uint64_t total_ram_available;        // Total available RAM in bytes
-         uint64_t total_ram_used;             // Total RAM used in bytes
-         uint64_t total_cpu_weight_allocated; // Total allocated CPU weight
-         uint64_t total_net_weight_allocated; // Total allocated NET weight
+         double ram_price;                    // RAM price (bytes per token)
+         uint64_t total_ram_available;        // Total available RAM (bytes)
+         uint64_t total_ram_used;             // Total RAM used (bytes)
+         uint64_t total_cpu_weight_allocated; // Total allocated (CPU weight)
+         uint64_t total_net_weight_allocated; // Total allocated (NET weight)
 
          EOSLIB_SERIALIZE(resource_config, (ram_price)(total_ram_available)(total_ram_used)(total_cpu_weight_allocated)(total_net_weight_allocated)(ram_fee))
       };
