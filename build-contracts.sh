@@ -24,10 +24,10 @@ else
     ./build.sh
 fi
 
-cd "${PARENT_PATH}/contracts/eosio.bios.tonomy"
-if [ -e eosio.bios.tonomy.wasm ]
+cd "${PARENT_PATH}/contracts/eosio.tonomy"
+if [ -e eosio.tonomy.wasm ]
 then
-    echo "eosio.bios.tonomy already built"
+    echo "eosio.tonomy already built"
 else
     ./build.sh
 fi
@@ -44,14 +44,6 @@ cd "${PARENT_PATH}/contracts/eosio.token"
 if [ -e eosio.token.wasm ]
 then
     echo "eosio.token already built"
-else
-    ./build.sh
-fi
-
-cd "${PARENT_PATH}/contracts/id.tmy"
-if [ -e id.tmy.wasm ]
-then
-    echo "id.tmy already built"
 else
     ./build.sh
 fi

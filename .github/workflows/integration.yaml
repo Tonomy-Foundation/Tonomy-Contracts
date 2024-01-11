@@ -13,8 +13,8 @@ jobs:
       - name: Compile eosio.bios
         run: ./contracts/eosio.bios/build.sh local
 
-      - name: Compile eosio.bios.tonomy
-        run: ./contracts/eosio.bios.tonomy/build.sh local
+      - name: Compile eosio.tonomy
+        run: ./contracts/eosio.tonomy/build.sh local
 
       - name: Compile eosio.boot
         run: ./contracts/eosio.boot/build.sh local

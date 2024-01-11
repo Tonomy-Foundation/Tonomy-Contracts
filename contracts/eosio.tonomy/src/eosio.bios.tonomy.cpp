@@ -1,4 +1,4 @@
-#include <eosio.bios.tonomy/eosio.bios.tonomy.hpp>
+#include <eosio.tonomy/eosio.tonomy.hpp>
 #include <eosio/symbol.hpp>
 #include <eosio/transaction.hpp>
 #include <vector>

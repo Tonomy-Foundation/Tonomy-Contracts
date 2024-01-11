@@ -7,4 +7,4 @@ cd "${PARENT_PATH}"
 
 source ../compile_contract.sh
 
-compile_contract "${PARENT_PATH}" "eosio.bios.tonomy" "${BUILD_METHOD}"
+compile_contract "${PARENT_PATH}" "eosio.tonomy" "${BUILD_METHOD}"

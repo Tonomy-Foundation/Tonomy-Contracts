@@ -11,9 +11,8 @@ echo "Deleting built smart contracts"
 CONTRACTS=(
     "eosio.boot"
     "eosio.bios"
-    "eosio.bios.tonomy"
+    "eosio.tonomy"
     "demo.tmy"
-    "id.tmy"
     "eosio.token"
 )
 for CONTRACT in "${CONTRACTS[@]}"
