@@ -123,6 +123,7 @@ namespace eosiobiostonomy
    class [[eosio::contract("eosio.tonomy")]] bios : public eosio::contract
    {
    private:
+      uint64_t inital_ram_bytes = 6000;
       uint64_t initial_cpu_weight_allocation = 1000;
       uint64_t initial_net_weight_allocation = 1000;
 
