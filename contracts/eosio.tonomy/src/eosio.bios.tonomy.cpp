@@ -356,15 +356,6 @@ namespace eosiobiostonomy
          throwError("TCON1000", "This people username is already taken");
       }
 
-      // Set the resource limits for the new account
-      // uncomment this in task TODOS #77
-
-      resource_config_table _resource_config(get_self(), get_self().value);
-      auto config = _resource_config.get_or_create(get_self(), eosiobiostonomy::bios::resource_config());
-      config.total_cpu_weight_allocated += this->initial_cpu_weight_allocation;
-      config.total_net_weight_allocated += this->initial_net_weight_allocation;
-      _resource_config.set(config, get_self());
-
       // Store the password_salt and hashed username in table
       _people.emplace(get_self(), [&](auto &people_itr)
                       {
@@ -490,7 +481,14 @@ namespace eosiobiostonomy
          {
             _people.modify(people_itr, get_self(), [&](auto &people_itr)
                            { people_itr.status = eosiobiostonomy::enum_account_status::Active_Status; });
-            eosio::set_resource_limits(account, 6000, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+            eosio::set_resource_limits(account, this->inital_ram_bytes, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+
+            resource_config_table _resource_config(get_self(), get_self().value);
+            auto config = _resource_config.get(get_self(), eosiobiostonomy::bios::resource_config());
+            config.total_ram_used += this->inital_ram_bytes;
+            config.total_cpu_weight_allocated += this->initial_cpu_weight_allocation;
+            config.total_net_weight_allocated += this->initial_net_weight_allocation;
+            _resource_config.set(config, get_self());
          }
       }
 
