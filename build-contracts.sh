@@ -8,42 +8,22 @@ PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 echo "Building smart contracts"
 
-cd "${PARENT_PATH}/contracts/eosio.boot"
-if [ -e eosio.boot.wasm ]
-then
-    echo "eosio.boot already built"
-else
-    ./build.sh
-fi
+CONTRACTS=(
+    "demo.tmy"
+    "eosio.bios"
+    "eosio.boot"
+    "eosio.token"
+    "eosio.tonomy"
+    "tonomy"
+)
 
-cd "${PARENT_PATH}/contracts/eosio.bios"
-if [ -e eosio.bios.wasm ]
-then
-    echo "eosio.bios already built"
-else
-    ./build.sh
-fi
-
-cd "${PARENT_PATH}/contracts/eosio.tonomy"
-if [ -e eosio.tonomy.wasm ]
-then
-    echo "eosio.tonomy already built"
-else
-    ./build.sh
-fi
-
-cd "${PARENT_PATH}/contracts/demo.tmy"
-if [ -e demo.tmy.wasm ]
-then
-    echo "demo.tmy already built"
-else
-    ./build.sh
-fi
-
-cd "${PARENT_PATH}/contracts/eosio.token"
-if [ -e eosio.token.wasm ]
-then
-    echo "eosio.token already built"
-else
-    ./build.sh
-fi
+for CONTRACT in "${CONTRACTS[@]}"
+do
+    cd "${PARENT_PATH}/contracts/${CONTRACT}"
+    if [ -e "${CONTRACT}.wasm" ]
+    then
+        echo "${CONTRACT} already built"
+    else
+        ./build.sh
+    fi
+done

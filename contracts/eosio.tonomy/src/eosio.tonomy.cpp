@@ -78,6 +78,12 @@ namespace eosiotonomy
       check(false, "the onerror action cannot be called directly");
    }
 
+   void bios::setalimits(name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight)
+   {
+      check_sender(tonomy_system_name);
+      set_resource_limits(account, ram_bytes, net_weight, cpu_weight);
+   }
+
    void bios::setprods(const std::vector<eosio::producer_authority> &schedule)
    {
       check_sender(tonomy_system_name);
