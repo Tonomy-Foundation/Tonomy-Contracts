@@ -10,7 +10,8 @@ set -e ## exit if any statement fails
 cleos push action eosio activate '["f0af56d2c5a48d60a4a5b5c903edfb7db3a736a94ed589d0b797df33ff9d3e1d"]' -p eosio
 
 # FORWARD_SETCODE
-cleos push action eosio activate '["2652f5f96006294109b3dd0bbde63693f55324af452b799ee137a81a905eed25"]' -p eosio
+# cleos push action eosio activate '["2652f5f96006294109b3dd0bbde63693f55324af452b799ee137a81a905eed25"]' -p eosio
+# this feature breaks our eosio contract, so we don't activate it. See https://t.me/antelopedevs/337104
 
 # ONLY_BILL_FIRST_AUTHORIZER
 cleos push action eosio activate '["8ba52fe7a3956c5cd3a656a3174b931d3bb2abb45578befc59f283ecd816a405"]' -p eosio

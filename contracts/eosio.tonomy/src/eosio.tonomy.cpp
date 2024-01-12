@@ -57,7 +57,7 @@ namespace eosiobiostonomy
 
    void bios::setabi(name account, const std::vector<char> &abi)
    {
-      require_auth(gov_name);
+      require_auth(get_self());
       abi_hash_table table(get_self(), get_self().value);
       auto itr = table.find(account.value);
       if (itr == table.end())
