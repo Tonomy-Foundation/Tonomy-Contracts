@@ -51,7 +51,16 @@ namespace eosiotonomy
 
    void bios::setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code)
    {
-      check_sender(tonomy_system_name);
+      if (eosio::get_sender() == ""_n)
+      {
+         // this is easier to allow the transition to this contract
+         // https://t.me/antelopedevs/337128
+         require_auth(tonomy_system_name);
+      }
+      else
+      {
+         check_sender(tonomy_system_name);
+      }
    }
 
    void bios::setabi(name account, const std::vector<char> &abi)
