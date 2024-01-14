@@ -210,28 +210,63 @@ namespace tonomysystem
          row.version = 1; });
    }
 
-   void tonomy::setacctype(name account_name, account_type acc_type)
+   void tonomy::adminsetapp(
+       name account_name,
+       string app_name,
+       string description,
+       checksum256 username_hash,
+       string logo_url,
+       string origin)
    {
       eosio::require_auth(get_self()); // signed by active@id.tmy permission
 
+      // Add to the account_type table
       account_type_table account_type(get_self(), get_self().value);
 
       auto itr = account_type.find(account_name.value);
       if (itr != account_type.end())
       {
-         account_type.modify(itr, get_self(), [&](auto &row)
-                             {
-               row.acc_type = acc_type;
-               row.version = 1; });
+         throwError("TCON1003", "Account has already been set in account_type table");
       }
-      else
-      {
-         account_type.emplace(get_self(), [&](auto &row)
-                              {
+      account_type.emplace(get_self(), [&](auto &row)
+                           {
                row.account_name = account_name;
-               row.acc_type = acc_type;
+               row.acc_type = enum_account_type::App;
                row.version = 1; });
+
+      // Check the account name is not already used
+      auto apps_itr = _apps.find(account_name.value);
+      if (apps_itr != _apps.end())
+      {
+         throwError("TCON1004", "Account name is already used in apps table");
       }
+
+      // Check the username is not already taken
+      auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
+      const auto username_itr = apps_by_username_hash_itr.find(username_hash);
+      if (username_itr != apps_by_username_hash_itr.end())
+      {
+         throwError("TCON1001", "This app username is already taken");
+      }
+
+      // Check the origin is not already taken
+      auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
+      auto apps_by_origin_hash_itr = _apps.get_index<"originhash"_n>();
+      const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
+      if (origin_itr != apps_by_origin_hash_itr.end())
+      {
+         throwError("TCON1002", "This app origin is already taken");
+      }
+
+      // Store the password_salt and hashed username in table
+      _apps.emplace(get_self(), [&](auto &app_itr)
+                    {
+                           app_itr.account_name = account_name;
+                           app_itr.app_name = app_name;
+                           app_itr.description = description;
+                           app_itr.logo_url = logo_url;
+                           app_itr.origin = origin;
+                           app_itr.username_hash = username_hash; });
    }
 
    void tonomy::updatekeyper(name account,

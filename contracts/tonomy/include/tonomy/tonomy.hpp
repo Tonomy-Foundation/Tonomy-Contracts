@@ -93,12 +93,22 @@ namespace tonomysystem
           checksum256 password_salt);
 
       /**
-       * Sets the account type for a given account
+       * Manually sets the details of an app (admin only)
        *
        * @param account_name - name of the account
-       * @param acc_type - account type to be set
+       * @param app_name - name of the app
+       * @param description - description of the app
+       * @param username_hash - hash of the username
+       * @param logo_url - url to the logo of the app
+       * @param origin - domain associated with the app
        */
-      [[eosio::action]] void setacctype(name account_name, account_type acc_type);
+      [[eosio::action]] void adminsetapp(
+          name account_name,
+          string app_name,
+          string description,
+          checksum256 username_hash,
+          string logo_url,
+          string origin);
 
       /**
        * Create a new account for an app and registers it's details
@@ -300,7 +310,7 @@ namespace tonomysystem
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &tonomy::updatekeyper>;
       using newapp_action = action_wrapper<"newapp"_n, &tonomy::newapp>;
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
-      using setacctype_action = action_wrapper<"setacctype"_n, &tonomy::setacctype>;
+      using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
       using buyram_action = action_wrapper<"buyram"_n, &tonomy::buyram>;
       using sellram_action = action_wrapper<"sellram"_n, &tonomy::sellram>;
