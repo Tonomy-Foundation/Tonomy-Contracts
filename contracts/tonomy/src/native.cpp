@@ -79,6 +79,7 @@ namespace tonomysystem
 
    void native::setpriv(name account, uint8_t is_priv)
    {
+      // TODO disable proxying: this contract is priviledged and can execute the required API calls directly
       require_auth(governance_name);
       native::setpriv_action action("eosio"_n, {get_self(), "active"_n});
       action.send(account, is_priv);
@@ -86,6 +87,7 @@ namespace tonomysystem
 
    void native::setalimits(name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight)
    {
+      // TODO delete function. This is handled by our own resource management
       require_auth(governance_name);
       native::setalimits_action action("eosio"_n, {get_self(), "active"_n});
       action.send(account, ram_bytes, net_weight, cpu_weight);
@@ -100,6 +102,7 @@ namespace tonomysystem
 
    void native::setparams(const eosio::blockchain_parameters &params)
    {
+      // TODO disable proxying: this contract is priviledged and can execute the required API calls directly
       require_auth(governance_name);
       native::setparams_action action("eosio"_n, {get_self(), "active"_n});
       action.send(params);
@@ -107,6 +110,7 @@ namespace tonomysystem
 
    void native::reqauth(name from)
    {
+      // TODO delete as not needed. Check in Telegram first
       require_auth(governance_name);
       native::reqauth_action action("eosio"_n, {get_self(), "active"_n});
       action.send(from);
@@ -128,6 +132,7 @@ namespace tonomysystem
 
    void native::onerror(uint128_t sender_id, std::vector<char> sent_trx)
    {
+      // TODO delete: this is not needed in this contract. It is not supposed to be called in the eosio contract
       require_auth(governance_name);
       native::onerror_action action("eosio"_n, {get_self(), "active"_n});
       action.send(sender_id, sent_trx);

@@ -448,6 +448,7 @@ namespace tonomysystem
       eosio::set_resource_limits(app, myRAM - quant.amount, myNET, myNET);
 
       // Transfer token and sell RAM
+      // TODO should buy and sell from proxy counttract, otherwise cannot autorize to sell ram
       eosio::action(permission_level{get_self(), "active"_n},
                     token_contract_name,
                     "transfer"_n,

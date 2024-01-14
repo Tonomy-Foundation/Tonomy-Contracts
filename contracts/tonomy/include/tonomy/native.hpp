@@ -85,7 +85,7 @@ namespace tonomysystem
    {
    public:
       using contract::contract;
-      static constexpr eosio::name governance_name = "gov.tmy"_n;
+      static constexpr eosio::name governance_name = "tonomy"_n;
 
       native(name receiver, name code, eosio::datastream<const char *> ds) : contract(receiver, code, ds) {}
 

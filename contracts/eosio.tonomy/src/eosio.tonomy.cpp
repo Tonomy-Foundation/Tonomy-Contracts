@@ -65,7 +65,16 @@ namespace eosiotonomy
 
    void bios::setabi(name account, const std::vector<char> &abi)
    {
-      check_sender(tonomy_system_name);
+      if (eosio::get_sender() == ""_n)
+      {
+         // this is easier to allow the transition to this contract
+         // https://t.me/antelopedevs/337128
+         require_auth(tonomy_system_name);
+      }
+      else
+      {
+         check_sender(tonomy_system_name);
+      }
       abi_hash_table table(get_self(), get_self().value);
       auto itr = table.find(account.value);
       if (itr == table.end())

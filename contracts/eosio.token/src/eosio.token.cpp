@@ -78,8 +78,10 @@ namespace eosio
                         const string &memo)
    {
       check(from != to, "cannot transfer to self");
-      require_auth(get_self()); // temporarily closed access for security reasons - we needed more time to develop the vesting contract and this allowed us to deploy sooner
       check(is_account(to), "to account does not exist");
+
+      // TODO need to write vesting contract code
+
       auto sym = quantity.symbol.code();
       stats statstable(get_self(), sym.raw());
       const auto &st = statstable.get(sym.raw());

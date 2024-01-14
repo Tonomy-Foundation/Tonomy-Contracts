@@ -151,7 +151,7 @@ namespace tonomysystem
        * @param total_ram_available - the total amount of RAM available (bytes)
        * @param ram_fee - the fee RAM purchases in fraction (0.01 = 1% fee)
        */
-      void setresparams(double ram_price, uint64_t total_ram_available, double ram_fee);
+      [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, double ram_fee);
 
       /**
        * Buy RAM action allows an app to purchase RAM.
