@@ -252,17 +252,6 @@ namespace tonomysystem
        */
       [[eosio::action]] void reqactivated(const eosio::checksum256 &feature_digest);
 
-      struct [[eosio::table]] abi_hash
-      {
-         name owner;
-         checksum256 hash;
-         uint64_t primary_key() const { return owner.value; }
-
-         EOSLIB_SERIALIZE(abi_hash, (owner)(hash))
-      };
-
-      typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
-
       using newaccount_action = action_wrapper<"newaccount"_n, &native::newaccount>;
       using updateauth_action = action_wrapper<"updateauth"_n, &native::updateauth>;
       using deleteauth_action = action_wrapper<"deleteauth"_n, &native::deleteauth>;
