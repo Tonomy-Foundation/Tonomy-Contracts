@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - master
+      - development
 
 jobs:
   build:
@@ -39,8 +39,8 @@ jobs:
           name: tonomy
           path: ./contracts/tonomy
 
-  deploy-demo:
-    name: Deploy tonomy contract to demo
+  deploy-staging:
+    name: Deploy tonomy contract to staging
     needs: build
     runs-on: ubuntu-20.04
     container: tonomy/antelope
@@ -59,7 +59,7 @@ jobs:
           cleos wallet create --file ./wallet.txt
           cleos wallet import --private-key $ID_TONOMY_PRIVATE_KEY
           ls ./contracts/tonomy
-          cleos -u "https://blockchain-api-demo.tonomy.foundation" set contract tonomy ./contracts/tonomy tonomy.wasm tonomy.abi
+          cleos -u "https://blockchain-api.staging.tonomy.foundation" set contract tonomy ./contracts/tonomy tonomy.wasm tonomy.abi
 
   push-docker:
     name: Builds docker image and push to Docker Hub
@@ -96,7 +96,7 @@ jobs:
           file: ./blockchain/Dockerfile
           target: tonomy_blockchain_base
           push: true
-          tags: tonomy/blockchain:base
+          tags: tonomy/blockchain:base-development
 
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -105,7 +105,7 @@ jobs:
           file: ./blockchain/Dockerfile
           target: tonomy_blockchain_initialized
           push: true
-          tags: tonomy/blockchain:initialized
+          tags: tonomy/blockchain:initialized-development
 
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -114,4 +114,4 @@ jobs:
           file: ./blockchain/Dockerfile
           target: tonomy_blockchain_nodejs
           push: true
-          tags: tonomy/blockchain:nodejs
+          tags: tonomy/blockchain:nodejs-development

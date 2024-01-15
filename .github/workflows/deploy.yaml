@@ -2,64 +2,8 @@ on:
   push:
     branches:
       - master
-      - testnet
-      - development
-
-env:
-  BRANCH_NAME2: ${{ github.ref_name }}
-#   BRANCH_NAME: ${GITHUB_REF}
-  TAG_SUFFIX2: ${{ env.BRANCH_NAME == 'master' && '' || '-' + env.BRANCH_NAME }}
 
 jobs:
-  test-act:
-    name: Testing variables
-    runs-on: ubuntu-20.04
-    outputs:
-      GIT_BRANCH: ${{ steps.setvars.outputs.GIT_BRANCH }}
-      TAG_SUFFIX: ${{ steps.setvars.outputs.TAG_SUFFIX }}
-
-    steps:
-      - name: Set variables
-        id: setvars
-        run: |
-          echo "::set-output name=GIT_BRANCH::${{github.base_ref}}"
-          if [[ "${{steps.setvars.outputs.GIT_BRANCH}}" == "master" ]]; then
-            echo "::set-output name=TAG_SUFFIX::"
-          else
-            echo "::set-output name=TAG_SUFFIX::-${{steps.setvars.outputs.GIT_BRANCH}}"
-          fi
-        
-      - name: Print variables
-        run: |
-          echo "GIT_BRANCH: ${{ steps.setvars.outputs.GIT_BRANCH }}"
-          echo "TAG_SUFFIX: ${{ steps.setvars.outputs.TAG_SUFFIX }}"
-          echo "BRANCH_NAME2: ${{ env.BRANCH_NAME2 }}"
-          echo "TAG_SUFFIX2: ${{ env.TAG_SUFFIX2 }}"
-
-  test-act2:
-    name: Testing variables
-    runs-on: ubuntu-20.04
-    needs: test-act
-    steps:
-      - name: Print
-        run: echo "TAG_SUFFIX=${{needs.test-act.outputs.TAG_SUFFIX}}"
-  test-act3:
-    name: Testing vars
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Set branch-based variables
-        uses: iamtheyammer/branch-env-vars@v1.2.1
-        with:
-          bevOverwrite: true
-          EXAMPLE: |
-            master:
-            testnet:-rc
-            development:-development
-
-      - name: Print
-        run: |
-          echo "EXAMPLE=${{ env.EXAMPLE }}"
-          echo "BRANCH_NAME=${{ env.BRANCH_NAME }}"
   build:
     name: Compile eosio.boot, eosio.bios and tonomy contracts
     runs-on: ubuntu-20.04
@@ -148,4 +92,4 @@ jobs:
           file: ./blockchain/Dockerfile
           target: tonomy_blockchain_nodejs
           push: true
-          tags: tonomy/blockchain:nodejs{{ env.TAG_SUFFIX  }}
+          tags: tonomy/blockchain:nodejs
