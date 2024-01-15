@@ -28,7 +28,7 @@ jobs:
           if [[ "${{github.base_ref}}" == "master" ]]; then
             echo "{TAG_SUFFIX}=" >> "$GITHUB_OUTPUT"
           else
-            echco "{TAG_SUFFIX}=-${{github.base_ref}}" >> "$GITHUB_OUTPUT"
+            echo "{TAG_SUFFIX}=-${{github.base_ref}}" >> "$GITHUB_OUTPUT"
           fi
         
       - name: Print variables
