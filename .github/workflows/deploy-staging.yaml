@@ -61,7 +61,7 @@ jobs:
           cleos wallet create --file ./wallet.txt
           cleos wallet import --private-key $ID_TONOMY_PRIVATE_KEY
           ls ./contracts/tonomy
-          cleos -u "https://blockchain-api.staging.tonomy.foundation" set contract tonomy ./contracts/tonomy tonomy.wasm tonomy.abi
+          cleos -u "https://blockchain-api-staging.tonomy.foundation" set contract tonomy ./contracts/tonomy tonomy.wasm tonomy.abi
 
   push-docker:
     name: Builds docker image and push to Docker Hub
