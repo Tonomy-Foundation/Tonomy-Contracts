@@ -2,7 +2,7 @@
 
 namespace eosiotonomy
 {
-   void bios::check_sender(name sender)
+   void bios::check_sender(const name &sender)
    {
       check(eosio::get_sender() == sender, "You cannot call this eosio action directly, call from the " + sender.to_string() + " contract");
    }
@@ -15,17 +15,19 @@ namespace eosiotonomy
       check_sender(tonomy_system_name);
    }
 
-   void bios::updateauth(ignore<name> account,
+   void bios::updateauth(name account,
                          ignore<name> permission,
                          ignore<name> parent,
                          ignore<authority> auth)
    {
+      check_governance_requirements(account);
       check_sender(tonomy_system_name);
    }
 
-   void bios::deleteauth(ignore<name> account,
+   void bios::deleteauth(name account,
                          ignore<name> permission)
    {
+      check_governance_requirements(account);
       check_sender(tonomy_system_name);
    }
 
@@ -49,8 +51,19 @@ namespace eosiotonomy
       check_sender(tonomy_system_name);
    }
 
+   void bios::check_governance_requirements(const name &account)
+   {
+      // An extra requirement for certain actions to prevent misuse
+      if (account == tonomy_system_name || account == get_self())
+      {
+         // This is an additional requirement
+         require_auth(governance_name);
+      }
+   }
+
    void bios::setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code)
    {
+      check_governance_requirements(account);
       if (eosio::get_sender() == ""_n)
       {
          // this is easier to allow the transition to this contract

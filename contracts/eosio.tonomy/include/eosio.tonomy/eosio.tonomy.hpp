@@ -79,8 +79,11 @@ namespace eosiotonomy
    class [[eosio::contract("eosio.tonomy")]] bios : public eosio::contract
    {
    private:
-      void check_sender(name sender);
+      void check_sender(const name &sender);
+      void check_governance_requirements(const name &account);
+
       static constexpr eosio::name tonomy_system_name = "tonomy"_n;
+      static constexpr eosio::name governance_name = "gov.tmy"_n;
 
    public:
       using contract::contract;
@@ -108,7 +111,7 @@ namespace eosiotonomy
        * @param parem - the parent of the permission which is updated,
        * @param auth - the json describing the permission authorization.
        */
-      [[eosio::action]] void updateauth(ignore<name> account,
+      [[eosio::action]] void updateauth(name account,
                                         ignore<name> permission,
                                         ignore<name> parent,
                                         ignore<authority> auth);
@@ -119,7 +122,7 @@ namespace eosiotonomy
        * @param account - the account for which the permission authorization is deleted,
        * @param permission - the permission name been deleted.
        */
-      [[eosio::action]] void deleteauth(ignore<name> account,
+      [[eosio::action]] void deleteauth(name account,
                                         ignore<name> permission);
 
       /**
