@@ -14,7 +14,7 @@ env:
       
 jobs:
   test-act:
-    name: Testing variables
+    name: Testing variables1
     runs-on: ubuntu-20.04
     outputs:
       GIT_BRANCH: ${{ steps.setvars.outputs.GIT_BRANCH }}
@@ -25,10 +25,10 @@ jobs:
         id: setvars
         run: |
           echo "::set-output name=GIT_BRANCH::${{github.base_ref}}"
-          if [[ "${{steps.setvars.outputs.GIT_BRANCH}}" == "master" ]]; then
+          if [[ ${{github.base_ref}}" == "master" ]]; then
             echo "::set-output name=TAG_SUFFIX::"
           else
-            echo "::set-output name=TAG_SUFFIX::-${{steps.setvars.outputs.GIT_BRANCH}}"
+            echo "::set-output name=TAG_SUFFIX::-${{github.base_ref}}"
           fi
         
       - name: Print variables
@@ -39,14 +39,15 @@ jobs:
           echo "TAG_SUFFIX2: ${{ env.TAG_SUFFIX2 }}"
 
   test-act2:
-    name: Testing variables
+    name: Testing variables2 from 1
     runs-on: ubuntu-20.04
     needs: test-act
     steps:
       - name: Print
         run: echo "TAG_SUFFIX=${{needs.test-act.outputs.TAG_SUFFIX}}"
+
   test-act3:
-    name: Testing vars
+    name: Testing vars 3
     runs-on: ubuntu-20.04
     steps:
       - name: Set branch-based variables
