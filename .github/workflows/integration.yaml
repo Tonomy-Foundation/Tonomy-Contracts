@@ -10,20 +10,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Compile demo.tmy
+        run: ./contracts/demo.tmy/build.sh local
+      
       - name: Compile eosio.bios
         run: ./contracts/eosio.bios/build.sh local
-
-      - name: Compile eosio.bios.tonomy
-        run: ./contracts/eosio.bios.tonomy/build.sh local
 
       - name: Compile eosio.boot
         run: ./contracts/eosio.boot/build.sh local
 
-      - name: Compile demo.tmy
-        run: ./contracts/demo.tmy/build.sh local
-      
-      - name: Compile onocoin.tmy
-        run: ./contracts/onocoin.tmy/build.sh local
+      - name: Compile eosio.token
+        run: ./contracts/eosio.token/build.sh local
 
-      - name: Compile id.tmy
-        run: ./contracts/id.tmy/build.sh local
+      - name: Compile eosio.tonomy
+        run: ./contracts/eosio.tonomy/build.sh local
+
+      - name: Compile tonomy
+        run: ./contracts/tonomy/build.sh local
