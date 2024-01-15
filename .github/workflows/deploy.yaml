@@ -1,3 +1,5 @@
+name: "Master build docker image"
+
 on:
   push:
     branches:
