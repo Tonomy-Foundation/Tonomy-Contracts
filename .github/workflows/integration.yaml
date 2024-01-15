@@ -10,7 +10,7 @@ on:
 env:
   BRANCH_NAME2: ${{ github.ref_name }}
 #   BRANCH_NAME: ${GITHUB_REF}
-  TAG_SUFFIX2: ${{ env.BRANCH_NAME == 'master' && '' || '-' + env.BRANCH_NAME }}
+  # TAG_SUFFIX2: ${{ env.BRANCH_NAME == 'master' && '' || '-' + env.BRANCH_NAME }}
       
 jobs:
   test-act:
