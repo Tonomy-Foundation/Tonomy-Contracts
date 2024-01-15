@@ -24,11 +24,11 @@ jobs:
       - name: Set variables
         id: setvars
         run: |
-          echo "::set-output name=GIT_BRANCH::${{github.base_ref}}"
-          if [[ ${{github.base_ref}}" == "master" ]]; then
-            echo "::set-output name=TAG_SUFFIX::"
+          echo "{GIT_BRANCH}={${{github.base_ref}}}" >> "$GITHUB_OUTPUT"
+          if [[ "${{github.base_ref}}" == "master" ]]; then
+            echo "{TAG_SUFFIX}=" >> "$GITHUB_OUTPUT"
           else
-            echo "::set-output name=TAG_SUFFIX::-${{github.base_ref}}"
+            echco "{TAG_SUFFIX}=-${{github.base_ref}}" >> "$GITHUB_OUTPUT"
           fi
         
       - name: Print variables
