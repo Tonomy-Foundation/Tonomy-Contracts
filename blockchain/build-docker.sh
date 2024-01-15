@@ -15,4 +15,7 @@ docker image build --target antelope_blockchain . -f ./blockchain/Dockerfile --f
 
 # Create docker image
 docker rm -f tonomy_blockchain_initialized || true
+docker buildx build -t easy_cleos --target tonomy_easy_cleos .
+
 docker image build --target tonomy_blockchain_initialized . -f ./blockchain/Dockerfile --force-rm -t tonomy_blockchain_initialized
+
