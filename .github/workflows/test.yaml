@@ -1,7 +1,12 @@
 name: Compile all smart contracts
 
-on: pull_request
-
+on:
+  pull_request:
+    branches:
+      - master
+      - testnet
+      - development
+      
 jobs:
   compile:
     runs-on: ubuntu-20.04
@@ -17,6 +22,9 @@ jobs:
         run: ./contracts/eosio.bios/build.sh local
 
       - name: Compile eosio.boot
+        run: ./contracts/eosio.boot/build.sh local
+
+      - name: Compile eosio.msig
         run: ./contracts/eosio.boot/build.sh local
 
       - name: Compile eosio.token
