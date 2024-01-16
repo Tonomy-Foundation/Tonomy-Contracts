@@ -39,4 +39,9 @@ RUN tar -C /usr/local --strip-components 1 -xzf node-v18.12.1-linux-x64.tar.gz
 
 ### Easy cleos script
 FROM tonomy_blockchain_initialized as tonomy_easycleos
-COPY . ./easy-cleos.sh
+
+# COPY ./easy-cleos.sh /var/contracts/blockchain
+# RUN cp ./easy-cleos.sh /var/contracts/blockchain
+
+RUN mkdir /var/easycleos
+RUN cp ./easycleos.sh /var/easycleos/easycleos.sh
