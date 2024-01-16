@@ -1,42 +1,18 @@
-# #!/bin/bash
+#!/bin/bash
 
-# # Create JSON files for permissions
-# cat <<EOF > owner_permission.json
-# {
-#   "threshold": 2,
-#   "keys": [
-#     {"key": "EOS7i8bx8XgEyMxC1aEqT1zPpd3uNgrMERC9eqKHyZkPnoeg84f5k", "weight": 1},
-#     {"key": "EOS76Gp7Uf84EmbEocbAYvh1RAqwtrS3DEDAPxp7FBpGMMn9ubFNb", "weight": 1},
-#     {"key": "EOS6tjapJyMd4NWtjL2A43okSCXpjVzARNNcsW8mCMNhNE5Ld63ww", "weight": 1}
-#   ]
-# }
-# EOF
+# Get the input private key 
+read -s -p "Enter Private Key: " private_key
 
-# cat <<EOF > active_permission.json
-# {
-#   "threshold": 1,
-#   "keys": [
-#     {"key": "EOS7i8bx8XgEyMxC1aEqT1zPpd3uNgrMERC9eqKHyZkPnoeg84f5k", "weight": 1},
-#     {"key": "EOS76Gp7Uf84EmbEocbAYvh1RAqwtrS3DEDAPxp7FBpGMMn9ubFNb", "weight": 1},
-#     {"key": "EOS6tjapJyMd4NWtjL2A43okSCXpjVzARNNcsW8mCMNhNE5Ld63ww", "weight": 1}
-#   ]
-# }
-# EOF
+# Import the key into the EOSIO wallet
+cleos wallet import --private-key $private_key
 
-# # Set owner permission
-# cleos set account permission found.tmy owner owner_permission.json -p found.tmy@owner
+echo $private_key
 
-# # Set active permission
-# cleos set account permission found.tmy active active_permission.json -p found.tmy@active
-
-# get the password securly
-passwd=$(readlink -f passed)
-
-# import the key
-cleos import key $passwd
+# Get the wallet alias
+read -s -p "Enter alias url: " alias_url
 
 # create an alias so that it connects to pangea mainnet
-alias cleos='cleos -u https://pangea-mainnet-api.com'
+alias cleos='cleos -u' $alias_url
 
 # open terminal. user can then do cleos commands easily with key and connected to mainnet
 /bin/bash

@@ -18,5 +18,3 @@ docker rm -f tonomy_blockchain_initialized || true
 docker build -t easycleos --target tonomy_easycleos . -f ./blockchain/Dockerfile
 
 docker image build --target tonomy_blockchain_initialized . -f ./blockchain/Dockerfile --force-rm -t tonomy_blockchain_initialized
-# docker run -it easycleos ./easycleos.sh create-key
-# docker run -it easycleos ./easycleos.sh transact KEY_ehatehatha
