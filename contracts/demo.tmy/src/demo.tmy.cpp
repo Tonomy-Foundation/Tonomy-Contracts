@@ -179,22 +179,4 @@ namespace eosio
       check(it->balance.amount == 0, "Cannot close because the balance is not zero.");
       acnts.erase(it);
    }
-
-   void token::addperm(const name &per)
-   {
-      require_auth(get_self());
-      permission permissions(get_self(), get_self().value);
-
-      auto itr = permissions.find(0);
-      if (itr == permissions.end())
-      {
-         permissions.emplace(get_self(), [&](auto &row)
-                             { row.permission_name = per; });
-      }
-      else
-      {
-         permissions.modify(itr, eosio::same_payer, [&](auto &row)
-                            { row.permission_name = per; });
-      }
-   }
 } /// namespace eosio
