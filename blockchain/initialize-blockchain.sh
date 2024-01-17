@@ -8,7 +8,8 @@ PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$PARENT_PATH"
 
 # Create a new wallet with the eosio and other keys
-cleos wallet create --to-console
+WALLET_NAME=${1:-"default"}
+cleos wallet create --to-console --name "${WALLET_NAME}"
 
 # import eosio
 PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
