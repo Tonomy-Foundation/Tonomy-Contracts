@@ -115,3 +115,12 @@ jobs:
           target: tonomy_blockchain_nodejs
           push: true
           tags: tonomy/blockchain:nodejs
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./blockchain/Dockerfile
+          target: tonomy_blockchain_easycleos
+          push: true
+          tags: tonomy/blockchain:easycleos
