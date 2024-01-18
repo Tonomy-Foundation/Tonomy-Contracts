@@ -60,13 +60,7 @@ namespace eosio
       check(existing != statstable.end(), "token with symbol does not exist, create token before issue");
       const auto &st = *existing;
 
-      // Get the account name of the app for demo.tmy
-      // use as the permission name
-      permission permissions(get_self(), get_self().value);
-      auto perm = permissions.find(0);
-      const name per = perm->permission_name;
-
-      require_auth({to, per});
+      require_auth({to, get_self()});
       check(quantity.is_valid(), "invalid quantity");
       check(quantity.amount > 0, "must issue positive quantity");
 
@@ -108,11 +102,8 @@ namespace eosio
                         const string &memo)
    {
       check(from != to, "cannot transfer to self");
-      permission permissions(get_self(), get_self().value);
-      auto perm = permissions.find(0);
-      const name per = perm->permission_name;
 
-      require_auth({from, per});
+      require_auth({from, get_self()});
       check(is_account(to), "to account does not exist");
       auto sym = quantity.symbol.code();
       stats statstable(get_self(), sym.raw());
@@ -187,23 +178,5 @@ namespace eosio
       check(it != acnts.end(), "Balance row already deleted or never existed. Action won't have any effect.");
       check(it->balance.amount == 0, "Cannot close because the balance is not zero.");
       acnts.erase(it);
-   }
-
-   void token::addperm(const name &per)
-   {
-      require_auth(get_self());
-      permission permissions(get_self(), get_self().value);
-
-      auto itr = permissions.find(0);
-      if (itr == permissions.end())
-      {
-         permissions.emplace(get_self(), [&](auto &row)
-                             { row.permission_name = per; });
-      }
-      else
-      {
-         permissions.modify(itr, eosio::same_payer, [&](auto &row)
-                            { row.permission_name = per; });
-      }
    }
 } /// namespace eosio

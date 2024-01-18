@@ -12,6 +12,7 @@ CONTRACTS=(
     "demo.tmy"
     "eosio.bios"
     "eosio.boot"
+    "eosio.msig"
     "eosio.token"
     "eosio.tonomy"
     "tonomy"
