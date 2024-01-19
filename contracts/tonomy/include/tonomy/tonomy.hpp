@@ -253,7 +253,7 @@ namespace tonomysystem
       // Create an instance of the table that can is initalized in the constructor
       apps_table _apps;
 
-      struct [[eosio::table]] resource_config
+      struct [[eosio::table]] resrc_config
       {
          double ram_fee;                      // RAM fee fraction (0.01 = 1% fee)
          double ram_price;                    // RAM price (bytes per token)
@@ -262,9 +262,9 @@ namespace tonomysystem
          uint64_t total_cpu_weight_allocated; // Total allocated (CPU weight)
          uint64_t total_net_weight_allocated; // Total allocated (NET weight)
 
-         EOSLIB_SERIALIZE(resource_config, (ram_price)(total_ram_available)(total_ram_used)(total_cpu_weight_allocated)(total_net_weight_allocated)(ram_fee))
+         EOSLIB_SERIALIZE(resrc_config, (ram_price)(total_ram_available)(total_ram_used)(total_cpu_weight_allocated)(total_net_weight_allocated)(ram_fee))
       };
-      typedef eosio::singleton<"resconfig"_n, resource_config> resource_config_table;
+      typedef eosio::singleton<"resconfig"_n, resrc_config> resrc_config_table;
 
       /**
        * Returns the account name of the app that corresponds to the origin

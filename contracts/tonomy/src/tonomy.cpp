@@ -185,11 +185,11 @@ namespace tonomysystem
          throwError("TCON1002", "This app origin is already taken");
       }
 
-      tonomy::resource_config_table _resource_config(get_self(), get_self().value);
-      auto config = _resource_config.get();
+      tonomy::resrc_config_table _resrc_config(get_self(), get_self().value);
+      auto config = _resrc_config.get();
       config.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
       config.total_net_weight_allocated = this->initial_net_weight_allocation;
-      _resource_config.set(config, get_self());
+      _resrc_config.set(config, get_self());
 
       // Store the password_salt and hashed username in table
       _apps.emplace(get_self(), [&](auto &app_itr)
@@ -286,12 +286,12 @@ namespace tonomysystem
                            { people_itr.status = enum_account_status::Active_Status; });
             eosio::set_resource_limits(account, this->inital_ram_bytes, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
 
-            resource_config_table _resource_config(get_self(), get_self().value);
-            auto config = _resource_config.get();
+            resrc_config_table _resrc_config(get_self(), get_self().value);
+            auto config = _resrc_config.get();
             config.total_ram_used += this->inital_ram_bytes;
             config.total_cpu_weight_allocated += this->initial_cpu_weight_allocation;
             config.total_net_weight_allocated += this->initial_net_weight_allocation;
-            _resource_config.set(config, get_self());
+            _resrc_config.set(config, get_self());
          }
       }
 
@@ -365,13 +365,13 @@ namespace tonomysystem
       // check ram_fee is non-negative
       eosio::check(ram_fee >= 0, "RAM fee must be non-negative");
 
-      resource_config_table resource_config_singleton(get_self(), get_self().value);
-      resource_config config;
+      resrc_config_table resrc_config_singleton(get_self(), get_self().value);
+      resrc_config config;
 
-      if (resource_config_singleton.exists())
+      if (resrc_config_singleton.exists())
       {
          // Singleton exists, get the existing config and modify the values
-         config = resource_config_singleton.get();
+         config = resrc_config_singleton.get();
          config.ram_price = ram_price;
          config.total_ram_available = total_ram_available;
          config.ram_fee = ram_fee;
@@ -379,11 +379,11 @@ namespace tonomysystem
       else
       {
          // Singleton does not exist, set the values and also set other values to 0
-         config = resource_config{ram_price, ram_fee, total_ram_available, 0, 0, 0};
+         config = resrc_config{ram_price, ram_fee, total_ram_available, 0, 0, 0};
       }
 
       // Save the modified or new config back to the singleton
-      resource_config_singleton.set(config, get_self());
+      resrc_config_singleton.set(config, get_self());
    }
 
    void tonomy::buyram(const name &dao_owner, const name &app, const asset &quant)
@@ -404,12 +404,12 @@ namespace tonomysystem
       eosio::check(quant.amount > 0, "Amount must be positive");
 
       // Get the RAM price
-      // resource_config_table resource_config_singleton(get_self(), get_self().value);
-      //  auto config = resource_config_singleton.get();
-      resource_config_table config_table(get_self(), get_self().value);
+      // resrc_config_table resrc_config_singleton(get_self(), get_self().value);
+      //  auto config = resrc_config_singleton.get();
+      resrc_config_table config_table(get_self(), get_self().value);
 
-      // Retrieve the resource_config object from the table
-      resource_config config;
+      // Retrieve the resrc_config object from the table
+      resrc_config config;
       if (config_table.exists())
       {
          config = config_table.get();
@@ -464,8 +464,8 @@ namespace tonomysystem
       eosio::check(quant.amount > 0, "Amount must be positive");
 
       // Get the RAM price
-      resource_config_table resource_config_singleton(get_self(), get_self().value);
-      auto config = resource_config_singleton.get();
+      resrc_config_table resrc_config_singleton(get_self(), get_self().value);
+      auto config = resrc_config_singleton.get();
 
       // Read values from the table
       double ram_price = config.ram_price;
@@ -475,7 +475,7 @@ namespace tonomysystem
       eosio::check(config.total_ram_used >= quant.amount, "Not enough RAM to sell");
       // Modify the values and save them back to the table
       config.total_ram_used -= quant.amount;
-      resource_config_singleton.set(config, get_self());
+      resrc_config_singleton.set(config, get_self());
 
       // Deallocate the RAM
       int64_t myRAM, myNET, myCPU;
