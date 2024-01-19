@@ -25,14 +25,14 @@
 ## Create a new keypair
 This script is used to create a new key pair in the Antelope blockchain.
 
-- docker run -it tonomy_blockchain_easycleos ./create-key.sh
+- docker run -it tonomy_blockchain:easycleos ./create-key.sh
 
 After running the script, it will generate a private key. Store the private key in a very safe place. It will be required for the transact.sh script.
 
 ## Sign blockchain transactions
 This script is used to make transactions in the Antelope blockchain.
 
-- docker run -it tonomy_blockchain_easycleos ./transact.sh
+- docker run -it tonomy_blockchain:easycleos ./transact.sh
 
 When prompted, provide the following inputs:
 
