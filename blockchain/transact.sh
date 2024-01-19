@@ -1,16 +1,14 @@
 #!/bin/bash
 
-# Get the input private key 
+# Get the input private key
 read -s -p "Enter Private Key: " private_key
 
+# Create a new EOSIO wallet (if not already created)
+cleos wallet create -n mywallet --to-console
+
 # Import the key into the EOSIO wallet
-cleos wallet import --private-key $private_key
+cleos wallet import -n mywallet --private-key $private_key
 
-# Get the wallet alias
-read -p "Enter blockchain API url (e.g. https://blockchain-api.pangea.web4.world): " alias_url
-
-# create an alias so that it connects to pangea mainnet
-alias cleos='cleos -u' $alias_url
-
-# open terminal. user can then do cleos commands easily with key and connected to mainnet
+# Open terminal. Users can then do cleos commands easily with key and connected to mainnet
 /bin/bash
+

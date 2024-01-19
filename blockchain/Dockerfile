@@ -43,5 +43,5 @@ FROM tonomy_blockchain_initialized as tonomy_blockchain_easycleos
 RUN mkdir /var/easycleos
 
 # Copy the script to the container
-COPY ./create-key.sh /var/easycleos/create-key.sh
-COPY ./transact.sh /var/easycleos/transact.sh
+RUN cp ./create-key.sh /var/easycleos/create-key.sh
+RUN cp ./transact.sh /var/easycleos/transact.sh

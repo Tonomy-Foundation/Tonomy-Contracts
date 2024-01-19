@@ -1,3 +1,27 @@
+## Prerequisits (one time)
+
+# Requirements
+
+- Windows 10 with 64 bit 
+- Windows 11 with 64 bit operating system 
+
+# How to install on windows 
+
+- The first place to start is the official Docker website(https://www.docker.com/get-started/) from where  download Docker Desktop.
+- Run the downloaded installer 
+- Configuration
+    Mark both options true
+- Click Ok and wait a bit
+- Restart required
+- Docker automatically run Accept License Agreement
+- the Docker Desktop window will open. we have selected WSL 2 as our virtualization enginein configuration, we also need to install it. Don’t click Restart just yet!
+- Follow the link in the dialog window and download WSL 2.
+- Open the installer.
+- Click on Next to begin installing the Windows Subsystem for Linux (WSL).
+- Restart required
+
+- reference: https://www.linkedin.com/pulse/step-guide-how-install-docker-windows-1011-shashank-abhishek/
+
 ## Create a new keypair
 This script is used to create a new key pair in the Antelope blockchain.
 
@@ -22,20 +46,19 @@ cleos transfer gov.tmy opts.tmy 10000.000 LEO "Sending LEO tokens from gov.tmy t
 ## Example
 Here's an example of how to create a new key pair and sign a transaction using the scripts mentioned above:
 
-1. docker run -it tonomy_blockchain_easycleos ./create-key.sh
-2. docker run -it tonomy_blockchain_easycleos ./transact.sh
+1. docker run -it tonomy_blockchain:easycleos ./create-key.sh
+2. docker run -it tonomy_blockchain:easycleos ./transact.sh
     When prompted, 
     Enter Private Key: enter the private key generated in the previous step 
-    Enter blockchain API url: https://blockchain-api.pangea.web4.world
-
-3. Use cleos commands For example:
+3. alias cleos='cleos -u https://blockchain-api-staging.tonomy.foundation' (change blockchain url accordingly)
+4. Use cleos commands For example:
     - To sign transactions:
-    cleos transfer gov.tmy opts.tmy 10000.000 ONO 
+    cleos transfer ops.tmy gov.tmy "10000.0000 SYS" 
 
     - Get account information:
     cleos get account gov.tmy
 
     - Check balance:
-    cleos get currency balance eosio.token gov.tmy ONO
+    cleos get currency balance eosio.token gov.tmy SYS
 
 For more information on using cleos, refer to the [cleos documentation](https://docs.antelope.io/leap/latest/cleos/).
