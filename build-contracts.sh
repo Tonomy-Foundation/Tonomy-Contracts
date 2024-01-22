@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# If ARG1=local then will use local cdt-cpp, otherwise will use docker cdt-cpp
+ARG1=$1
+
 set -u ## exit if you try to use an uninitialised variable
 set -e ## exit if any statement fails
 
@@ -25,6 +28,6 @@ do
     then
         echo "${CONTRACT} already built"
     else
-        ./build.sh
+        ./build.sh "${ARG1}"
     fi
 done
