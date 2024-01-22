@@ -1,11 +1,6 @@
-## Prerequisits (one time)
+# Prerequisits (one time)
 
-# Requirements
-
-- Windows 10 with 64 bit 
-- Windows 11 with 64 bit operating system 
-
-# How to install on windows 
+## How to install on Windows 10/11
 
 - The first place to start is the official Docker website(https://www.docker.com/get-started/) from where  download Docker Desktop.
 - Run the downloaded installer 
@@ -25,14 +20,14 @@
 ## Create a new keypair
 This script is used to create a new key pair in the Antelope blockchain.
 
-- docker run -it tonomy_blockchain:easycleos ./create-key.sh
+- `docker run -it tonomy_blockchain:easycleos ./create-key.sh`
 
 After running the script, it will generate a private key. Store the private key in a very safe place. It will be required for the transact.sh script.
 
 ## Sign blockchain transactions
 This script is used to make transactions in the Antelope blockchain.
 
-- docker run -it tonomy_blockchain:easycleos ./transact.sh
+- `docker run -it tonomy_blockchain:easycleos ./transact.sh`
 
 When prompted, provide the following inputs:
 
@@ -40,25 +35,25 @@ When prompted, provide the following inputs:
 2- Blockchain URL: {{Enter the API URL of the Antelope blockchain}}
 
 Then you can type in commands using cleos that will sign transactions. e.g.
-cleos transfer gov.tmy opts.tmy 10000.000 LEO "Sending LEO tokens from gov.tmy to ops.tmy account"
+`cleos transfer gov.tmy opts.tmy 10000.000 SYS "Sending SYS tokens from gov.tmy to ops.tmy account"`
 
 
 ## Example
 Here's an example of how to create a new key pair and sign a transaction using the scripts mentioned above:
 
-1. docker run -it tonomy_blockchain:easycleos ./create-key.sh
-2. docker run -it tonomy_blockchain:easycleos ./transact.sh
+1. `docker run -it tonomy_blockchain:easycleos ./create-key.sh`
+2. `docker run -it tonomy_blockchain:easycleos ./transact.sh`
     When prompted, 
     Enter Private Key: enter the private key generated in the previous step 
-3. alias cleos='cleos -u https://blockchain-api-staging.tonomy.foundation' (change blockchain url accordingly)
+3. `alias cleos='cleos -u https://blockchain-api-staging.tonomy.foundation'` (change blockchain url accordingly)
 4. Use cleos commands For example:
     - To sign transactions:
-    cleos transfer ops.tmy gov.tmy "10000.0000 SYS" 
+    `cleos transfer ops.tmy gov.tmy "10000.0000 SYS"`
 
     - Get account information:
-    cleos get account gov.tmy
+    `cleos get account gov.tmy`
 
     - Check balance:
-    cleos get currency balance eosio.token gov.tmy SYS
+    `cleos get currency balance eosio.token gov.tmy SYS`
 
 For more information on using cleos, refer to the [cleos documentation](https://docs.antelope.io/leap/latest/cleos/).
