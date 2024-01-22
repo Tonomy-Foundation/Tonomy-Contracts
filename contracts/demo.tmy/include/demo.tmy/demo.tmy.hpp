@@ -105,14 +105,6 @@ namespace eosio
        */
       [[eosio::action]] void close(const name &owner, const symbol &symbol);
 
-      /**
-       * This action is for saving permission of application from outside the blockchain
-       * to be used for authentications later.
-       *
-       * @param per - account name of the app to be used for authorization
-       */
-      ACTION addperm(const name &per);
-
       static asset get_supply(const name &token_contract_account, const symbol_code &sym_code)
       {
          stats statstable(token_contract_account, sym_code.raw());
@@ -133,7 +125,6 @@ namespace eosio
       using transfer_action = eosio::action_wrapper<"transfer"_n, &token::transfer>;
       using open_action = eosio::action_wrapper<"open"_n, &token::open>;
       using close_action = eosio::action_wrapper<"close"_n, &token::close>;
-      using addperm_action = eosio::action_wrapper<"addperm"_n, &token::addperm>;
 
    private:
       struct [[eosio::table]] account
@@ -152,16 +143,8 @@ namespace eosio
          uint64_t primary_key() const { return supply.symbol.code().raw(); }
       };
 
-      struct [[eosio::table]] perm
-      {
-         name permission_name;
-
-         uint64_t primary_key() const { return 0; }
-      };
-
       typedef eosio::multi_index<"accounts"_n, account> accounts;
       typedef eosio::multi_index<"stat"_n, currency_stats> stats;
-      typedef eosio::multi_index<"permission"_n, perm> permission;
 
       void sub_balance(const name &owner, const asset &value);
       void add_balance(const name &owner, const asset &value, const name &ram_payer);

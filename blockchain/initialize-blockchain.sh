@@ -8,11 +8,12 @@ PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$PARENT_PATH"
 
 # Create a new wallet with the eosio and other keys
-cleos wallet create --file /data/wallet.txt
+WALLET_NAME=${1:-"default"}
+cleos wallet create --to-console --name "${WALLET_NAME}"
 
 # import eosio
 PKEY_EOSIO="PVT_K1_2bfGi9rYsXQSXXTvJbDAPhHLQUojjaNLomdm3cEJ1XTzMqUt3V"
-cleos wallet import --private-key $PKEY_EOSIO
+cleos wallet import --name "${WALLET_NAME}" --private-key $PKEY_EOSIO
 
 # Enable protocol feature pre-activation PREACTIVATE_FEATURE for eosio.contract v1.8+
 curl -X POST http://127.0.0.1:8888/v1/producer/schedule_protocol_feature_activations -d '{"protocol_features_to_activate": ["0ec7e080177b2c02b278d5088611686b49d739925a92d9bfcacd7fc6b74053bd"]}'

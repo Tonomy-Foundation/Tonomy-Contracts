@@ -1,0 +1,97 @@
+name: "Master build docker image"
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Compile eosio.boot, eosio.bios and tonomy contracts
+    runs-on: ubuntu-20.04
+    container: tonomy/antelope
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build eosio.boot contract
+        run: ./contracts/eosio.boot/build.sh local
+
+      - name: Build eosio.bios contract
+        run: ./contracts/eosio.bios/build.sh local
+
+      - name: Build tonomy contract
+        run: ./contracts/tonomy/build.sh local
+
+      - name: Add eosio.boot contracts to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: eosio.boot
+          path: ./contracts/eosio.boot
+
+      - name: Add eosio.bios contracts to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: eosio.bios
+          path: ./contracts/eosio.bios
+
+      - name: Add built contracts to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: tonomy
+          path: ./contracts/tonomy
+
+  push-docker:
+    name: Builds docker image and push to Docker Hub
+    needs: build
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get eosio.boot contracts from cache
+        uses: actions/download-artifact@v3
+        with:
+          name: eosio.boot
+          path: contracts/eosio.boot
+
+      - name: Get eosio.bios contracts from cache
+        uses: actions/download-artifact@v3
+        with:
+          name: eosio.bios
+          path: contracts/eosio.bios
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./blockchain/Dockerfile
+          target: tonomy_blockchain_base
+          push: true
+          tags: tonomy/blockchain:base
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./blockchain/Dockerfile
+          target: tonomy_blockchain_initialized
+          push: true
+          tags: tonomy/blockchain:initialized
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./blockchain/Dockerfile
+          target: tonomy_blockchain_nodejs
+          push: true
+          tags: tonomy/blockchain:nodejs
