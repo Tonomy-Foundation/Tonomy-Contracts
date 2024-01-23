@@ -24,7 +24,16 @@ namespace tonomysystem
                            name parent,
                            authority auth)
    {
-      require_auth(governance_name); // gov only, till we implement this
+      // gov only, till we implement this
+      // upgrades to the tonomy contract itself requires governance approval (owner)
+      if (account == "eosio"_n || account == "tonomy"_n)
+      {
+         eosio::require_auth({governance_name, "owner"_n});
+      }
+      else
+      {
+         eosio::require_auth(governance_name);
+      }
       native::updateauth_action action("eosio"_n, {account, permission});
       action.send(account, permission, parent, auth);
    }
@@ -65,7 +74,17 @@ namespace tonomysystem
 
    void native::setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code)
    {
-      require_auth(governance_name); // gov only, till we implement this
+      // gov only, till we implement this
+      // upgrades to the tonomy contract itself requires governance approval (owner)
+      if (account == "eosio"_n || account == "tonomy"_n)
+      {
+         eosio::require_auth({governance_name, "owner"_n});
+      }
+      else
+      {
+         eosio::require_auth(governance_name);
+      }
+
       native::setcode_action action("eosio"_n, {account, "active"_n});
       action.send(account, vmtype, vmversion, code);
    }
