@@ -30,8 +30,8 @@ namespace tonomysystem
 
    void native::newaccount(name creator, name name, authority owner, authority active)
    {
-      require_governance_active();
-      native::newaccount_action action("eosio"_n, {creator, "active"_n});
+      require_governance_owner();
+      native::newaccount_action action("eosio"_n, {creator, "owner"_n});
       action.send(creator, name, owner, active);
    }
 
@@ -40,8 +40,6 @@ namespace tonomysystem
                            name parent,
                            authority auth)
    {
-      // gov only, till we implement this
-      // upgrades to the tonomy contract itself requires governance approval (owner)
       special_governance_check(account);
       native::updateauth_action action("eosio"_n, {account, permission});
       action.send(account, permission, parent, auth);
@@ -50,7 +48,7 @@ namespace tonomysystem
    void native::deleteauth(name account,
                            name permission)
    {
-      require_governance_active();
+      special_governance_check(account);
       native::deleteauth_action action("eosio"_n, {account, permission});
       action.send(account, permission);
    }
@@ -69,31 +67,28 @@ namespace tonomysystem
                            name code,
                            name type)
    {
-      require_governance_active();
+      special_governance_check(account);
       native::unlinkauth_action action("eosio"_n, {account, "active"_n});
       action.send(account, code, type);
    }
 
    void native::canceldelay(permission_level canceling_auth, checksum256 trx_id)
    {
-      require_governance_active();
+      require_governance_owner();
       native::canceldelay_action action("eosio"_n, {governance_name, "active"_n});
       action.send(canceling_auth, trx_id);
    }
 
    void native::setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code)
    {
-      // gov only, till we implement this
-      // upgrades to the tonomy contract itself requires governance approval (owner)
       special_governance_check(account);
-
       native::setcode_action action("eosio"_n, {account, "active"_n});
       action.send(account, vmtype, vmversion, code);
    }
 
    void native::setabi(name account, const std::vector<char> &abi)
    {
-      require_governance_active();
+      special_governance_check(account);
       native::setabi_action action("eosio"_n, {account, "active"_n});
       action.send(account, abi);
    }
@@ -154,7 +149,7 @@ namespace tonomysystem
    void native::onerror(uint128_t sender_id, std::vector<char> sent_trx)
    {
       // TODO delete: this is not needed in this contract. It is not supposed to be called in the eosio contract
-      require_governance_active();
+      require_governance_owner();
       native::onerror_action action("eosio"_n, {governance_name, "active"_n});
       action.send(sender_id, sent_trx);
    }
