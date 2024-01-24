@@ -9,6 +9,8 @@
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
 
+#include "eosio.tonomy/eosio.tonomy.hpp"
+
 namespace tonomysystem
 {
    using eosio::action_wrapper;
@@ -23,58 +25,11 @@ namespace tonomysystem
    using eosio::singleton;
    using std::string;
 
-   struct permission_level_weight
-   {
-      permission_level permission;
-      uint16_t weight;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(permission_level_weight, (permission)(weight))
-   };
-
-   struct key_weight
-   {
-      eosio::public_key key;
-      uint16_t weight;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(key_weight, (key)(weight))
-   };
-
-   struct wait_weight
-   {
-      uint32_t wait_sec;
-      uint16_t weight;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(wait_weight, (wait_sec)(weight))
-   };
-
-   struct authority
-   {
-      uint32_t threshold = 0;
-      std::vector<key_weight> keys;
-      std::vector<permission_level_weight> accounts;
-      std::vector<wait_weight> waits;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(authority, (threshold)(keys)(accounts)(waits))
-   };
-
-   struct block_header
-   {
-      uint32_t timestamp;
-      name producer;
-      uint16_t confirmed = 0;
-      checksum256 previous;
-      checksum256 transaction_mroot;
-      checksum256 action_mroot;
-      uint32_t schedule_version = 0;
-      std::optional<eosio::producer_schedule> new_producers;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(block_header, (timestamp)(producer)(confirmed)(previous)(transaction_mroot)(action_mroot)(schedule_version)(new_producers))
-   };
+   using eosiotonomy::authority;
+   using eosiotonomy::block_header;
+   using eosiotonomy::key_weight;
+   using eosiotonomy::permission_level_weight;
+   using eosiotonomy::wait_weight;
 
    /**
     * The `eosio.tonomy` is the first sample of system contract provided by `block.one` through the EOSIO platform. It is a minimalist system contract because it only supplies the actions that are absolutely critical to bootstrap a chain and nothing more. This allows for a chain agnostic approach to bootstrapping a chain.
@@ -111,12 +66,14 @@ namespace tonomysystem
        * @param account - the account for which the permission is updated,
        * @param pemission - the permission name which is updated,
        * @param parem - the parent of the permission which is updated,
-       * @param aut - the json describing the permission authorization.
+       * @param auth - the json describing the permission authorization,
+       * @param auth_parent - true if the parent permission should be checked, otherwise the "permission" will be used to authorize
        */
       [[eosio::action]] void updateauth(name account,
                                         name permission,
                                         name parent,
-                                        authority auth);
+                                        authority auth,
+                                        bool auth_parent);
 
       /**
        * Delete authorization action deletes the authorization for an account's permission.

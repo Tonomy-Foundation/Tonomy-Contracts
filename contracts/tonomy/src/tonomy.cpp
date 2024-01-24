@@ -3,6 +3,8 @@
 #include <eosio/transaction.hpp>
 #include <vector>
 
+#include "eosio.tonomy/eosio.tonomy.hpp"
+
 namespace tonomysystem
 {
    // contract class constructor
@@ -316,7 +318,7 @@ namespace tonomysystem
       }
 
       // must be signed by the account's permission_level or parent (from eosio.tonomy::updateauth())
-      tonomy::updateauth_action updateauthaction("eosio"_n, {account, "owner"_n});
+      eosiotonomy::bios::updateauth_action updateauthaction("eosio"_n, {account, "owner"_n});
       updateauthaction.send(account, permission, "owner"_n, authority);
 
       if (link_auth)
@@ -350,7 +352,7 @@ namespace tonomysystem
       // setup the new key authoritie(s)
       authority authority = create_authority_with_key(key);
 
-      tonomy::updateauth_action updateauthaction("eosio"_n, {account, parent});
+      eosiotonomy::bios::updateauth_action updateauthaction("eosio"_n, {account, parent});
       updateauthaction.send(account, app, parent, authority);
       // must be signed by the account's permission_level or parent (from eosio.tonomy::updateauth())
    }

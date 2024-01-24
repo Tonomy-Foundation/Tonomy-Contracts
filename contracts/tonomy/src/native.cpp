@@ -3,19 +3,24 @@
 #include <eosio/transaction.hpp>
 #include <vector>
 
+#include "eosio.tonomy/eosio.tonomy.hpp"
+
 namespace tonomysystem
 {
 
+   // Requires the governance active permission authorization
    void require_governance_active()
    {
       eosio::require_auth({native::governance_name, "active"_n});
    }
 
+   // Requires the governance owner permission authorization
    void require_governance_owner()
    {
       eosio::require_auth({native::governance_name, "owner"_n});
    }
 
+   // Used to protect governance actions
    void special_governance_check(name account)
    {
       if (account == "eosio"_n || account == "tonomy"_n)
@@ -38,10 +43,16 @@ namespace tonomysystem
    void native::updateauth(name account,
                            name permission,
                            name parent,
-                           authority auth)
+                           authority auth,
+                           bool auth_parent)
    {
       special_governance_check(account);
-      native::updateauth_action action("eosio"_n, {account, permission});
+      eosio::name auth_permission = permission;
+      if (auth_parent)
+      {
+         auth_permission = parent;
+      }
+      eosiotonomy::bios::updateauth_action action("eosio"_n, {account, auth_permission});
       action.send(account, permission, parent, auth);
    }
 
