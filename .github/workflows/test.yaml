@@ -25,7 +25,7 @@ jobs:
         run: ./contracts/eosio.boot/build.sh local
 
       - name: Compile eosio.msig
-        run: ./contracts/eosio.boot/build.sh local
+        run: ./contracts/eosio.msig/build.sh local
 
       - name: Compile eosio.token
         run: ./contracts/eosio.token/build.sh local
