@@ -3,7 +3,7 @@
 #include <eosio/transaction.hpp>
 #include <vector>
 
-#include "eosio.tonomy/eosio.tonomy.hpp"
+#include <eosio.tonomy/eosio.tonomy.hpp>
 
 namespace tonomysystem
 {

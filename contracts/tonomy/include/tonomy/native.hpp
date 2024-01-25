@@ -8,8 +8,7 @@
 #include <eosio/producer_schedule.hpp>
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
-
-#include "eosio.tonomy/eosio.tonomy.hpp"
+#include <eosio.tonomy/eosio.tonomy.hpp>
 
 namespace tonomysystem
 {
