@@ -46,6 +46,7 @@ jobs:
     needs: build
     runs-on: ubuntu-20.04
     container: tonomy/antelope
+    environment: testnet
     env:
       TONOMY_OPS_PRIVATE_KEY: ${{ secrets.TONOMY_OPS_PRIVATE_KEY }}
       TONOMY_BOARD1_PRIVATE_KEY: ${{ secrets.TONOMY_BOARD1_PRIVATE_KEY }}
