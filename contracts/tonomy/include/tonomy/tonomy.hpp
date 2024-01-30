@@ -10,7 +10,6 @@
 #include <eosio/singleton.hpp>
 
 #include "native.hpp"
-// #include "resources.hpp"
 
 namespace tonomysystem
 {

@@ -28,6 +28,7 @@ CMD ./nodeos.sh
 ### Intialize the blockchain
 FROM tonomy_blockchain_base as tonomy_blockchain_initialized
 
+## Run bootstrap script
 RUN bash -c "./nodeos.sh &" && sleep 10 && ./initialize-blockchain.sh && ./nodeos.sh stop
 
 ### Install nodejs
@@ -35,3 +36,12 @@ FROM tonomy_blockchain_initialized as tonomy_blockchain_nodejs
 
 RUN wget nodejs.org/dist/v18.12.1/node-v18.12.1-linux-x64.tar.gz
 RUN tar -C /usr/local --strip-components 1 -xzf node-v18.12.1-linux-x64.tar.gz
+
+### Easy cleos script
+FROM tonomy_blockchain_initialized as tonomy_blockchain_easycleos
+
+RUN mkdir /var/easycleos
+
+# Copy the script to the container
+RUN cp ./create-key.sh /var/easycleos/create-key.sh
+RUN cp ./transact.sh /var/easycleos/transact.sh

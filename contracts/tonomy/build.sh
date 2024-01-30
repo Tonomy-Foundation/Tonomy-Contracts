@@ -17,6 +17,9 @@ BUILD_COMMAND="cdt-cpp -abigen -I ${WORKING_DIR}/include -R ${WORKING_DIR}/ricar
 
 echo $BUILD_COMMAND
 
+mkdir -p "${PARENT_PATH}/include/eosio.tonomy"
+cp "${PARENT_PATH}/../eosio.tonomy/include/eosio.tonomy/eosio.tonomy.hpp" "${PARENT_PATH}/include/eosio.tonomy/eosio.tonomy.hpp"
+
 if [ "$BUILD_METHOD" == "local" ]; then
     bash -c "${BUILD_COMMAND}"
 else

@@ -31,3 +31,5 @@ do
         ./build.sh "${ARG1}"
     fi
 done
+
+echo "All contracts built or skipped sucessfully"
