@@ -17,7 +17,6 @@ CMD nodeos
 FROM antelope_blockchain as tonomy_blockchain_base
 
 RUN mkdir /var/config
-RUN echo "hel3z8l8o"
 COPY . /var/contracts
 WORKDIR /var/contracts/blockchain
 
