@@ -2,6 +2,7 @@
 
 #include <eosio/crypto.hpp>
 #include <eosio/eosio.hpp>
+#include <eosio/producer_schedule.hpp>
 
 namespace eosioboot
 {
@@ -77,6 +78,34 @@ namespace eosioboot
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
       EOSLIB_SERIALIZE(authority, (threshold)(keys)(accounts)(waits))
+   };
+
+   /**
+    * Blockchain block header.
+    *
+    * A block header is defined by:
+    * - a timestamp,
+    * - the producer that created it,
+    * - a confirmed flag default as zero,
+    * - a link to previous block,
+    * - a link to the transaction merkel root,
+    * - a link to action root,
+    * - a schedule version,
+    * - and a producers' schedule.
+    */
+   struct block_header
+   {
+      uint32_t timestamp;
+      name producer;
+      uint16_t confirmed = 0;
+      checksum256 previous;
+      checksum256 transaction_mroot;
+      checksum256 action_mroot;
+      uint32_t schedule_version = 0;
+      std::optional<eosio::producer_schedule> new_producers;
+
+      // explicit serialization macro is not necessary, used here only to improve compilation time
+      EOSLIB_SERIALIZE(block_header, (timestamp)(producer)(confirmed)(previous)(transaction_mroot)(action_mroot)(schedule_version)(new_producers))
    };
 
    /**
@@ -239,6 +268,14 @@ namespace eosioboot
        * @param feature_digest - hash of the protocol feature to check for activation.
        */
       [[eosio::action]] void reqactivated(const eosio::checksum256 &feature_digest);
+
+      /**
+       * On block action. This special action is triggered when a block is applied by the given producer
+       * and cannot be generated from any other source.
+       *
+       * @param header - the block header produced.
+       */
+      [[eosio::action]] void onblock(ignore<block_header> header) {}
 
       using newaccount_action = action_wrapper<"newaccount"_n, &boot::newaccount>;
       using updateauth_action = action_wrapper<"updateauth"_n, &boot::updateauth>;

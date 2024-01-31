@@ -58,6 +58,19 @@ namespace eosiotonomy
       EOSLIB_SERIALIZE(authority, (threshold)(keys)(accounts)(waits))
    };
 
+   /**
+    * Blockchain block header.
+    *
+    * A block header is defined by:
+    * - a timestamp,
+    * - the producer that created it,
+    * - a confirmed flag default as zero,
+    * - a link to previous block,
+    * - a link to the transaction merkel root,
+    * - a link to action root,
+    * - a schedule version,
+    * - and a producers' schedule.
+    */
    struct block_header
    {
       uint32_t timestamp;
@@ -246,6 +259,14 @@ namespace eosiotonomy
        * @param feature_digest - hash of the protocol feature to check for activation.
        */
       [[eosio::action]] void reqactivated(const eosio::checksum256 &feature_digest);
+
+      /**
+       * On block action. This special action is triggered when a block is applied by the given producer
+       * and cannot be generated from any other source.
+       *
+       * @param header - the block header produced.
+       */
+      [[eosio::action]] void onblock(ignore<block_header> header) {}
 
       struct [[eosio::table]] abi_hash
       {
