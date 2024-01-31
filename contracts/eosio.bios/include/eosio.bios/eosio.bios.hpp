@@ -8,18 +8,17 @@
 #include <eosio/producer_schedule.hpp>
 #include <eosio/asset.hpp>
 
-
 namespace eosiobios
 {
 
    using eosio::action_wrapper;
+   using eosio::asset;
    using eosio::check;
    using eosio::checksum256;
    using eosio::ignore;
    using eosio::name;
    using eosio::permission_level;
    using eosio::public_key;
-   using eosio::asset;
 
    struct permission_level_weight
    {
@@ -99,8 +98,9 @@ namespace eosiobios
       [[eosio::action]] void newaccount(name creator,
                                         name name,
                                         ignore<authority> owner,
-                                        ignore<authority> active) {
-                                        }
+                                        ignore<authority> active)
+      {
+      }
       /**
        * Update authorization action updates pemission for an account.
        *
@@ -112,8 +112,9 @@ namespace eosiobios
       [[eosio::action]] void updateauth(ignore<name> account,
                                         ignore<name> permission,
                                         ignore<name> parent,
-                                        ignore<authority> auth) {
-                                        }
+                                        ignore<authority> auth)
+      {
+      }
 
       /**
        * Delete authorization action deletes the authorization for an account's permission.
@@ -122,9 +123,9 @@ namespace eosiobios
        * @param permission - the permission name been deleted.
        */
       [[eosio::action]] void deleteauth(ignore<name> account,
-                                        ignore<name> permission) {
-
-                                        }
+                                        ignore<name> permission)
+      {
+      }
 
       /**
        * Link authorization action assigns a specific action from a contract to a permission you have created. Five system
@@ -144,8 +145,9 @@ namespace eosiobios
       [[eosio::action]] void linkauth(ignore<name> account,
                                       ignore<name> code,
                                       ignore<name> type,
-                                      ignore<name> requirement) {
-                                      }
+                                      ignore<name> requirement)
+      {
+      }
 
       /**
        * Unlink authorization action it's doing the reverse of linkauth action, by unlinking the given action.
@@ -156,8 +158,9 @@ namespace eosiobios
        */
       [[eosio::action]] void unlinkauth(ignore<name> account,
                                         ignore<name> code,
-                                        ignore<name> type) {
-                                        }
+                                        ignore<name> type)
+      {
+      }
 
       /**
        * Cancel delay action cancels a deferred transaction.
@@ -165,7 +168,8 @@ namespace eosiobios
        * @param canceling_auth - the permission that authorizes this action,
        * @param trx_id - the deferred transaction id to be cancelled.
        */
-      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id) {
+      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id)
+      {
       }
 
       /**
@@ -176,7 +180,8 @@ namespace eosiobios
        * @param vmversion - reserved, set it to zero.
        * @param code - the code content to be set, in the form of a blob binary..
        */
-      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code) {
+      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code)
+      {
       }
 
       /**
@@ -266,7 +271,6 @@ namespace eosiobios
 
       typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
 
-      
       using newaccount_action = action_wrapper<"newaccount"_n, &bios::newaccount>;
       using updateauth_action = action_wrapper<"updateauth"_n, &bios::updateauth>;
       using deleteauth_action = action_wrapper<"deleteauth"_n, &bios::deleteauth>;
@@ -282,6 +286,5 @@ namespace eosiobios
       using reqauth_action = action_wrapper<"reqauth"_n, &bios::reqauth>;
       using activate_action = action_wrapper<"activate"_n, &bios::activate>;
       using reqactivated_action = action_wrapper<"reqactivated"_n, &bios::reqactivated>;
-      
    };
 }
