@@ -69,7 +69,7 @@ namespace tonomysystem
       uint64_t initial_cpu_weight_allocation = 1000;
       uint64_t initial_net_weight_allocation = 1000;
 
-      static constexpr eosio::symbol system_resource_currency = eosio::symbol("SYS", 4);
+      static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
       static constexpr eosio::name token_contract_name = "eosio.token"_n;
 
       /**
@@ -261,7 +261,7 @@ namespace tonomysystem
          uint64_t total_cpu_weight_allocated; // Total allocated (CPU weight)
          uint64_t total_net_weight_allocated; // Total allocated (NET weight)
 
-         EOSLIB_SERIALIZE(resource_config, (ram_price)(total_ram_available)(total_ram_used)(total_cpu_weight_allocated)(total_net_weight_allocated)(ram_fee))
+         EOSLIB_SERIALIZE(resource_config, (ram_fee)(ram_price)(total_ram_available)(total_ram_used)(total_cpu_weight_allocated)(total_net_weight_allocated))
       };
       typedef eosio::singleton<"resconfig"_n, resource_config> resource_config_table;
 
