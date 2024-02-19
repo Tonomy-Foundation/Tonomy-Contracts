@@ -69,7 +69,7 @@ namespace tonomysystem
       uint64_t initial_cpu_weight_allocation = 1000;
       uint64_t initial_net_weight_allocation = 1000;
 
-      static constexpr eosio::symbol system_resource_currency = eosio::symbol("SYS", 4);
+      static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
       static constexpr eosio::name token_contract_name = "eosio.token"_n;
 
       /**
