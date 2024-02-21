@@ -220,7 +220,7 @@ namespace tonomysystem
       string logo_url,
       string origin,
       public_key key) {
-      eosio::require_auth(user_name);
+      require_auth(native::governance_name); // check authorization is gov.tmy
       checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
 
       // use the password_key public key for the owner authority

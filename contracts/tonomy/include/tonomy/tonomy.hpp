@@ -130,6 +130,29 @@ namespace tonomysystem
           public_key key);
 
       /**
+       * Create a new admin account for an app and registers it's details
+       *
+       * @details Creates a new admin account for an app and registers it's details.
+       *
+       * @param user_name - name of the admin
+       * @param name - name of the app
+       * @param description - description of the app
+       * @param username_hash - hash of the username
+       * @param logo_url - url to the logo of the app
+       * @param origin - domain associated with the app
+       * @param password_key - public key generated from the account's password
+       */
+      [[eosio::action]] void newappadmin(
+          string user_name,
+          string app_name,
+          string description,
+          checksum256 username_hash,
+          string logo_url,
+          string origin,
+          public_key key);
+
+
+      /**
        * Adds a new key to a person's account to log into an app with
        *
        * @param account - account of the person
@@ -308,6 +331,7 @@ namespace tonomysystem
       using newperson_action = action_wrapper<"newperson"_n, &tonomy::newperson>;
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &tonomy::updatekeyper>;
       using newapp_action = action_wrapper<"newapp"_n, &tonomy::newapp>;
+      using newappadmin_action = action_wrapper<"newappadmin"_n, &tonomy::newappadmin>;
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
       using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
