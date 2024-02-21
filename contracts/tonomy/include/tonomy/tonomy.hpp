@@ -134,22 +134,20 @@ namespace tonomysystem
        *
        * @details Creates a new admin account for an app and registers it's details.
        *
-       * @param user_name - name of the admin
+       * @param owner - name of the admin
        * @param name - name of the app
        * @param description - description of the app
        * @param username_hash - hash of the username
        * @param logo_url - url to the logo of the app
        * @param origin - domain associated with the app
-       * @param password_key - public key generated from the account's password
        */
       [[eosio::action]] void newappadmin(
-          string user_name,
+          string owner,
           string app_name,
           string description,
           checksum256 username_hash,
           string logo_url,
-          string origin,
-          public_key key);
+          string origin);
 
 
       /**

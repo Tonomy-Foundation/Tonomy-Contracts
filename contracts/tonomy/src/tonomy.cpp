@@ -213,23 +213,21 @@ namespace tonomysystem
    }
 
    void newappadmin(
-      name user_name,  
+      name owner,  
       string app_name,
       string description,
       checksum256 username_hash,
       string logo_url,
-      string origin,
-      public_key key) {
+      string origin) {
       require_auth(native::governance_name); // check authorization is gov.tmy
       checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
 
-      // use the password_key public key for the owner authority
-      authority key_authority = create_authority_with_key(key);
-      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
-
-      // If the account name exists, this will fail
-      newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      newaccountaction.send(get_self(), user_name, key_authority, key_authority);
+      // Check the owner account type is Person
+      account_type_table account_type(get_self(), get_self().value);
+      const auto owner_type_itr = account_type.find(owner);
+      if (owner_type_itr == account_type.end() || owner_type_itr->acc_type != enum_account_type::Person) {
+         throwError("TCON1000", "Owner account is not of type Person");
+      }
 
       // Check the username is not already taken
       auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
@@ -257,7 +255,7 @@ namespace tonomysystem
       // Store the password_salt and hashed username in table
       _apps.emplace(get_self(), [&](auto &app_itr)
                     {
-                           app_itr.account_name = user_name;
+                           app_itr.account_name = owner;
                            app_itr.app_name = app_name;
                            app_itr.description = description;
                            app_itr.logo_url = logo_url;
@@ -268,7 +266,7 @@ namespace tonomysystem
       account_type_table account_type(get_self(), get_self().value);
       account_type.emplace(get_self(), [&](auto &row)
                            {
-         row.account_name = user_name;
+         row.account_name = owner;
          row.acc_type = enum_account_type::App;
          row.version = 1; });
    }
