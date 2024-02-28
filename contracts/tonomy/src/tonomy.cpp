@@ -145,90 +145,14 @@ namespace tonomysystem
          row.version = 1; });
    }
 
-   void tonomy::newapp(
-       string app_name,
-       string description,
-       checksum256 username_hash,
-       string logo_url,
-       string origin,
-       public_key key)
-   {
-      // TODO in the future only an organization type can create an app
-      // check the transaction is signed by the `id.tmy` account
-      eosio::require_auth(get_self());
-
-      checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
-
-      // generate new random account name
-      const eosio::name random_name = random_account_name(username_hash, description_hash, enum_account_type::App);
-
-      // use the password_key public key for the owner authority
-      authority key_authority = create_authority_with_key(key);
-      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
-
-      // If the account name exists, this will fail
-      newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      newaccountaction.send(get_self(), random_name, key_authority, key_authority);
-
-      // Check the username is not already taken
-      auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
-      const auto username_itr = apps_by_username_hash_itr.find(username_hash);
-      if (username_itr != apps_by_username_hash_itr.end())
-      {
-         throwError("TCON1001", "This app username is already taken");
-      }
-
-      // Check the origin is not already taken
-      auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
-      auto apps_by_origin_hash_itr = _apps.get_index<"originhash"_n>();
-      const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
-      if (origin_itr != apps_by_origin_hash_itr.end())
-      {
-         throwError("TCON1002", "This app origin is already taken");
-      }
-
-      tonomy::resource_config_table _resource_config(get_self(), get_self().value);
-      auto config = _resource_config.get();
-      config.total_cpu_weight_allocated = this->initial_cpu_weight_allocation;
-      config.total_net_weight_allocated = this->initial_net_weight_allocation;
-      _resource_config.set(config, get_self());
-
-      // Store the password_salt and hashed username in table
-      _apps.emplace(get_self(), [&](auto &app_itr)
-                    {
-                           app_itr.account_name = random_name;
-                           app_itr.app_name = app_name;
-                           app_itr.description = description;
-                           app_itr.logo_url = logo_url;
-                           app_itr.origin = origin;
-                           app_itr.username_hash = username_hash; });
-
-      // Store the account type in the account_type table
-      account_type_table account_type(get_self(), get_self().value);
-      account_type.emplace(get_self(), [&](auto &row)
-                           {
-         row.account_name = random_name;
-         row.acc_type = enum_account_type::App;
-         row.version = 1; });
-   }
-
-   void newappadmin(
-      name owner,  
+    void create_app(
+      eosio::name account_name,
       string app_name,
       string description,
       checksum256 username_hash,
       string logo_url,
-      string origin) {
-      require_auth(native::governance_name); // check authorization is gov.tmy
-      checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
-
-      // Check the owner account type is Person
-      account_type_table account_type(get_self(), get_self().value);
-      const auto owner_type_itr = account_type.find(owner);
-      if (owner_type_itr == account_type.end() || owner_type_itr->acc_type != enum_account_type::Person) {
-         throwError("TCON1000", "Owner account is not of type Person");
-      }
-
+      string origin)
+   {
       // Check the username is not already taken
       auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
       const auto username_itr = apps_by_username_hash_itr.find(username_hash);
@@ -269,6 +193,55 @@ namespace tonomysystem
          row.account_name = owner;
          row.acc_type = enum_account_type::App;
          row.version = 1; });
+   }
+   
+
+   void tonomy::newapp(
+       string app_name,
+       string description,
+       checksum256 username_hash,
+       string logo_url,
+       string origin,
+       public_key key)
+   {
+      // TODO in the future only an organization type can create an app
+      // check the transaction is signed by the `id.tmy` account
+      eosio::require_auth(get_self());
+
+      checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
+
+      // generate new random account name
+      const eosio::name random_name = random_account_name(username_hash, description_hash, enum_account_type::App);
+
+      // use the password_key public key for the owner authority
+      authority key_authority = create_authority_with_key(key);
+      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
+
+      // If the account name exists, this will fail
+      newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
+      newaccountaction.send(get_self(), random_name, key_authority, key_authority);
+      create_app(random_name, app_name, description, username_hash, logo_url, origin);
+     
+   }
+
+   void newappadmin(
+      name owner,  
+      string app_name,
+      string description,
+      checksum256 username_hash,
+      string logo_url,
+      string origin) {
+      require_auth(native::governance_name); // check authorization is gov.tmy
+      checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
+
+      // Check the owner account type is Person
+      // account_type_table account_type(get_self(), get_self().value);
+      // const auto owner_type_itr = account_type.find(owner.value);
+      // if (owner_type_itr == account_type.end() || owner_type_itr->acc_type != enum_account_type::Person) {
+      //    throwError("TCON1000", "Owner account is not of type Person");
+      // }
+
+      create_app(owner, app_name, description, username_hash, logo_url, origin);
    }
 
    void tonomy::adminsetapp(

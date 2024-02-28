@@ -64,6 +64,15 @@ namespace tonomysystem
     */
    class [[eosio::contract("tonomy")]] tonomy : public native
    {
+   private: 
+      void create_app( 
+          name account_name,
+          string app_name,
+          string description,
+          checksum256 username_hash,
+          string logo_url,
+          string origin);
+
    public:
       uint64_t inital_ram_bytes = 6000;
       uint64_t initial_cpu_weight_allocation = 1000;
