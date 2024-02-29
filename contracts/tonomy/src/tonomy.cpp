@@ -193,9 +193,6 @@ namespace tonomysystem
          row.account_name = account_name;
          row.acc_type = enum_account_type::App;
          row.version = 1; });
-     
-
-      
    }
    
 
