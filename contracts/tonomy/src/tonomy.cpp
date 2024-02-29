@@ -145,7 +145,7 @@ namespace tonomysystem
          row.version = 1; });
    }
 
-    void create_app(
+    void tonomy::create_app(
       eosio::name account_name,
       string app_name,
       string description,
@@ -153,7 +153,7 @@ namespace tonomysystem
       string logo_url,
       string origin)
    {
-      // Check the username is not already taken
+       // Check the username is not already taken
       auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
       const auto username_itr = apps_by_username_hash_itr.find(username_hash);
       if (username_itr != apps_by_username_hash_itr.end())
@@ -179,7 +179,7 @@ namespace tonomysystem
       // Store the password_salt and hashed username in table
       _apps.emplace(get_self(), [&](auto &app_itr)
                     {
-                           app_itr.account_name = owner;
+                           app_itr.account_name = account_name;
                            app_itr.app_name = app_name;
                            app_itr.description = description;
                            app_itr.logo_url = logo_url;
@@ -190,9 +190,12 @@ namespace tonomysystem
       account_type_table account_type(get_self(), get_self().value);
       account_type.emplace(get_self(), [&](auto &row)
                            {
-         row.account_name = owner;
+         row.account_name = account_name;
          row.acc_type = enum_account_type::App;
          row.version = 1; });
+     
+
+      
    }
    
 
@@ -221,10 +224,9 @@ namespace tonomysystem
       newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
       newaccountaction.send(get_self(), random_name, key_authority, key_authority);
       create_app(random_name, app_name, description, username_hash, logo_url, origin);
-     
    }
 
-   void newappadmin(
+   void tonomy::newappadmin(
       name owner,  
       string app_name,
       string description,
@@ -235,12 +237,11 @@ namespace tonomysystem
       checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
 
       // Check the owner account type is Person
-      // account_type_table account_type(get_self(), get_self().value);
-      // const auto owner_type_itr = account_type.find(owner.value);
-      // if (owner_type_itr == account_type.end() || owner_type_itr->acc_type != enum_account_type::Person) {
-      //    throwError("TCON1000", "Owner account is not of type Person");
-      // }
-
+      tonomy::account_type_table _account_type(get_self(), get_self().value);
+      const auto owner_type_itr = _account_type.find(owner.value);
+      if (owner_type_itr == _account_type.end() || owner_type_itr->acc_type != enum_account_type::Person) {
+         throwError("TCON1000", "Owner account is not of type Person");
+      }
       create_app(owner, app_name, description, username_hash, logo_url, origin);
    }
 

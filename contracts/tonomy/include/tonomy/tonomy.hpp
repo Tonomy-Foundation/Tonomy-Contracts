@@ -151,7 +151,7 @@ namespace tonomysystem
        * @param origin - domain associated with the app
        */
       [[eosio::action]] void newappadmin(
-          string owner,
+          name owner,
           string app_name,
           string description,
           checksum256 username_hash,
@@ -338,7 +338,7 @@ namespace tonomysystem
       using newperson_action = action_wrapper<"newperson"_n, &tonomy::newperson>;
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &tonomy::updatekeyper>;
       using newapp_action = action_wrapper<"newapp"_n, &tonomy::newapp>;
-      using newappadmin_action = action_wrapper<"newappadmin"_n, &tonomy::newappadmin>;
+      using newappadmin_action = action_wrapper<"c"_n, &tonomy::newappadmin>;
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
       using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
