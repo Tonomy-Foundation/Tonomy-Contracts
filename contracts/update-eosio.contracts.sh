@@ -8,4 +8,5 @@ git checkout v1.9.2
 cp ./contracts/eosio.bios/ ../ -ur
 cp ./contracts/demo.tmy/ ../ -ur
 cp ./contracts/eosio.token/ ../ -ur
+cp ./contracts/vesting.token/ ../ -ur
 rm eosio.contracts -rf
