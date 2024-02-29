@@ -159,7 +159,7 @@ namespace tonomysystem
       if (owner_type_itr == _account_type.end() || owner_type_itr->acc_type != enum_account_type::Person) {
          throwError("TCON1000", "Owner account is not of type Person");
       }
-      
+
       checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
 
       // generate new random account name
@@ -223,7 +223,7 @@ namespace tonomysystem
        string logo_url,
        string origin
    {
-      eosio::require_auth({owner, get_self()}); // this will successfully use the SSO permission
+      eosio::require_auth({owner, get_self()}); 
 
       create_app(owner, app_name, description, username_hash, logo_url, origin);
    }
