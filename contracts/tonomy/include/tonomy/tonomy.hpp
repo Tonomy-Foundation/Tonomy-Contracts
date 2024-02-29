@@ -66,7 +66,7 @@ namespace tonomysystem
    {
    private: 
       void create_app( 
-          name account_name,
+          name owner,
           string app_name,
           string description,
           checksum256 username_hash,
