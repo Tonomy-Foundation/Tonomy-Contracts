@@ -94,6 +94,13 @@ namespace tonomysystem
       return new_authority;
    }
 
+   authority create_authority_with_account(const eosio::name &account)
+   {
+      authority new_authority{.threshold = 1, .keys = {}, .accounts = {{.permission = permission_level(account, "active"_n), .weight = 1}}, .waits = {}};
+
+      return new_authority;
+   }
+
    // add the eosio.code permission to allow the account to call the smart contract properly
    // https://developers.eos.io/welcome/v2.1/smart-contract-guides/adding-inline-actions#step-1-adding-eosiocode-to-permissions
    permission_level create_eosio_code_permission_level(const name &account)
@@ -145,17 +152,20 @@ namespace tonomysystem
          row.version = 1; });
    }
 
-   void tonomy::newapp(
-       string app_name,
-       string description,
-       checksum256 username_hash,
-       string logo_url,
-       string origin,
-       public_key key)
+    void tonomy::create_app(
+      eosio::name owner,
+      string app_name,
+      string description,
+      checksum256 username_hash,
+      string logo_url,
+      string origin)
    {
-      // TODO in the future only an organization type can create an app
-      // check the transaction is signed by the `id.tmy` account
-      eosio::require_auth(get_self());
+      // Check the owner account type is Person
+      tonomy::account_type_table _account_type(get_self(), get_self().value);
+      const auto owner_type_itr = _account_type.find(owner.value);
+      if (owner_type_itr == _account_type.end() || owner_type_itr->acc_type != enum_account_type::Person) {
+         throwError("TCON1000", "Owner account is not of type Person");
+      }
 
       checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
 
@@ -163,14 +173,14 @@ namespace tonomysystem
       const eosio::name random_name = random_account_name(username_hash, description_hash, enum_account_type::App);
 
       // use the password_key public key for the owner authority
-      authority key_authority = create_authority_with_key(key);
-      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
+      authority account_authority = create_authority_with_account(owner);
+      account_authority .accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       // If the account name exists, this will fail
       newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      newaccountaction.send(get_self(), random_name, key_authority, key_authority);
+      newaccountaction.send(get_self(), random_name, account_authority , account_authority );
 
-      // Check the username is not already taken
+       // Check the username is not already taken
       auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
       const auto username_itr = apps_by_username_hash_itr.find(username_hash);
       if (username_itr != apps_by_username_hash_itr.end())
@@ -210,6 +220,32 @@ namespace tonomysystem
          row.account_name = random_name;
          row.acc_type = enum_account_type::App;
          row.version = 1; });
+   }
+
+   void tonomy::newapp(
+      eosio::name owner,
+       string app_name,
+       string description,
+       checksum256 username_hash,
+       string logo_url,
+       string origin)
+   {
+      eosio::require_auth({owner, get_self()}); 
+
+      create_app(owner, app_name, description, username_hash, logo_url, origin);
+   }
+
+   void tonomy::newappadmin(
+      eosio::name owner,  
+      string app_name,
+      string description,
+      checksum256 username_hash,
+      string logo_url,
+      string origin)
+{
+      require_auth(native::governance_name); // check authorization is gov.tmy
+
+      create_app(owner, app_name, description, username_hash, logo_url, origin);
    }
 
    void tonomy::adminsetapp(
