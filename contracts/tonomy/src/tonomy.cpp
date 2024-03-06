@@ -94,6 +94,13 @@ namespace tonomysystem
       return new_authority;
    }
 
+   authority create_authority_with_account(const eosio::name &account)
+   {
+      authority new_authority{.threshold = 1, .keys = {}, .accounts = {{.permission = permission_level(account, "active"_n), .weight = 1}}, .waits = {}};
+
+      return new_authority;
+   }
+
    // add the eosio.code permission to allow the account to call the smart contract properly
    // https://developers.eos.io/welcome/v2.1/smart-contract-guides/adding-inline-actions#step-1-adding-eosiocode-to-permissions
    permission_level create_eosio_code_permission_level(const name &account)
@@ -221,7 +228,7 @@ namespace tonomysystem
        string description,
        checksum256 username_hash,
        string logo_url,
-       string origin
+       string origin)
    {
       eosio::require_auth({owner, get_self()}); 
 
@@ -229,7 +236,7 @@ namespace tonomysystem
    }
 
    void tonomy::newappadmin(
-      name owner,  
+      eosio::name owner,  
       string app_name,
       string description,
       checksum256 username_hash,

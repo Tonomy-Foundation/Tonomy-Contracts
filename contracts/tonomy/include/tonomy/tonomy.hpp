@@ -103,7 +103,7 @@ namespace tonomysystem
       /**
        * Manually sets the details of an app (admin only)
        *
-       * @param account_name - name of the account
+       * @param owner - name of the account
        * @param app_name - name of the app
        * @param description - description of the app
        * @param username_hash - hash of the username
@@ -111,7 +111,7 @@ namespace tonomysystem
        * @param origin - domain associated with the app
        */
       [[eosio::action]] void adminsetapp(
-          name account_name,
+          name owner,
           string app_name,
           string description,
           checksum256 username_hash,
@@ -122,21 +122,22 @@ namespace tonomysystem
        * Create a new account for an app and registers it's details
        *
        * @details Creates a new account for an app and registers it's details.
-       *
+       *       
+       * @param owner - name of the account
        * @param name - name of the app
        * @param description - description of the app
        * @param username_hash - hash of the username
        * @param logo_url - url to the logo of the app
        * @param origin - domain associated with the app
-       * @param password_key - public key generated from the account's password
        */
       [[eosio::action]] void newapp(
+         name owner,
           string app_name,
           string description,
           checksum256 username_hash,
           string logo_url,
-          string origin,
-          public_key key);
+          string origin
+         );
 
       /**
        * Create a new admin account for an app and registers it's details
