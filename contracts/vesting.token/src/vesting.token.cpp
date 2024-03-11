@@ -1,12 +1,14 @@
 #include <vesting.token/vesting.token.hpp>
 
 namespace vestingtoken {
+
     void vestingToken::updatedate(eosio::time_point_sec newStartDate) {
         require_auth(get_self());
         startDate startDate(get_self(), get_self().value);
         startDate.set(newStartDate, get_self());
     }
-    void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, VestingCategory category) {
+
+    void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, vesting_category category) {
         // Only the contract owner can call this function
         require_auth(get_self());
 
@@ -17,47 +19,47 @@ namespace vestingtoken {
         eosio::check(amount.amount > 0, "Amount must be greater than 0");
 
         // Create a new vesting schedule
-        vesting_schedules vestingTable(get_self(), holder.value);
-        auto iter = vestingTable.end();
+        vesting_allocations vesting_table(get_self(), holder.value);
+        auto iter = vesting_table.end();
 
-        vestingTable.emplace(get_self(), [&](auto& row) {
+        vesting_table.emplace(get_self(), [&](auto& row) {
             row.holder = holder;
-            row.totalTokens = amount;
-            row.tokensClaimed = asset(0, amount.symbol);
+            row.total_allocated = amount;
+            row.tokens_claimed = asset(0, amount.symbol);
             row.allocated = eosio::current_time_point();
-            row.vestingCategory = category;
+            row.vesting_category_type = category;
         });
     }
+
     void vestingToken::withdraw(eosio::name holder){
         require_auth(holder);
         // Get the vesting schedule
-        vesting_schedules vestingTable(get_self(), holder.value);
-        for (auto iter = vestingTable.begin(); iter != vestingTable.end(); ++iter) {
-            const vested_allocation& vestingSchedule = *iter;
+        vesting_allocations vesting_table(get_self(), holder.value);
+        for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter) {
+            const vested_allocation& vesting_schedule = *iter;
 
-            VestingCategory category = vestingSchedule.vestingCategory;
+            vesting_category category = vesting_schedule.vesting_category_type;
 
-            eosio::time_point_sec startDelayDays = eosio::time_point_sec(category.startDelayDays * 24 * 60 * 60);
-            eosio::time_point_sec startDateValue = startDate(get_self(), get_self().value).get();
-            eosio::time_point_sec vesting_start = startDateValue + eosio::seconds(startDelayDays.sec_since_epoch()) + vestingSchedule.allocated;
-
-
+            eosio::time_point_sec start_delay_seconds = eosio::time_point_sec(category.start_delay_days * 24 * 60 * 60);
+            eosio::time_point_sec start_date_value = startDate(get_self(), get_self().value).get();
+            eosio::time_point_sec vesting_start = start_date_value + eosio::seconds(start_delay_seconds.sec_since_epoch()) + vesting_schedule.allocated;
+            
             // Calculate the tokens that can be claimed
             if (eosio::current_time_point() > eosio::time_point(vesting_start)) {
-                eosio::asset cliffTokens = vestingSchedule.totalTokens * category.cliffPeriodDays /
-                                        category.vestingPeriodDays;
+                eosio::asset cliff_tokens = vesting_schedule.total_allocated * category.cliff_period_days /
+                                        category.vesting_period_days;
                 
                 eosio::microseconds microseconds_elapsed = eosio::current_time_point() - vesting_start;
                 double days_elapsed = microseconds_elapsed.count() / 1000000.0 / 60 / 60 / 24;
-                eosio::asset claimable = (vestingSchedule.totalTokens - cliffTokens) * days_elapsed / category.vestingPeriodDays;
+                eosio::asset claimable = (vesting_schedule.total_allocated - cliff_tokens) * days_elapsed / category.vesting_period_days;
 
-                if (!vestingSchedule.cliffPeriodClaimed) {
-                    claimable += cliffTokens;
+                if (!vesting_schedule.cliff_period_claimed) {
+                    claimable += cliff_tokens;
                 }
 
-                vestingTable.modify(iter, get_self(), [&](auto& row) {
-                    row.tokensClaimed += claimable;
-                    row.cliffPeriodClaimed = true;
+                vesting_table.modify(iter, get_self(), [&](auto& row) {
+                    row.tokens_claimed += claimable;
+                    row.cliff_period_claimed = true;
                 });
 
                 // Transfer the tokens to the holder

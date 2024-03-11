@@ -16,13 +16,13 @@ namespace vestingtoken {
     using eosio::check;
 
     typedef eosio::singleton<"startdate"_n, eosio::time_point_sec> startDate;
-    struct VestingCategory {
-        int cliffPeriodDays;
-        int startDelayDays;
-        int vestingPeriodDays;
+    struct vesting_category  {
+        int cliff_period_days;
+        int start_delay_days;
+        int vesting_period_days;
     };
 
-    std::map<int, VestingCategory> vestingCategories = {
+    static const std::map<int, vesting_category> vesting_categories = {
         {1, {6*30, 0, 12*30}}, // private sale #1
         {2, {0, 3*30, 24*30}}  // team & Ecosystem
         // Add other categories as needed
@@ -37,26 +37,28 @@ namespace vestingtoken {
         // Define the structure of a vesting schedule
         struct [[eosio::table]] vested_allocation {
             eosio::name holder;
-            eosio::asset totalTokens;
-            eosio::asset tokensClaimed;
+            eosio::asset total_allocated;
+            eosio::asset tokens_claimed;
             eosio::time_point_sec allocated;
-            VestingCategory vestingCategory;
-            bool cliffPeriodClaimed;
-            uint64_t primary_key() const { return holder.value; }
-            EOSLIB_SERIALIZE(struct vested_allocation, (holder)(totalTokens)
-            (tokensClaimed)(allocated)(vestingCategory)(cliffPeriodClaimed))
+            vesting_category vesting_category_type;
+            bool cliff_period_claimed;
+            uint64_t primary_key() const {
+                return allocated.sec_since_epoch();
+            }
+            EOSLIB_SERIALIZE(struct vested_allocation, (holder)(total_allocated)
+            (tokens_claimed)(allocated)(vesting_category_type)(cliff_period_claimed))
         };
 
         // Define the mapping of vesting schedules
-        typedef eosio::multi_index<"vestschedule"_n, vested_allocation> vesting_schedules;
+        typedef eosio::multi_index<"allocation"_n, vested_allocation> vesting_allocations;
 
         /**
         * @details Updates the start date for vesting schedules to a new specified date
         *
-        * @param newStartDate - The new start date for vesting schedules.
+        * @param new_starte_date - The new start date for vesting schedules.
         */
         [[eosio::action]]
-        void updatedate(eosio::time_point_sec newStartDate);
+        void updatedate(eosio::time_point_sec new_starte_date);
 
         /**
         * @details Assigns tokens to a holder with a specified vesting category.
@@ -66,7 +68,7 @@ namespace vestingtoken {
         * @param category - The vesting category for the assigned tokens.
         */
         [[eosio::action]]
-        void assigntokens(eosio::name holder, eosio::asset amount, VestingCategory category);
+        void assigntokens(eosio::name holder, eosio::asset amount, vesting_category category);
 
         /**
         * @details Allows a holder to withdraw vested tokens if the vesting conditions are met.
