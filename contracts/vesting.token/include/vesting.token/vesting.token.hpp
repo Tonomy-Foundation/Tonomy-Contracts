@@ -50,12 +50,29 @@ namespace vestingtoken {
         // Define the mapping of vesting schedules
         typedef eosio::multi_index<"vestschedule"_n, vested_allocation> vesting_schedules;
 
+        /**
+        * @details Updates the start date for vesting schedules to a new specified date
+        *
+        * @param newStartDate - The new start date for vesting schedules.
+        */
         [[eosio::action]]
         void updatedate(eosio::time_point_sec newStartDate);
 
+        /**
+        * @details Assigns tokens to a holder with a specified vesting category.
+        *
+        * @param holder - The account name of the token holder.
+        * @param amount - The amount of tokens to be assigned.
+        * @param category - The vesting category for the assigned tokens.
+        */
         [[eosio::action]]
         void assigntokens(eosio::name holder, eosio::asset amount, VestingCategory category);
 
+        /**
+        * @details Allows a holder to withdraw vested tokens if the vesting conditions are met.
+        *
+        * @param holder - The account name of the token holder.
+        */
         [[eosio::action]]
         void withdraw(eosio::name holder);
 
