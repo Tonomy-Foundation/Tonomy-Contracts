@@ -1,72 +1,72 @@
 #include <vesting.token/vesting.token.hpp>
 
-namespace vestingtoken
-{
-    void vestingtoken::setconfig(uint64_t default_vesting_period_seconds) {
-    require_auth(get_self());
-    cfg.set(config{.default_vesting_period =
-                        seconds(default_vesting_period_seconds)},
-            get_self());
+namespace vestingtoken {
+    void vestingToken::updatedate(eosio::time_point_sec newStartDate) {
+        require_auth(get_self());
+        startDate startDate(get_self(), get_self().value);
+        startDate.set(newStartDate, get_self());
     }
+    void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, VestingCategory category) {
+        // Only the contract owner can call this function
+        require_auth(get_self());
 
-    void vestingtoken::on_transfer(name from, name to, asset quantity,
-                                string memo) {
-    if (from == get_self()) {
-        // we're sending tokens, do nothing additional
-        return;
+        // Check the symbol is correct and valid
+        auto sym = amount.symbol;
+        eosio::check(sym == system_resource_currency, "Symbol does not match system resource currency");
+        eosio::check(sym.precision() == system_resource_currency.precision(), "Symbol precision does not match");
+        eosio::check(amount.amount > 0, "Amount must be greater than 0");
+
+        // Create a new vesting schedule
+        vesting_schedules vestingTable(get_self(), holder.value);
+        auto iter = vestingTable.end();
+
+        vestingTable.emplace(get_self(), [&](auto& row) {
+            row.holder = holder;
+            row.totalTokens = amount;
+            row.tokensClaimed = asset(0, amount.symbol);
+            row.allocated = eosio::current_time_point();
+            row.vestingCategory = category;
+        });
     }
+    void vestingToken::withdraw(eosio::name holder){
+        require_auth(holder);
+        // Get the vesting schedule
+        vesting_schedules vestingTable(get_self(), holder.value);
+        for (auto iter = vestingTable.begin(); iter != vestingTable.end(); ++iter) {
+            const vested_allocation& vestingSchedule = *iter;
 
-    check(to == get_self(), "contract is not involved in this transfer");
-    check(quantity.symbol.is_valid(), "invalid quantity");
-    // prevent RAM DoS by restricting access
-    check(quantity.amount >= 10000, "must vest more than 1 token");
-    check(quantity.symbol == TONOMY_SYMBOL,
-            "invalid token symbol");
+            VestingCategory category = vestingSchedule.vestingCategory;
 
-    name vest_to = name(memo);
-    check(is_account(vest_to),
-            "must provide an existing account as memo that can withdraw the funds "
-            "after the vesting period");
+            eosio::time_point_sec startDelayDays = eosio::time_point_sec(category.startDelayDays * 24 * 60 * 60);
+            eosio::time_point_sec startDateValue = startDate(get_self(), get_self().value).get();
+            eosio::time_point_sec vesting_start = startDateValue + eosio::seconds(startDelayDays.sec_since_epoch()) + vestingSchedule.allocated;
 
-    config c = get_config();
-    vests_t vests(get_self(), vest_to.value);
-    // _self must pay during notify
-    vests.emplace(get_self(), [&](vest& v) {
-        v.id = vests.available_primary_key();
-        v.quantity = quantity;
-        v.matures_at = current_time_point() + c.default_vesting_period;
-    });
-    }
 
-    void vestingtoken::withdraw(eosio::name to) {
-    // anyone can initiate a withdraw
-    vests_t vests(get_self(), to.value);
-    auto time_index = vests.get_index<"time"_n>();
+            // Calculate the tokens that can be claimed
+            if (eosio::current_time_point() > eosio::time_point(vesting_start)) {
+                eosio::asset cliffTokens = vestingSchedule.totalTokens * category.cliffPeriodDays /
+                                        category.vestingPeriodDays;
+                
+                eosio::microseconds microseconds_elapsed = eosio::current_time_point() - vesting_start;
+                double days_elapsed = microseconds_elapsed.count() / 1000000.0 / 60 / 60 / 24;
+                eosio::asset claimable = (vestingSchedule.totalTokens - cliffTokens) * days_elapsed / category.vestingPeriodDays;
 
-    auto it = time_index.lower_bound(0);
-    check(it != time_index.end(), "no vestings found");
-    auto now = current_time_point();
-    check(it->matures_at < now, "no matured vestings found");
+                if (!vestingSchedule.cliffPeriodClaimed) {
+                    claimable += cliffTokens;
+                }
 
-    action(permission_level{get_self(), "active"_n}, "eosio.token"_n,
-            "transfer"_n,
-            make_tuple(get_self(), to, it->quantity,
-                        std::string("Withdraw from vesting contract")))
-        .send();
+                vestingTable.modify(iter, get_self(), [&](auto& row) {
+                    row.tokensClaimed += claimable;
+                    row.cliffPeriodClaimed = true;
+                });
 
-    time_index.erase(it);
-    }
-
-    void vestingtoken::changevest(eosio::name to, uint64_t vest_id,
-                                time_point_sec new_matures_at) {
-    require_auth(get_self());
-    vests_t vests(get_self(), to.value);
-    auto it = vests.find(vest_id);
-    check(it != vests.end(), "vesting does not exist");
-
-    check(new_matures_at > current_time_point() - days(1),
-            "cannot set vesting end date so far into the past");
-
-    vests.modify(it, same_payer, [&](auto& v) { v.matures_at = new_matures_at; });
+                // Transfer the tokens to the holder
+                eosio::action({get_self(), "active"_n},
+                token_contract_name,
+                "transfer"_n,
+                std::make_tuple(get_self(), holder, claimable, std::string("Unlocked vested coins")))
+                .send();
+            }
+        }
     }
 }
