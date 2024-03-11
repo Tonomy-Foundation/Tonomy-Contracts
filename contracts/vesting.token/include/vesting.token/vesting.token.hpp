@@ -17,9 +17,9 @@ namespace vestingtoken {
 
     typedef eosio::singleton<"startdate"_n, eosio::time_point_sec> startDate;
     struct vesting_category  {
-        int cliff_period_days;
-        int start_delay_days;
-        int vesting_period_days;
+        uint32_t  cliff_period_days;
+        uint32_t  start_delay_days;
+        uint32_t  vesting_period_days;
     };
 
     static const std::map<int, vesting_category> vesting_categories = {
