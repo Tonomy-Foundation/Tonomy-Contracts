@@ -15,7 +15,9 @@ namespace vestingtoken {
     using std::string;
     using eosio::check;
 
-    typedef eosio::singleton<"startdate"_n, eosio::time_point_sec> startDate;
+    typedef eosio::singleton<"startdate"_n, eosio::time_point_sec> start_date;
+    static const uint32_t SECONDS_IN_DAY = 24*60*60;
+
     struct vesting_category  {
         uint32_t  cliff_period_days;
         uint32_t  start_delay_days;
