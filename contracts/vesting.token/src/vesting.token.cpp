@@ -58,10 +58,10 @@ namespace vestingtoken {
             eosio::time_point_sec vesting_start = start_date_value + start_delay_seconds.sec_since_epoch() + vesting_schedule.allocated.sec_since_epoch();
 
             // Calculate the cliff end time
-            eosio::time_point_sec cliff_end_time = vesting_start + eosio::seconds(category.cliff_period_days * SECONDS_IN_DAY);
+            eosio::time_point_sec cliff_end_time = vesting_start + eosio::time_point_sec(category.cliff_period_days * SECONDS_IN_DAY).sec_since_epoch();
 
             // Calculate the vesting end time
-            eosio::time_point_sec vesting_end_time = vesting_start + eosio::seconds(category.vesting_period_days * SECONDS_IN_DAY);
+            eosio::time_point_sec vesting_end_time = vesting_start + eosio::time_point_sec(category.vesting_period_days * SECONDS_IN_DAY).sec_since_epoch();
 
             // Calculate the tokens that can be claimed
             const auto current_time = eosio::current_time_point().sec_since_epoch();
