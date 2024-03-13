@@ -76,7 +76,7 @@ namespace vestingtoken {
             uint32_t vesting_end_time_since_epoch = vesting_start_since_epoch + (category.vesting_period_seconds * SECONDS_IN_DAY);
 
             // Check if vesting period after cliff has started
-            eosio::check(now.sec_since_epoch() >= cliff_end_since_epoch, "Vesting period after cliff has not started");
+            eosio::check(now.sec_since_epoch() >= cliff_end_since_epoch, "Vesting period has not started");
 
             // Check if vesting period after cliff has started
             eosio::check(now.sec_since_epoch() >= vesting_end_time_since_epoch, "Vesting period after cliff has not started");
