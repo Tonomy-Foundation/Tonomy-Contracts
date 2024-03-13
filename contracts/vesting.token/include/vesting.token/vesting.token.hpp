@@ -73,7 +73,7 @@ namespace vestingtoken {
         * @param category - The vesting category for the assigned tokens.
         */
         [[eosio::action]]
-        void assigntokens(eosio::name holder, eosio::asset amount, vesting_category category);
+        void assigntokens(eosio::name holder, eosio::asset amount, int category);
 
         /**
         * @details Allows a holder to withdraw vested tokens if the vesting conditions are met.

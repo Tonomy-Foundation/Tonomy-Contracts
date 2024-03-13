@@ -8,9 +8,17 @@ namespace vestingtoken {
         launch_date = launch_date;
     }
 
-    void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, vesting_category category) {
+    void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, int category_id) {
         // Only the contract owner can call this function
         require_auth(get_self());
+        
+        // Check if the provided category exists in the map
+        auto category_iter = vesting_categories.find(category_id);
+        eosio::check(category_iter != vesting_categories.end(), "Invalid vesting category");
+
+        // If the category exists, you can access it like this:
+        vesting_category category = category_iter->second;
+
 
         // Check the symbol is correct and valid
         auto sym = amount.symbol;
