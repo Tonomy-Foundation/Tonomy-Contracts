@@ -2,10 +2,12 @@
 
 namespace vestingtoken {
 
-    void vestingToken::updatedate(eosio::time_point sales_date, eosio::time_point launch_date) {
+    void vestingToken::updatedate(string sales_date_str, string launch_date_str) {
         require_auth(get_self());
-        sales_start_date = sales_date;
-        launch_date = launch_date;
+        sales_start_date sales_start_date(get_self(), get_self().value);
+        sales_start_date.set(eosio::time_point_sec::from_iso_string(sales_date_str), get_self());
+        launch_date launch_date(get_self(), get_self().value);
+        launch_date.set(eosio::time_point_sec::from_iso_string(launch_date_str), get_self());
     }
 
     void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, int category_id) {
@@ -41,13 +43,16 @@ namespace vestingtoken {
 
         // Calculate the number of seconds since sales start
         const eosio::time_point_sec now = eosio::current_time_point();
-        int64_t allocated_after_sales_start_seconds = now.sec_since_epoch() - sales_start_date.sec_since_epoch();
+        sales_start_date sales_start_singleton(get_self(), get_self().value);
+        const eosio::time_point_sec sales_start_date_value = sales_start_singleton.get_or_default(); 
+
+        int64_t allocated_after_sales_start_seconds = now.sec_since_epoch() - sales_start_date_value.sec_since_epoch();
 
         vesting_table.emplace(get_self(), [&](auto& row) {
             row.holder = holder;
             row.total_allocated = amount;
             row.tokens_claimed = asset(0, amount.symbol);
-            row.allocated = allocated_after_sales_start_seconds;
+            row.seconds_since_sales_start = allocated_after_sales_start_seconds;
             row.vesting_category_type = category;
         });
     }
@@ -62,12 +67,13 @@ namespace vestingtoken {
             const vested_allocation& vesting_allocation = *iter;
 
             vesting_category category = vesting_allocation.vesting_category_type;
-
-            uint32_t vesting_start_since_epoch = launch_date.sec_since_epoch() + vesting_allocation.allocated + (category.start_delay_days * SECONDS_IN_DAY);
-            uint32_t cliff_end_since_epoch = vesting_start_since_epoch + (category.cliff_period_days * SECONDS_IN_DAY);
+            launch_date launch_date_singleton(get_self(), get_self().value);
+            const eosio::time_point_sec launch_date_value = launch_date_singleton.get_or_default(); 
+            uint32_t vesting_start_since_epoch = launch_date_value.sec_since_epoch() + vesting_allocation.seconds_since_sales_start + (category.start_delay_seconds * SECONDS_IN_DAY);
+            uint32_t cliff_end_since_epoch = vesting_start_since_epoch + (category.cliff_period_seconds * SECONDS_IN_DAY);
             
             // Calculate the vesting end time
-            uint32_t vesting_end_time_since_epoch = vesting_start_since_epoch + (category.vesting_period_days * SECONDS_IN_DAY);
+            uint32_t vesting_end_time_since_epoch = vesting_start_since_epoch + (category.vesting_period_seconds * SECONDS_IN_DAY);
 
             // Check if vesting period after cliff has started
             eosio::check(now.sec_since_epoch() >= cliff_end_since_epoch, "Vesting period after cliff has not started");
@@ -75,11 +81,11 @@ namespace vestingtoken {
             // Check if vesting period after cliff has started
             eosio::check(now.sec_since_epoch() >= vesting_end_time_since_epoch, "Vesting period after cliff has not started");
 
-            eosio::asset cliff_tokens = vesting_allocation.total_allocated * category.cliff_period_days /
-                                            category.vesting_period_days;
+            eosio::asset cliff_tokens = vesting_allocation.total_allocated * category.cliff_period_seconds /
+                                            category.vesting_period_seconds;
 
             uint32_t seconds_elapsed = now.sec_since_epoch() - vesting_start_since_epoch;
-            eosio::asset claimable = (vesting_allocation.total_allocated - cliff_tokens) * seconds_elapsed / category.vesting_period_days;
+            eosio::asset claimable = (vesting_allocation.total_allocated - cliff_tokens) * seconds_elapsed / category.vesting_period_seconds;
 
             if (!vesting_allocation.cliff_period_claimed) {
                 claimable += cliff_tokens;

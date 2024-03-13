@@ -15,20 +15,20 @@ namespace vestingtoken {
     using std::string;
     using eosio::check;
 
-    eosio::time_point sales_start_date;
-    eosio::time_point launch_date;
+    typedef eosio::singleton<"salesdate"_n, eosio::time_point_sec> sales_start_date;
+    typedef eosio::singleton<"launchdate"_n, eosio::time_point_sec> launch_date;
 
     static const uint32_t SECONDS_IN_DAY = 24*60*60;
 
     struct vesting_category  {
-        uint32_t  cliff_period_days;
-        uint32_t  start_delay_days;
-        uint32_t  vesting_period_days;
+        uint32_t  cliff_period_seconds;
+        uint32_t  start_delay_seconds;
+        uint32_t  vesting_period_seconds;
     };
 
     static const std::map<int, vesting_category> vesting_categories = {
-        {1, {6*30, 0, 12*30}}, // private sale #1
-        {2, {0, 3*30, 24*30}}  // team & Ecosystem
+        {1, {6*30*SECONDS_IN_DAY, 0, 12*30*SECONDS_IN_DAY}}, // private sale #1
+        {2, {0, 3*30*SECONDS_IN_DAY, 24*30*SECONDS_IN_DAY}}  // team & Ecosystem
         // Add other categories as needed
     };
 
@@ -43,14 +43,14 @@ namespace vestingtoken {
             eosio::name holder;
             eosio::asset total_allocated;
             eosio::asset tokens_claimed;
-            uint32_t allocated;
+            uint32_t seconds_since_sales_start;
             vesting_category vesting_category_type;
             bool cliff_period_claimed;
             uint64_t primary_key() const {
-                return allocated;
+                return seconds_since_sales_start;
             }
             EOSLIB_SERIALIZE(struct vested_allocation, (holder)(total_allocated)
-            (tokens_claimed)(allocated)(vesting_category_type)(cliff_period_claimed))
+            (tokens_claimed)(seconds_since_sales_start)(vesting_category_type)(cliff_period_claimed))
         };
 
         // Define the mapping of vesting schedules
@@ -63,7 +63,7 @@ namespace vestingtoken {
         * @param launch_date - The new start date for vesting schedules.
         */
         [[eosio::action]]
-        void updatedate(eosio::time_point sales_start_date, eosio::time_point launch_date);
+        void updatedate(string sales_start_date, string launch_date);
 
         /**
         * @details Assigns tokens to a holder with a specified vesting category.
