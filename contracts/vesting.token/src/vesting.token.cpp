@@ -4,11 +4,14 @@ namespace vestingtoken {
 
     void vestingToken::updatedate(string sales_date_str, string launch_date_str) {
         require_auth(get_self());
-        sales_start_date sales_start_date(get_self(), get_self().value);
-        sales_start_date.set(eosio::time_point_sec::from_iso_string(sales_date_str), get_self());
-        launch_date launch_date(get_self(), get_self().value);
-        launch_date.set(eosio::time_point_sec::from_iso_string(launch_date_str), get_self());
+        vestingtoken::launch_and_sales_dates dates;
+        dates.sales_start_date = eosio::time_point_sec::from_iso_string(sales_date_str);
+        dates.launch_date = eosio::time_point_sec::from_iso_string(launch_date_str);
+
+        vestingtoken::launch_sales_dates launch_sales_dates_singleton(get_self(), get_self().value);
+        launch_sales_dates_singleton.set(dates, get_self());
     }
+
 
     void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, int category_id) {
         // Only the contract owner can call this function
@@ -30,7 +33,6 @@ namespace vestingtoken {
 
         // Create a new vesting schedule
         vesting_allocations vesting_table(get_self(), holder.value);
-        auto iter = vesting_table.end();
 
         // Check the number of rows for the user
         uint32_t num_rows = 0;
@@ -43,9 +45,10 @@ namespace vestingtoken {
 
         // Calculate the number of seconds since sales start
         const eosio::time_point_sec now = eosio::current_time_point();
-        sales_start_date sales_start_singleton(get_self(), get_self().value);
-        const eosio::time_point_sec sales_start_date_value = sales_start_singleton.get_or_default(); 
-
+        vestingtoken::launch_sales_dates launch_sales_dates_singleton(get_self(), get_self().value);
+        vestingtoken::launch_and_sales_dates dates = launch_sales_dates_singleton.get();
+        eosio::time_point_sec sales_start_date_value = dates.sales_start_date;
+        
         int64_t allocated_after_sales_start_seconds = now.sec_since_epoch() - sales_start_date_value.sec_since_epoch();
 
         vesting_table.emplace(get_self(), [&](auto& row) {
@@ -67,13 +70,16 @@ namespace vestingtoken {
             const vested_allocation& vesting_allocation = *iter;
 
             vesting_category category = vesting_allocation.vesting_category_type;
-            launch_date launch_date_singleton(get_self(), get_self().value);
-            const eosio::time_point_sec launch_date_value = launch_date_singleton.get_or_default(); 
-            uint32_t vesting_start_since_epoch = launch_date_value.sec_since_epoch() + vesting_allocation.seconds_since_sales_start + (category.start_delay_seconds * SECONDS_IN_DAY);
-            uint32_t cliff_end_since_epoch = vesting_start_since_epoch + (category.cliff_period_seconds * SECONDS_IN_DAY);
+
+            vestingtoken::launch_sales_dates launch_sales_dates_singleton(get_self(), get_self().value);
+            vestingtoken::launch_and_sales_dates dates = launch_sales_dates_singleton.get();
+            eosio::time_point_sec launch_date_value = dates.launch_date;
+
+            uint32_t vesting_start_since_epoch = launch_date_value.sec_since_epoch() + vesting_allocation.seconds_since_sales_start + (category.start_delay_seconds);
+            uint32_t cliff_end_since_epoch = vesting_start_since_epoch + (category.cliff_period_seconds);
             
             // Calculate the vesting end time
-            uint32_t vesting_end_time_since_epoch = vesting_start_since_epoch + (category.vesting_period_seconds * SECONDS_IN_DAY);
+            uint32_t vesting_end_time_since_epoch = vesting_start_since_epoch + (category.vesting_period_seconds);
 
             // Check if vesting period after cliff has started
             eosio::check(now.sec_since_epoch() >= cliff_end_since_epoch, "Vesting period has not started");
@@ -84,18 +90,34 @@ namespace vestingtoken {
             eosio::asset cliff_tokens = vesting_allocation.total_allocated * category.cliff_period_seconds /
                                             category.vesting_period_seconds;
 
-            uint32_t seconds_elapsed = now.sec_since_epoch() - vesting_start_since_epoch;
-            eosio::asset claimable = (vesting_allocation.total_allocated - cliff_tokens) * seconds_elapsed / category.vesting_period_seconds;
+            // double vesting_schedule_completed_fraction = (now.sec_since_epoch() - vesting_start_since_epoch ) / category.vesting_period_seconds;
 
-            if (!vesting_allocation.cliff_period_claimed) {
-                claimable += cliff_tokens;
+            // if (!vesting_allocation.cliff_period_claimed) {
+            //     vesting_schedule_completed_fraction += cliff_tokens;
+            // }
+
+            // vesting_table.modify(iter, get_self(), [&](auto& row) {
+            //     row.tokens_claimed += vesting_schedule_completed_fraction;
+            //     row.cliff_period_claimed = true;
+            // });
+              // Calculate the total claimable amount
+            double claimable = 0.0;
+            if (now.sec_since_epoch() >= vesting_end_time_since_epoch) {
+                claimable = vesting_allocation.total_allocated.amount;
+            } else {
+                claimable = vesting_allocation.total_allocated.amount * (now.sec_since_epoch() - vesting_start_since_epoch) / category.vesting_period_seconds;
             }
 
-            vesting_table.modify(iter, get_self(), [&](auto& row) {
-                row.tokens_claimed += claimable;
-                row.cliff_period_claimed = true;
-            });
+            // Check if there are any unclaimed tokens
+            eosio::check(claimable > vesting_allocation.tokens_claimed.amount, "No unclaimed tokens available");
 
+            // Calculate the amount to claim
+            double to_claim = claimable - vesting_allocation.tokens_claimed.amount;
+
+            // Update the tokens_claimed field
+            vesting_table.modify(iter, get_self(), [&](auto& row) {
+                row.tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
+            });
             // Transfer the tokens to the holder
             eosio::action({get_self(), "active"_n},
             token_contract_name,
