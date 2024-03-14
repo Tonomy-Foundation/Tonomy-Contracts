@@ -15,14 +15,14 @@ namespace vestingtoken {
     using std::string;
     using eosio::check;
 
-    struct launch_and_sales_dates {
-        eosio::time_point_sec sales_start_date;
+    struct vesting_settings {
+         eosio::time_point_sec sales_start_date;
         eosio::time_point_sec launch_date;
 
-        EOSLIB_SERIALIZE(launch_and_sales_dates, (sales_start_date)(launch_date))
+        EOSLIB_SERIALIZE(vesting_settings, (sales_start_date)(launch_date))
     };
 
-    typedef eosio::singleton<"launchsales"_n, launch_and_sales_dates> launch_sales_dates;
+    typedef eosio::singleton<"settings"_n, vesting_settings> settings;
 
     static const uint32_t SECONDS_IN_DAY = 24*60*60;
 
