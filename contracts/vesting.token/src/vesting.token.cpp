@@ -13,7 +13,6 @@ namespace vestingtoken {
         launch_sales_dates_singleton.set(dates, get_self());
     }
 
-
     void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, int category_id) {
         // Only the contract owner can call this function
         require_auth(get_self());
@@ -45,12 +44,16 @@ namespace vestingtoken {
         }
 
         // Calculate the number of seconds since sales start
-        const eosio::time_point_sec now = eosio::current_time_point();
+        uint32_t now_since_epoch = eosio::current_time_point().sec_since_epoch();
         vestingtoken::settings launch_sales_dates_singleton(get_self(), get_self().value);
-        vestingtoken::vesting_settings dates = launch_sales_dates_singleton.get();
-        eosio::time_point_sec sales_start_date_value = dates.sales_start_date;
         
-        uint32_t allocated_after_sales_start_seconds = now.sec_since_epoch() - sales_start_date_value.sec_since_epoch();
+        vestingtoken::vesting_settings dates = launch_sales_dates_singleton.get();
+        uint32_t sales_start_date_since_epoch = dates.sales_start_date.sec_since_epoch();
+        
+        uint32_t allocated_after_sales_start_seconds = 0;
+        if (now_since_epoch > sales_start_date_since_epoch) {
+            allocated_after_sales_start_seconds = now_since_epoch - sales_start_date_since_epoch;
+        }
 
         vesting_table.emplace(get_self(), [&](auto& row) {
             row.holder = holder;
@@ -60,6 +63,7 @@ namespace vestingtoken {
             row.vesting_category_type = category;
         });
     }
+
     void vestingToken::withdraw(eosio::name holder) {
         require_auth(holder);
 
