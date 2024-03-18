@@ -52,7 +52,7 @@ namespace vestingtoken {
         vestingtoken::vesting_settings dates = launch_sales_dates_singleton.get();
         uint32_t sales_start_date_since_epoch = dates.sales_start_date.sec_since_epoch();
 
-        check (now_since_epoch >= sales_start_date_since_epoch, "Sale has not yet started")
+        check (now_since_epoch >= sales_start_date_since_epoch, "Sale has not yet started");
         
         uint32_t allocated_after_sales_start_seconds = 0;
         allocated_after_sales_start_seconds = now_since_epoch - sales_start_date_since_epoch;
@@ -106,7 +106,7 @@ namespace vestingtoken {
             vesting_table.modify(iter, get_self(), [&](auto& row) {
                 row.tokens_claimed += tokens_claimed;
             });
-            
+
             // Transfer the tokens to the holder
             eosio::action({get_self(), "active"_n},
             token_contract_name,
