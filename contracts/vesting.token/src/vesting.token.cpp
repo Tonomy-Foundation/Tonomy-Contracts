@@ -13,7 +13,7 @@ namespace vestingtoken {
         launch_sales_dates_singleton.set(dates, get_self());
     }
 
-    void vestingToken::assigntokens(eosio::name holder, eosio::asset amount, int category_id) {
+    void vestingToken::assigntokens(eosio::name sender, eosio::name holder, eosio::asset amount, int category_id) {
         // Only the contract owner can call this function
         require_auth(get_self());
         
@@ -27,6 +27,7 @@ namespace vestingtoken {
 
         // Check the symbol is correct and valid
         auto sym = amount.symbol;
+        eosio::check(sym.is_valid(), "invalid amount symbol");
         eosio::check(sym == system_resource_currency, "Symbol does not match system resource currency");
         eosio::check(sym.precision() == system_resource_currency.precision(), "Symbol precision does not match");
         eosio::check(amount.amount > 0, "Amount must be greater than 0");
@@ -65,6 +66,12 @@ namespace vestingtoken {
             row.seconds_since_sales_start = allocated_after_sales_start_seconds;
             row.vesting_category_type = category;
         });
+
+        eosio::action({get_self(), "active"_n},
+            token_contract_name,
+            "transfer"_n,
+            std::make_tuple(sender, get_self(), amount , std::string("Allocated vested funds")))
+            .send();    
     }
 
     void vestingToken::withdraw(eosio::name holder) {

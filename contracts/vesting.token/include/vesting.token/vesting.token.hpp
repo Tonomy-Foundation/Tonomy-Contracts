@@ -79,12 +79,13 @@ namespace vestingtoken {
         /**
         * @details Assigns tokens to a holder with a specified vesting category.
         *
+        * @param sender {name} - The account name of the sender who is assigning the tokens.
         * @param holder {name} - The account name of the token holder.
         * @param amount {asset} - The amount of tokens to be assigned.
         * @param category {integer} - The vesting category for the assigned tokens.
         */
         [[eosio::action]]
-        void assigntokens(eosio::name holder, eosio::asset amount, int category);
+        void assigntokens(eosio::name sender, eosio::name holder, eosio::asset amount, int category);
 
         /**
         * @details Allows a holder to withdraw vested tokens if the vesting conditions are met.
