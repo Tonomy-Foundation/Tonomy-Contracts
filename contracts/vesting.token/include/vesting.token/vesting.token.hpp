@@ -65,8 +65,13 @@ namespace vestingtoken {
         /**
         * @details Updates the start date for vesting schedules to a new specified date
         *
-        * @param sales_start_date - The new start date for vesting schedules.
-        * @param launch_date - The new start date for vesting schedules.
+        * @param sales_start_date {string} - The new start date for vesting schedules.
+        * @param launch_date {string} - The new start date for vesting schedules.
+        * @details
+        * Before any allocations can be executed, the start date should be set using this action.
+        * If the launch date is not known when the sale starts, set it to a long time in the future.
+        * 
+        * Example of the string format expected: "2024-04-01T24:00:00"
         */
         [[eosio::action]]
         void updatedate(string sales_start_date, string launch_date);
@@ -74,9 +79,9 @@ namespace vestingtoken {
         /**
         * @details Assigns tokens to a holder with a specified vesting category.
         *
-        * @param holder - The account name of the token holder.
-        * @param amount - The amount of tokens to be assigned.
-        * @param category - The vesting category for the assigned tokens.
+        * @param holder {name} - The account name of the token holder.
+        * @param amount {asset} - The amount of tokens to be assigned.
+        * @param category {integer} - The vesting category for the assigned tokens.
         */
         [[eosio::action]]
         void assigntokens(eosio::name holder, eosio::asset amount, int category);
@@ -84,7 +89,7 @@ namespace vestingtoken {
         /**
         * @details Allows a holder to withdraw vested tokens if the vesting conditions are met.
         *
-        * @param holder - The account name of the token holder.
+        * @param holder {name} - The account name of the token holder.
         */
         [[eosio::action]]
         void withdraw(eosio::name holder);

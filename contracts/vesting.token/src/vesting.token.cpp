@@ -38,6 +38,8 @@ namespace vestingtoken {
         uint32_t num_rows = 0;
         for (auto itr = vesting_table.begin(); itr != vesting_table.end(); ++itr) {
             ++num_rows;
+            // If the number of rows exceeds 20, throw an exception to prevent purchasing tokens more than 20 times.
+            // For more information, see https://swcregistry.io/docs/SWC-128/
             if (num_rows > 20) {
                 eosio::check(false, "Cannot purchase tokens more than 20 times.");
             }
@@ -49,11 +51,12 @@ namespace vestingtoken {
         
         vestingtoken::vesting_settings dates = launch_sales_dates_singleton.get();
         uint32_t sales_start_date_since_epoch = dates.sales_start_date.sec_since_epoch();
+
+        check (now_since_epoch >= sales_start_date_since_epoch, "Sale has not yet started")
         
         uint32_t allocated_after_sales_start_seconds = 0;
-        if (now_since_epoch > sales_start_date_since_epoch) {
-            allocated_after_sales_start_seconds = now_since_epoch - sales_start_date_since_epoch;
-        }
+        allocated_after_sales_start_seconds = now_since_epoch - sales_start_date_since_epoch;
+        
 
         vesting_table.emplace(get_self(), [&](auto& row) {
             row.holder = holder;
@@ -87,10 +90,10 @@ namespace vestingtoken {
             uint32_t vesting_end_time_since_epoch = vesting_start_since_epoch + category.vesting_period_seconds;
 
             // Check if vesting period after cliff has started
-            eosio::check(now_since_epoch >= cliff_end_since_epoch, "Vesting period has not started");
+            eosio::check(now_since_epoch >= cliff_end_since_epoch, "Vesting period after cliff has not started");
 
             // Calculate the total claimable amount
-            uint64_t claimable = 0;
+            int64_t claimable = 0;
             if (now_since_epoch >= vesting_end_time_since_epoch) {
                 claimable = vesting_allocation.total_allocated.amount;
             } else {
@@ -101,8 +104,9 @@ namespace vestingtoken {
 
             // Update the tokens_claimed field
             vesting_table.modify(iter, get_self(), [&](auto& row) {
-                row.tokens_claimed = tokens_claimed;
+                row.tokens_claimed += tokens_claimed;
             });
+            
             // Transfer the tokens to the holder
             eosio::action({get_self(), "active"_n},
             token_contract_name,
