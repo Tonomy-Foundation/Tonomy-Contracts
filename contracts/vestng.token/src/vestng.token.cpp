@@ -112,6 +112,7 @@ namespace vestingtoken {
             // Update the tokens_claimed field
             vesting_table.modify(iter, get_self(), [&](auto& row) {
                 row.tokens_claimed += tokens_claimed;
+                row.cliff_period_claimed = true;
             });
 
             // Transfer the tokens to the holder
