@@ -7,4 +7,4 @@ cd "${PARENT_PATH}"
 
 source ../compile_contract.sh
 
-compile_contract "${PARENT_PATH}" "vesting.token" "${BUILD_METHOD}"
+compile_contract "${PARENT_PATH}" "vestng.token" "${BUILD_METHOD}"

@@ -1,4 +1,4 @@
-// vesting.token.hpp
+// vestng.token.hpp
 
 #pragma once
 
@@ -14,6 +14,7 @@ namespace vestingtoken {
     using eosio::name;
     using std::string;
     using eosio::check;
+    using eosio::singleton;
 
     struct vesting_settings {
          eosio::time_point_sec sales_start_date;
@@ -34,11 +35,14 @@ namespace vestingtoken {
 
     static const std::map<int, vesting_category> vesting_categories = {
         {1, {6*30*SECONDS_IN_DAY, 0, 12*30*SECONDS_IN_DAY}}, // private sale #1
-        {2, {0, 3*30*SECONDS_IN_DAY, 24*30*SECONDS_IN_DAY}}  // team & Ecosystem
+        {2, {0, 3*30*SECONDS_IN_DAY, 24*30*SECONDS_IN_DAY}}, // team & Ecosystem
+        {3, {0, 3*30*SECONDS_IN_DAY, 24*30*SECONDS_IN_DAY}}, // team & Ecosystem
+        {4, {0, 3*30*SECONDS_IN_DAY, 24*30*SECONDS_IN_DAY}}, // team & Ecosystem
+
         // Add other categories as needed
     };
 
-    class [[eosio::contract("vesting.token")]] vestingToken : public eosio::contract {
+    class [[eosio::contract("vestng.token")]] vestingToken : public eosio::contract {
     public:
         using contract::contract;
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);

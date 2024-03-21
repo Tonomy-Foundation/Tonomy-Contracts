@@ -1,4 +1,4 @@
-#include <vesting.token/vesting.token.hpp>
+#include <vestng.token/vestng.token.hpp>
 
 namespace vestingtoken {
 
@@ -23,7 +23,6 @@ namespace vestingtoken {
 
         // If the category exists, you can access it like this:
         vesting_category category = category_iter->second;
-
 
         // Check the symbol is correct and valid
         auto sym = amount.symbol;
@@ -65,6 +64,7 @@ namespace vestingtoken {
             row.tokens_claimed = asset(0, amount.symbol);
             row.seconds_since_sales_start = allocated_after_sales_start_seconds;
             row.vesting_category_type = category;
+            row.cliff_period_claimed = false;
         });
 
         eosio::action({get_self(), "active"_n},
