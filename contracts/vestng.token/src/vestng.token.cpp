@@ -72,6 +72,8 @@ namespace vestingtoken
             row.vesting_category_type = category;
             row.cliff_period_claimed = false; });
 
+        eosio::require_recipient(holder);
+
         eosio::action({get_self(), "active"_n},
                       token_contract_name,
                       "transfer"_n,
