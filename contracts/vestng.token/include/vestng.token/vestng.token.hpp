@@ -37,12 +37,15 @@ namespace vestingtoken
     };
 
     static const std::map<int, vesting_category> vesting_categories = {
-        {1, {6 * 30 * SECONDS_IN_DAY, 0, 12 * 30 * SECONDS_IN_DAY}}, // private sale #1
-        {2, {0, 3 * 30 * SECONDS_IN_DAY, 24 * 30 * SECONDS_IN_DAY}}, // team & Ecosystem
-        {3, {0, 3 * 30 * SECONDS_IN_DAY, 24 * 30 * SECONDS_IN_DAY}}, // team & Ecosystem
-        {4, {0, 3 * 30 * SECONDS_IN_DAY, 24 * 30 * SECONDS_IN_DAY}}, // team & Ecosystem
+        {1, {6 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Seed Private Sale,
+        {2, {6 * 30 * SECONDS_IN_DAY, 6 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Strategic Partnerships Private Sale,
+        {3, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY}},   // Public Sale (DO NOT USED YET),
+        {4, {0 * 30 * SECONDS_IN_DAY, 1 * 365 * SECONDS_IN_DAY, 5 * 365 * SECONDS_IN_DAY}}, // Team, Ecosystem
+        {5, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 1 * 365 * SECONDS_IN_DAY}},  // Legal and Compliance
+        {6, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Reserves, Partnerships, Liquidly Allocation
+        {7, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 5 * 365 * SECONDS_IN_DAY}},  // Community and Marketing, Platform Dev, Infra Rewards
 
-        // Add other categories as needed
+        {999, {10, 10, 20}}, // TESTING ONLY
     };
 
     class [[eosio::contract("vestng.token")]] vestingToken : public eosio::contract
