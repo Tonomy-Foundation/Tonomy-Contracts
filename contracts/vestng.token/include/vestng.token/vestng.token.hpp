@@ -40,7 +40,7 @@ namespace vestingtoken
         {1, {6 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Seed Private Sale,
         {2, {6 * 30 * SECONDS_IN_DAY, 6 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Strategic Partnerships Private Sale,
         {3, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY}},   // Public Sale (DO NOT USED YET),
-        {4, {0 * 30 * SECONDS_IN_DAY, 1 * 365 * SECONDS_IN_DAY, 5 * 365 * SECONDS_IN_DAY}}, // Team, Ecosystem
+        {4, {0 * 30 * SECONDS_IN_DAY, 1 * 365 * SECONDS_IN_DAY, 5 * 365 * SECONDS_IN_DAY}}, // Team and Advisors, Ecosystem
         {5, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 1 * 365 * SECONDS_IN_DAY}},  // Legal and Compliance
         {6, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Reserves, Partnerships, Liquidly Allocation
         {7, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 5 * 365 * SECONDS_IN_DAY}},  // Community and Marketing, Platform Dev, Infra Rewards
