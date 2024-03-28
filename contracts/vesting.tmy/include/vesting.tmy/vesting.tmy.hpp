@@ -1,4 +1,4 @@
-// vestng.token.hpp
+// vesting.tmy.hpp
 
 #pragma once
 
@@ -48,7 +48,7 @@ namespace vestingtoken
         {999, {10, 10, 20}}, // TESTING ONLY
     };
 
-    class [[eosio::contract("vestng.token")]] vestingToken : public eosio::contract
+    class [[eosio::contract("vesting.tmy")]] vestingToken : public eosio::contract
     {
     public:
         using contract::contract;
