@@ -35,3 +35,6 @@ jobs:
 
       - name: Compile tonomy
         run: ./contracts/tonomy/build.sh local
+
+      - name: Compile vesting.tmy
+        run: ./contracts/vesting.tmy/build.sh local

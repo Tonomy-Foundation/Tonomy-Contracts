@@ -46,7 +46,7 @@ namespace eosio
       statstable.modify(st, same_payer, [&](auto &s)
                         { s.supply += quantity; });
 
-      add_balance(st.issuer, quantity, st.issuer);
+      add_balance(st.issuer, quantity, get_self());
    }
 
    void token::retire(const asset &quantity, const string &memo)
