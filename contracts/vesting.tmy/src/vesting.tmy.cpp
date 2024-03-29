@@ -7,12 +7,12 @@ namespace vestingtoken
     {
         require_auth(get_self());
 
-        vestingtoken::vesting_settings dates;
-        dates.sales_start_date = eosio::time_point_sec::from_iso_string(sales_date_str);
-        dates.launch_date = eosio::time_point_sec::from_iso_string(launch_date_str);
+        vesting_settings settings;
+        settings.sales_start_date = eosio::time_point_sec::from_iso_string(sales_date_str);
+        settings.launch_date = eosio::time_point_sec::from_iso_string(launch_date_str);
 
-        vestingtoken::settings launch_sales_dates_singleton(get_self(), get_self().value);
-        launch_sales_dates_singleton.set(dates, get_self());
+        settings_table settings_table_instance(get_self(), get_self().value);
+        settings_table_instance.set(settings, get_self());
     }
 
     void vestingToken::assigntokens(eosio::name sender, eosio::name holder, eosio::asset amount, int category_id)
@@ -21,11 +21,7 @@ namespace vestingtoken
         require_auth(get_self());
 
         // Check if the provided category exists in the map
-        auto category_iter = vesting_categories.find(category_id);
-        eosio::check(category_iter != vesting_categories.end(), "Invalid vesting category");
-
-        // If the category exists, you can access it like this:
-        vesting_category category = category_iter->second;
+        eosio::check(vesting_categories.contains(category_id), "Invalid vesting category");
 
         // Check the symbol is correct and valid
         auto sym = amount.symbol;
@@ -53,10 +49,10 @@ namespace vestingtoken
 
         // Calculate the number of seconds since sales start
         uint32_t now_since_epoch = eosio::current_time_point().sec_since_epoch();
-        vestingtoken::settings launch_sales_dates_singleton(get_self(), get_self().value);
+        settings_table settings_table_instance(get_self(), get_self().value);
 
-        vestingtoken::vesting_settings dates = launch_sales_dates_singleton.get();
-        uint32_t sales_start_date_since_epoch = dates.sales_start_date.sec_since_epoch();
+        vesting_settings settings = settings_table_instance.get();
+        uint32_t sales_start_date_since_epoch = settings.sales_start_date.sec_since_epoch();
 
         check(now_since_epoch >= sales_start_date_since_epoch, "Sale has not yet started");
 
@@ -67,18 +63,18 @@ namespace vestingtoken
                               {
             row.holder = holder;
             row.total_allocated = amount;
-            row.tokens_claimed = asset(0, amount.symbol);
+            row.tokens_claimed = eosio::asset(0, amount.symbol);
             row.seconds_since_sales_start = allocated_after_sales_start_seconds;
-            row.vesting_category_type = category;
+            row.vesting_category_type = category_id;
             row.cliff_period_claimed = false; });
 
         eosio::require_recipient(holder);
 
-        eosio::action({get_self(), "active"_n},
-                      token_contract_name,
-                      "transfer"_n,
-                      std::make_tuple(sender, get_self(), amount, std::string("Allocated vested funds")))
-            .send();
+        // eosio::action({get_self(), "active"_n},
+        //               token_contract_name,
+        //               "transfer"_n,
+        //               std::make_tuple(sender, get_self(), amount, std::string("Allocated vested funds")))
+        //     .send();
     }
 
     void vestingToken::withdraw(eosio::name holder)
@@ -89,15 +85,15 @@ namespace vestingtoken
         vesting_allocations vesting_table(get_self(), holder.value);
         uint32_t now_since_epoch = eosio::time_point_sec(eosio::current_time_point()).sec_since_epoch();
 
-        vestingtoken::settings launch_sales_dates_singleton(get_self(), get_self().value);
-        vestingtoken::vesting_settings dates = launch_sales_dates_singleton.get();
-        uint32_t launch_date_since_epoch = dates.launch_date.sec_since_epoch();
+        settings_table settings_table_instance(get_self(), get_self().value);
+        vesting_settings settings = settings_table_instance.get();
+        uint32_t launch_date_since_epoch = settings.launch_date.sec_since_epoch();
 
         for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
             const vested_allocation &vesting_allocation = *iter;
 
-            vesting_category category = vesting_allocation.vesting_category_type;
+            vesting_category category = vesting_categories.at(vesting_allocation.vesting_category_type);
 
             uint32_t vesting_start_since_epoch = launch_date_since_epoch + vesting_allocation.seconds_since_sales_start + category.start_delay_seconds;
             uint32_t cliff_end_since_epoch = vesting_start_since_epoch + category.cliff_period_seconds;

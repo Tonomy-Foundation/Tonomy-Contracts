@@ -264,6 +264,8 @@ namespace tonomysystem
          EOSLIB_SERIALIZE(resource_config, (ram_fee)(ram_price)(total_ram_available)(total_ram_used)(total_cpu_weight_allocated)(total_net_weight_allocated))
       };
       typedef eosio::singleton<"resconfig"_n, resource_config> resource_config_table;
+      // Following line needed to correctly generate ABI. See https://github.com/EOSIO/eosio.cdt/issues/280#issuecomment-439666574
+      typedef eosio::multi_index<"resconfig"_n, resource_config> resource_config_table_dump;
 
       /**
        * Returns the account name of the app that corresponds to the origin

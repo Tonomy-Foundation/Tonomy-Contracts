@@ -17,16 +17,6 @@ namespace vestingtoken
     using eosio::singleton;
     using std::string;
 
-    struct vesting_settings
-    {
-        eosio::time_point_sec sales_start_date;
-        eosio::time_point_sec launch_date;
-
-        EOSLIB_SERIALIZE(vesting_settings, (sales_start_date)(launch_date))
-    };
-
-    typedef eosio::singleton<"settings"_n, vesting_settings> settings;
-
     static const uint32_t SECONDS_IN_DAY = 24 * 60 * 60;
 
     struct vesting_category
@@ -55,6 +45,18 @@ namespace vestingtoken
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
         static constexpr eosio::name token_contract_name = "eosio.token"_n;
 
+        struct [[eosio::table]] vesting_settings
+        {
+            eosio::time_point_sec sales_start_date;
+            eosio::time_point_sec launch_date;
+
+            EOSLIB_SERIALIZE(vesting_settings, (sales_start_date)(launch_date))
+        };
+
+        typedef eosio::singleton<"settings"_n, vesting_settings> settings_table;
+        // Following line needed to correctly generate ABI. See https://github.com/EOSIO/eosio.cdt/issues/280#issuecomment-439666574
+        typedef eosio::multi_index<"settings"_n, vesting_settings> settings_table_dump;
+
         // Define the structure of a vesting schedule
         struct [[eosio::table]] vested_allocation
         {
@@ -62,7 +64,7 @@ namespace vestingtoken
             eosio::asset total_allocated;
             eosio::asset tokens_claimed;
             uint32_t seconds_since_sales_start;
-            vesting_category vesting_category_type;
+            int vesting_category_type;
             bool cliff_period_claimed;
             uint64_t primary_key() const
             {
