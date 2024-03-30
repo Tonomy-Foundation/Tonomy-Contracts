@@ -13,29 +13,30 @@ namespace vestingtoken
     using eosio::action_wrapper;
     using eosio::asset;
     using eosio::check;
+    using eosio::days;
+    using eosio::microseconds;
     using eosio::name;
     using eosio::singleton;
+    using eosio::time_point;
     using std::string;
-
-    static const uint32_t SECONDS_IN_DAY = 24 * 60 * 60;
 
     struct vesting_category
     {
-        uint32_t cliff_period_seconds;
-        uint32_t start_delay_seconds;
-        uint32_t vesting_period_seconds;
+        microseconds cliff_period;
+        microseconds start_delay;
+        microseconds vesting_period;
     };
 
     static const std::map<int, vesting_category> vesting_categories = {
-        {1, {6 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Seed Private Sale,
-        {2, {6 * 30 * SECONDS_IN_DAY, 6 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Strategic Partnerships Private Sale,
-        {3, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY}},   // Public Sale (DO NOT USED YET),
-        {4, {0 * 30 * SECONDS_IN_DAY, 1 * 365 * SECONDS_IN_DAY, 5 * 365 * SECONDS_IN_DAY}}, // Team and Advisors, Ecosystem
-        {5, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 1 * 365 * SECONDS_IN_DAY}},  // Legal and Compliance
-        {6, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 2 * 365 * SECONDS_IN_DAY}},  // Reserves, Partnerships, Liquidly Allocation
-        {7, {0 * 30 * SECONDS_IN_DAY, 0 * 30 * SECONDS_IN_DAY, 5 * 365 * SECONDS_IN_DAY}},  // Community and Marketing, Platform Dev, Infra Rewards
+        {1, {days(6 * 30), days(0 * 30), days(2 * 365)}}, // Seed Private Sale,
+        // {2, {6 * 30 * MICROSECONDS_IN_DAY, 6 * 30 * MICROSECONDS_IN_DAY, 2 * 365 * MICROSECONDS_IN_DAY}},  // Strategic Partnerships Private Sale,
+        // {3, {0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY}},   // Public Sale (DO NOT USED YET),
+        // {4, {0 * 30 * MICROSECONDS_IN_DAY, 1 * 365 * MICROSECONDS_IN_DAY, 5 * 365 * MICROSECONDS_IN_DAY}}, // Team and Advisors, Ecosystem
+        // {5, {0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY, 1 * 365 * MICROSECONDS_IN_DAY}},  // Legal and Compliance
+        // {6, {0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY, 2 * 365 * MICROSECONDS_IN_DAY}},  // Reserves, Partnerships, Liquidly Allocation
+        // {7, {0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY, 5 * 365 * MICROSECONDS_IN_DAY}},  // Community and Marketing, Platform Dev, Infra Rewards
 
-        {999, {10, 10, 20}}, // TESTING ONLY
+        {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20)}}, // TESTING ONLY
     };
 
     class [[eosio::contract("vesting.tmy")]] vestingToken : public eosio::contract
@@ -47,8 +48,8 @@ namespace vestingtoken
 
         struct [[eosio::table]] vesting_settings
         {
-            eosio::time_point_sec sales_start_date;
-            eosio::time_point_sec launch_date;
+            eosio::time_point sales_start_date;
+            eosio::time_point launch_date;
 
             EOSLIB_SERIALIZE(vesting_settings, (sales_start_date)(launch_date))
         };
@@ -61,18 +62,16 @@ namespace vestingtoken
         struct [[eosio::table]] vested_allocation
         {
             eosio::name holder;
-            eosio::asset total_allocated;
+            eosio::asset tokens_allocated;
             eosio::asset tokens_claimed;
-            uint32_t seconds_since_sales_start;
+            microseconds time_since_sale_start;
             int vesting_category_type;
             bool cliff_period_claimed;
             uint64_t primary_key() const
             {
-                // This means people cannot purchase tokens more than once in a block (or the primary key will be the same)
-                // TODO: could be fixed by adding a random amount of subseconds
-                return seconds_since_sales_start;
+                return time_since_sale_start.count();
             }
-            EOSLIB_SERIALIZE(struct vested_allocation, (holder)(total_allocated)(tokens_claimed)(seconds_since_sales_start)(vesting_category_type)(cliff_period_claimed))
+            EOSLIB_SERIALIZE(struct vested_allocation, (holder)(tokens_allocated)(tokens_claimed)(time_since_sale_start)(vesting_category_type)(cliff_period_claimed))
         };
 
         // Define the mapping of vesting schedules

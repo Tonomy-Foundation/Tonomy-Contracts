@@ -8,8 +8,8 @@ namespace vestingtoken
         require_auth(get_self());
 
         vesting_settings settings;
-        settings.sales_start_date = eosio::time_point_sec::from_iso_string(sales_date_str);
-        settings.launch_date = eosio::time_point_sec::from_iso_string(launch_date_str);
+        settings.sales_start_date = eosio::time_point::from_iso_string(sales_date_str);
+        settings.launch_date = eosio::time_point::from_iso_string(launch_date_str);
 
         settings_table settings_table_instance(get_self(), get_self().value);
         settings_table_instance.set(settings, get_self());
@@ -41,30 +41,28 @@ namespace vestingtoken
             // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
             // may no longer be able to withdraw from the account.
             // For more information, see https://swcregistry.io/docs/SWC-128/
-            if (num_rows > 20)
+            if (num_rows > 150)
             {
-                eosio::check(false, "Cannot purchase tokens more than 20 times.");
+                eosio::check(false, "Cannot purchase tokens more than 150 times.");
             }
         }
 
         // Calculate the number of seconds since sales start
-        uint32_t now_since_epoch = eosio::current_time_point().sec_since_epoch();
+        time_point now = eosio::current_time_point();
+
         settings_table settings_table_instance(get_self(), get_self().value);
-
         vesting_settings settings = settings_table_instance.get();
-        uint32_t sales_start_date_since_epoch = settings.sales_start_date.sec_since_epoch();
 
-        check(now_since_epoch >= sales_start_date_since_epoch, "Sale has not yet started");
+        eosio::check(now >= settings.sales_start_date, "Sale has not yet started");
 
-        uint32_t allocated_after_sales_start_seconds = 0;
-        allocated_after_sales_start_seconds = now_since_epoch - sales_start_date_since_epoch;
+        microseconds time_since_sale_start = now - settings.sales_start_date;
 
         vesting_table.emplace(get_self(), [&](auto &row)
                               {
             row.holder = holder;
-            row.total_allocated = amount;
+            row.tokens_allocated = amount;
             row.tokens_claimed = eosio::asset(0, amount.symbol);
-            row.seconds_since_sales_start = allocated_after_sales_start_seconds;
+            row.time_since_sale_start = time_since_sale_start;
             row.vesting_category_type = category_id;
             row.cliff_period_claimed = false; });
 
@@ -83,11 +81,12 @@ namespace vestingtoken
 
         // Get the vesting allocations
         vesting_allocations vesting_table(get_self(), holder.value);
-        uint32_t now_since_epoch = eosio::time_point_sec(eosio::current_time_point()).sec_since_epoch();
+        time_point now = eosio::current_time_point();
 
         settings_table settings_table_instance(get_self(), get_self().value);
         vesting_settings settings = settings_table_instance.get();
-        uint32_t launch_date_since_epoch = settings.launch_date.sec_since_epoch();
+
+        time_point launch_date = settings.launch_date;
 
         for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
@@ -95,25 +94,37 @@ namespace vestingtoken
 
             vesting_category category = vesting_categories.at(vesting_allocation.vesting_category_type);
 
-            uint32_t vesting_start_since_epoch = launch_date_since_epoch + vesting_allocation.seconds_since_sales_start + category.start_delay_seconds;
-            uint32_t cliff_end_since_epoch = vesting_start_since_epoch + category.cliff_period_seconds;
+            time_point vesting_start = launch_date + vesting_allocation.time_since_sale_start + category.start_delay;
+            time_point cliff_end = vesting_start + category.cliff_period;
 
             // Calculate the vesting end time
-            uint32_t vesting_end_time_since_epoch = vesting_start_since_epoch + category.vesting_period_seconds;
+            time_point vesting_end = vesting_start + category.vesting_period;
 
             // Check if vesting period after cliff has started
-            eosio::check(now_since_epoch >= cliff_end_since_epoch, "Vesting period after cliff has not started");
+            eosio::check(now >= cliff_end, "Vesting period after cliff has not started");
+
+            // Print for debugging
+            eosio::print("{\"sales_start_date\":\"", settings.sales_start_date.to_string(), "\"");
+            eosio::print(",\"launch_date\":\"", launch_date.to_string(), "\"");
+            eosio::print(",\"now\":\"", now.to_string(), "\"");
+            eosio::print(",\"vesting_start\":\"", vesting_start.to_string(), "\"");
+            eosio::print(",\"cliff_end\":\"", cliff_end.to_string(), "\"");
+            eosio::print(",\"vesting_end\":\"", vesting_end.to_string(), "\"");
+            eosio::print(",\"vesting_finished\":", static_cast<double>((now - vesting_start).count()) / category.vesting_period.count());
+            eosio::print("}");
 
             // Calculate the total claimable amount
             int64_t claimable = 0;
-            if (now_since_epoch >= vesting_end_time_since_epoch)
+            if (now >= vesting_end)
             {
-                claimable = vesting_allocation.total_allocated.amount;
+                claimable = vesting_allocation.tokens_allocated.amount;
             }
             else
             {
-                claimable = vesting_allocation.total_allocated.amount * (now_since_epoch - vesting_start_since_epoch) / category.vesting_period_seconds;
+                double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
+                claimable = vesting_allocation.tokens_allocated.amount * vesting_finished;
             }
+
             claimable -= vesting_allocation.tokens_claimed.amount;
             eosio::asset tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
 
