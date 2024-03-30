@@ -28,13 +28,13 @@ namespace vestingtoken
     };
 
     static const std::map<int, vesting_category> vesting_categories = {
-        {1, {days(6 * 30), days(0 * 30), days(2 * 365)}}, // Seed Private Sale,
-        // {2, {6 * 30 * MICROSECONDS_IN_DAY, 6 * 30 * MICROSECONDS_IN_DAY, 2 * 365 * MICROSECONDS_IN_DAY}},  // Strategic Partnerships Private Sale,
-        // {3, {0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY}},   // Public Sale (DO NOT USED YET),
-        // {4, {0 * 30 * MICROSECONDS_IN_DAY, 1 * 365 * MICROSECONDS_IN_DAY, 5 * 365 * MICROSECONDS_IN_DAY}}, // Team and Advisors, Ecosystem
-        // {5, {0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY, 1 * 365 * MICROSECONDS_IN_DAY}},  // Legal and Compliance
-        // {6, {0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY, 2 * 365 * MICROSECONDS_IN_DAY}},  // Reserves, Partnerships, Liquidly Allocation
-        // {7, {0 * 30 * MICROSECONDS_IN_DAY, 0 * 30 * MICROSECONDS_IN_DAY, 5 * 365 * MICROSECONDS_IN_DAY}},  // Community and Marketing, Platform Dev, Infra Rewards
+        {1, {days(6 * 30), days(0 * 30), days(2 * 365)}},  // Seed Private Sale,
+        {2, {days(6 * 30), days(6 * 30), days(2 * 365)}},  // Strategic Partnerships Private Sale,
+        {3, {days(0 * 30), days(0 * 30), days(0 * 30)}},   // Public Sale (DO NOT USED YET),
+        {4, {days(0 * 30), days(1 * 365), days(5 * 365)}}, // Team and Advisors, Ecosystem
+        {5, {days(0 * 30), days(0 * 30), days(1 * 365)}},  // Legal and Compliance
+        {6, {days(0 * 30), days(0 * 30), days(2 * 365)}},  // Reserves, Partnerships, Liquidly Allocation
+        {7, {days(0 * 30), days(0 * 30), days(5 * 365)}},  // Community and Marketing, Platform Dev, Infra Rewards
 
         {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20)}}, // TESTING ONLY
     };
@@ -45,6 +45,7 @@ namespace vestingtoken
         using contract::contract;
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
         static constexpr eosio::name token_contract_name = "eosio.token"_n;
+        static const uint32_t MAX_ALLOCATIONS = 15;
 
         struct [[eosio::table]] vesting_settings
         {
@@ -66,12 +67,11 @@ namespace vestingtoken
             eosio::asset tokens_claimed;
             microseconds time_since_sale_start;
             int vesting_category_type;
-            bool cliff_period_claimed;
             uint64_t primary_key() const
             {
                 return time_since_sale_start.count();
             }
-            EOSLIB_SERIALIZE(struct vested_allocation, (holder)(tokens_allocated)(tokens_claimed)(time_since_sale_start)(vesting_category_type)(cliff_period_claimed))
+            EOSLIB_SERIALIZE(struct vested_allocation, (holder)(tokens_allocated)(tokens_claimed)(time_since_sale_start)(vesting_category_type))
         };
 
         // Define the mapping of vesting schedules
@@ -88,7 +88,7 @@ namespace vestingtoken
          *
          * Example of the string format expected: "2024-04-01T24:00:00"
          */
-        [[eosio::action]] void updatedate(string sales_start_date, string launch_date);
+        [[eosio::action]] void setsettings(string sales_start_date, string launch_date);
 
         /**
          * @details Assigns tokens to a holder with a specified vesting category.
@@ -107,7 +107,7 @@ namespace vestingtoken
          */
         [[eosio::action]] void withdraw(eosio::name holder);
 
-        using updatedate_action = action_wrapper<"updatedate"_n, &vestingToken::updatedate>;
+        using setsettings_action = action_wrapper<"setsettings"_n, &vestingToken::setsettings>;
         using assigntokens_action = action_wrapper<"assigntokens"_n, &vestingToken::assigntokens>;
         using withdraw_action = action_wrapper<"withdraw"_n, &vestingToken::withdraw>;
     };

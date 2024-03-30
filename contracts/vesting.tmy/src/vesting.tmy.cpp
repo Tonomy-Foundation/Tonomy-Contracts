@@ -3,7 +3,7 @@
 namespace vestingtoken
 {
 
-    void vestingToken::updatedate(string sales_date_str, string launch_date_str)
+    void vestingToken::setsettings(string sales_date_str, string launch_date_str)
     {
         require_auth(get_self());
 
@@ -41,9 +41,9 @@ namespace vestingtoken
             // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
             // may no longer be able to withdraw from the account.
             // For more information, see https://swcregistry.io/docs/SWC-128/
-            if (num_rows > 150)
+            if (num_rows > MAX_ALLOCATIONS)
             {
-                eosio::check(false, "Cannot purchase tokens more than 150 times.");
+                eosio::check(false, "Too many purchases received on this account.");
             }
         }
 
@@ -63,8 +63,7 @@ namespace vestingtoken
             row.tokens_allocated = amount;
             row.tokens_claimed = eosio::asset(0, amount.symbol);
             row.time_since_sale_start = time_since_sale_start;
-            row.vesting_category_type = category_id;
-            row.cliff_period_claimed = false; });
+            row.vesting_category_type = category_id; });
 
         eosio::require_recipient(holder);
 
@@ -87,7 +86,10 @@ namespace vestingtoken
         vesting_settings settings = settings_table_instance.get();
 
         time_point launch_date = settings.launch_date;
+        eosio::check(now >= launch_date, "Launch date not yet reached");
 
+        eosio::print("[");
+        int64_t total_claimable = 0;
         for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
             const vested_allocation &vesting_allocation = *iter;
@@ -101,44 +103,55 @@ namespace vestingtoken
             time_point vesting_end = vesting_start + category.vesting_period;
 
             // Check if vesting period after cliff has started
-            eosio::check(now >= cliff_end, "Vesting period after cliff has not started");
-
-            // Print for debugging
-            eosio::print("{\"sales_start_date\":\"", settings.sales_start_date.to_string(), "\"");
-            eosio::print(",\"launch_date\":\"", launch_date.to_string(), "\"");
-            eosio::print(",\"now\":\"", now.to_string(), "\"");
-            eosio::print(",\"vesting_start\":\"", vesting_start.to_string(), "\"");
-            eosio::print(",\"cliff_end\":\"", cliff_end.to_string(), "\"");
-            eosio::print(",\"vesting_end\":\"", vesting_end.to_string(), "\"");
-            eosio::print(",\"vesting_finished\":", static_cast<double>((now - vesting_start).count()) / category.vesting_period.count());
-            eosio::print("}");
-
-            // Calculate the total claimable amount
-            int64_t claimable = 0;
-            if (now >= vesting_end)
+            if (now >= cliff_end)
             {
-                claimable = vesting_allocation.tokens_allocated.amount;
+                // Calculate the total claimable amount
+                int64_t claimable = 0;
+                if (now >= vesting_end)
+                {
+                    claimable = vesting_allocation.tokens_allocated.amount;
+                }
+                else
+                {
+                    double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
+                    claimable = vesting_allocation.tokens_allocated.amount * vesting_finished;
+                }
+
+                total_claimable += claimable - vesting_allocation.tokens_claimed.amount;
+
+                // Print for debugging
+                eosio::print("{\"sales_start_date\":\"", settings.sales_start_date.to_string(), "\"");
+                eosio::print(",\"launch_date\":\"", launch_date.to_string(), "\"");
+                eosio::print(",\"now\":\"", now.to_string(), "\"");
+                eosio::print(",\"vesting_start\":\"", vesting_start.to_string(), "\"");
+                eosio::print(",\"cliff_end\":\"", cliff_end.to_string(), "\"");
+                eosio::print(",\"vesting_end\":\"", vesting_end.to_string(), "\"");
+                eosio::print(",\"vesting_finished\":", static_cast<double>((now - vesting_start).count()) / category.vesting_period.count(), "\"");
+                eosio::print(",\"previously_claimed\":", vesting_allocation.tokens_claimed.amount, "\"");
+                eosio::print(",\"claimable\":", claimable, "\"");
+                eosio::print(",\"total_claimable\":", total_claimable, "\"");
+                eosio::print("}");
+
+                // Update the tokens_claimed field
+                eosio::asset tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
+                vesting_table.modify(iter, get_self(), [&](auto &row)
+                                     { row.tokens_claimed = tokens_claimed; });
             }
             else
             {
-                double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
-                claimable = vesting_allocation.tokens_allocated.amount * vesting_finished;
+                eosio::print("{\"now\":\"", now.to_string(), "\"}");
             }
+        }
 
-            claimable -= vesting_allocation.tokens_claimed.amount;
-            eosio::asset tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
-
-            // Update the tokens_claimed field
-            vesting_table.modify(iter, get_self(), [&](auto &row)
-                                 {
-                row.tokens_claimed += tokens_claimed;
-                row.cliff_period_claimed = true; });
-
+        eosio::print("]");
+        if (total_claimable > 0)
+        {
             // Transfer the tokens to the holder
+            eosio::asset total_tokens_claimed = eosio::asset(total_claimable, system_resource_currency);
             eosio::action({get_self(), "active"_n},
                           token_contract_name,
                           "transfer"_n,
-                          std::make_tuple(get_self(), holder, tokens_claimed, std::string("Unlocked vested coins")))
+                          std::make_tuple(get_self(), holder, total_tokens_claimed, std::string("Unlocked vested coins")))
                 .send();
         }
     }
