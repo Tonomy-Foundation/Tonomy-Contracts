@@ -68,6 +68,8 @@ namespace vestingtoken
             bool cliff_period_claimed;
             uint64_t primary_key() const
             {
+                // This means people cannot purchase tokens more than once in a block (or the primary key will be the same)
+                // TODO: could be fixed by adding a random amount of subseconds
                 return seconds_since_sales_start;
             }
             EOSLIB_SERIALIZE(struct vested_allocation, (holder)(total_allocated)(tokens_claimed)(seconds_since_sales_start)(vesting_category_type)(cliff_period_claimed))

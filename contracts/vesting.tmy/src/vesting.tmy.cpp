@@ -70,11 +70,11 @@ namespace vestingtoken
 
         eosio::require_recipient(holder);
 
-        // eosio::action({get_self(), "active"_n},
-        //               token_contract_name,
-        //               "transfer"_n,
-        //               std::make_tuple(sender, get_self(), amount, std::string("Allocated vested funds")))
-        //     .send();
+        eosio::action({get_self(), "active"_n},
+                      token_contract_name,
+                      "transfer"_n,
+                      std::make_tuple(sender, get_self(), amount, std::string("Allocated vested funds")))
+            .send();
     }
 
     void vestingToken::withdraw(eosio::name holder)
