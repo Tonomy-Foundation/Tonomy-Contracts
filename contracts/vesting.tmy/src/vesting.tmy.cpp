@@ -41,7 +41,7 @@ namespace vestingtoken
             // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
             // may no longer be able to withdraw from the account.
             // For more information, see https://swcregistry.io/docs/SWC-128/
-            if (num_rows > MAX_ALLOCATIONS)
+            if (num_rows >= MAX_ALLOCATIONS)
             {
                 eosio::check(false, "Too many purchases received on this account.");
             }
@@ -59,6 +59,7 @@ namespace vestingtoken
 
         vesting_table.emplace(get_self(), [&](auto &row)
                               {
+            row.id = vesting_table.available_primary_key();
             row.holder = holder;
             row.tokens_allocated = amount;
             row.tokens_claimed = eosio::asset(0, amount.symbol);

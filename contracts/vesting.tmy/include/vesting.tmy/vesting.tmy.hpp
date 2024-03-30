@@ -45,7 +45,7 @@ namespace vestingtoken
         using contract::contract;
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
         static constexpr eosio::name token_contract_name = "eosio.token"_n;
-        static const uint32_t MAX_ALLOCATIONS = 15;
+        static const uint32_t MAX_ALLOCATIONS = 10;
 
         struct [[eosio::table]] vesting_settings
         {
@@ -62,16 +62,14 @@ namespace vestingtoken
         // Define the structure of a vesting schedule
         struct [[eosio::table]] vested_allocation
         {
+            uint64_t id;
             eosio::name holder;
             eosio::asset tokens_allocated;
             eosio::asset tokens_claimed;
             microseconds time_since_sale_start;
             int vesting_category_type;
-            uint64_t primary_key() const
-            {
-                return time_since_sale_start.count();
-            }
-            EOSLIB_SERIALIZE(struct vested_allocation, (holder)(tokens_allocated)(tokens_claimed)(time_since_sale_start)(vesting_category_type))
+            uint64_t primary_key() const { return id; }
+            EOSLIB_SERIALIZE(struct vested_allocation, (id)(holder)(tokens_allocated)(tokens_claimed)(time_since_sale_start)(vesting_category_type))
         };
 
         // Define the mapping of vesting schedules
