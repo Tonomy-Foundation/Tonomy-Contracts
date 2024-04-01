@@ -22,7 +22,7 @@ namespace tonomysystem
    // Used to protect governance actions
    void special_governance_check(name account)
    {
-      if (account == "eosio"_n || account == "tonomy"_n)
+      if (account == "eosio"_n || account == "eosio.token"_n || account == "vesting.tmy"_n || account == "tonomy"_n)
       {
          require_governance_owner();
       }
