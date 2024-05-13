@@ -134,6 +134,7 @@ namespace tonomysystem
        *
        * @param account - account of the person
        * @param app - account of the app to authorize the key to
+       * @param parent - parent permission of the new permission
        * @param key - public key to authorize
        */
       [[eosio::action]] void loginwithapp(
@@ -141,6 +142,22 @@ namespace tonomysystem
           name app,
           name parent,
           public_key key);
+
+      /**
+       * Adds a new key to a person's account to log into an app with (v2)
+       *
+       * @param account - account of the person
+       * @param app - account of the app to authorize the key to
+       * @param parent - parent permission of the new permission
+       * @param key - public key to authorize
+       * @param link_auth - whether to link the permission to the app
+       */
+      [[eosio::action]] void loginwithapp2(
+          name account,
+          name app,
+          name parent,
+          public_key key,
+          bool link_auth);
 
       /**
        * Update a key of a person
