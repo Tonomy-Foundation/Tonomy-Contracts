@@ -86,7 +86,6 @@ namespace vestingtoken
         time_point launch_date = settings.launch_date;
         eosio::check(now >= launch_date, "Launch date not yet reached");
 
-        // eosio::print("[");
         int64_t total_claimable = 0;
         for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
@@ -117,28 +116,11 @@ namespace vestingtoken
 
                 total_claimable += claimable - vesting_allocation.tokens_claimed.amount;
 
-                // Print for debugging
-                // eosio::print("{\"sales_start_date\":\"", settings.sales_start_date.to_string(), "\"");
-                // eosio::print(",\"launch_date\":\"", launch_date.to_string(), "\"");
-                // eosio::print(",\"now\":\"", now.to_string(), "\"");
-                // eosio::print(",\"vesting_start\":\"", vesting_start.to_string(), "\"");
-                // eosio::print(",\"cliff_end\":\"", cliff_end.to_string(), "\"");
-                // eosio::print(",\"vesting_end\":\"", vesting_end.to_string(), "\"");
-                // eosio::print(",\"vesting_finished\":", static_cast<double>((now - vesting_start).count()) / category.vesting_period.count(), "\"");
-                // eosio::print(",\"previously_claimed\":", vesting_allocation.tokens_claimed.amount, "\"");
-                // eosio::print(",\"claimable\":", claimable, "\"");
-                // eosio::print(",\"total_claimable\":", total_claimable, "\"");
-                // eosio::print("}");
-
                 // Update the tokens_claimed field
                 eosio::asset tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
                 vesting_table.modify(iter, get_self(), [&](auto &row)
                                      { row.tokens_claimed = tokens_claimed; });
             }
-            // else
-            // {
-            //     eosio::print("{\"now\":\"", now.to_string(), "\"}");
-            // }
         }
 
         eosio::print("]");

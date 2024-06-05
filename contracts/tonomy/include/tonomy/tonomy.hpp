@@ -328,6 +328,7 @@ namespace tonomysystem
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &tonomy::updatekeyper>;
       using newapp_action = action_wrapper<"newapp"_n, &tonomy::newapp>;
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
+      using loginwithapp2_action = action_wrapper<"loginwithapp2"_n, &tonomy::loginwithapp2>;
       using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
       using buyram_action = action_wrapper<"buyram"_n, &tonomy::buyram>;
