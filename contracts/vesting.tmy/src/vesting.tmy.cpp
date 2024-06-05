@@ -17,9 +17,6 @@ namespace vestingtoken
 
     void vestingToken::assigntokens(eosio::name sender, eosio::name holder, eosio::asset amount, int category_id)
     {
-        // Only the contract owner can call this function
-        require_auth(get_self());
-
         // Check if the provided category exists in the map
         eosio::check(vesting_categories.contains(category_id), "Invalid vesting category");
 
@@ -68,11 +65,11 @@ namespace vestingtoken
 
         eosio::require_recipient(holder);
 
-        eosio::action({get_self(), "active"_n},
+        eosio::action({sender, "active"_n},
                       token_contract_name,
                       "transfer"_n,
                       std::make_tuple(sender, get_self(), amount, std::string("Allocated vested funds")))
-            .send();
+            .send(); // This will also run eosio::require_auth(sender)
     }
 
     void vestingToken::withdraw(eosio::name holder)
