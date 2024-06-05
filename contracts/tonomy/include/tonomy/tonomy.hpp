@@ -144,22 +144,6 @@ namespace tonomysystem
           public_key key);
 
       /**
-       * Adds a new key to a person's account to log into an app with (v2)
-       *
-       * @param account - account of the person
-       * @param app - account of the app to authorize the key to
-       * @param parent - parent permission of the new permission
-       * @param key - public key to authorize
-       * @param link_auth - whether to link the permission to the app
-       */
-      [[eosio::action]] void loginwithapp2(
-          name account,
-          name app,
-          name parent,
-          public_key key,
-          bool link_auth);
-
-      /**
        * Update a key of a person
        *
        * @param account - name of the account to update
@@ -328,7 +312,6 @@ namespace tonomysystem
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &tonomy::updatekeyper>;
       using newapp_action = action_wrapper<"newapp"_n, &tonomy::newapp>;
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
-      using loginwithapp2_action = action_wrapper<"loginwithapp2"_n, &tonomy::loginwithapp2>;
       using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
       using buyram_action = action_wrapper<"buyram"_n, &tonomy::buyram>;

@@ -357,23 +357,6 @@ namespace tonomysystem
       // must be signed by the account's permission_level or parent (from eosio.tonomy::updateauth())
    }
 
-   void tonomy::loginwithapp2(
-       name account,
-       name app,
-       name parent,
-       public_key key,
-       bool link_auth)
-   {
-      loginwithapp(account, app, parent, key);
-
-      if (link_auth)
-      {
-         // link the permission to the app
-         linkauth_action linkauthaction("eosio"_n, {account, parent});
-         linkauthaction.send(account, app, ""_n, app);
-      }
-   }
-
    void tonomy::setresparams(double ram_price, uint64_t total_ram_available, double ram_fee)
    {
       require_auth(native::governance_name); // check authorization is gov.tmy
