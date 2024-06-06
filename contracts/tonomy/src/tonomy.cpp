@@ -460,7 +460,7 @@ namespace tonomysystem
       eosio::check(itr->acc_type == enum_account_type::App, "Only apps can buy and sell RAM");
 
       // Check that the RAM is being purchased with the correct token
-      eosio::check(quant.symbol == tonomy::system_resource_currency, "must buy ram with core token");
+      eosio::check(quant.symbol == tonomy::system_resource_currency, "must sell ram with core token");
 
       // Check that the amount of bytes being sold is positive
       eosio::check(quant.amount > 0, "Amount must be positive");

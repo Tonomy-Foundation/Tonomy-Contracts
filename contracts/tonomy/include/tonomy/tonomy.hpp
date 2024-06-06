@@ -134,6 +134,7 @@ namespace tonomysystem
        *
        * @param account - account of the person
        * @param app - account of the app to authorize the key to
+       * @param parent - parent permission of the new permission
        * @param key - public key to authorize
        */
       [[eosio::action]] void loginwithapp(

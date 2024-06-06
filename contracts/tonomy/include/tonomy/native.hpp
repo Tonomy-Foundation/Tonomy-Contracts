@@ -66,7 +66,8 @@ namespace tonomysystem
        * @param pemission - the permission name which is updated,
        * @param parem - the parent of the permission which is updated,
        * @param auth - the json describing the permission authorization,
-       * @param auth_parent - true if the parent permission should be checked, otherwise the "permission" will be used to authorize
+       * @param auth_parent - true if the parent permission should be checked, otherwise the "permission" will be used to authorize.
+       *                      should be true when a new permission is being created, otherwise false
        */
       [[eosio::action]] void updateauth(name account,
                                         name permission,
