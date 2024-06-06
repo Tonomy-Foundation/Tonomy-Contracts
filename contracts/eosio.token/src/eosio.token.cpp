@@ -78,6 +78,7 @@ namespace eosio
                         const string &memo)
    {
       check(from != to, "cannot transfer to self");
+      require_auth(from);
       check(is_account(to), "to account does not exist");
 
       // TODO need to write vesting contract code
