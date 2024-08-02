@@ -1,5 +1,11 @@
 {
     "files.associations": {
         "string": "cpp"
-    }
+    },
+    "git.branchPrefix": "feature/",
+    "git.branchProtection": [
+        "master",
+        "main",
+        "development"
+    ],
 }
