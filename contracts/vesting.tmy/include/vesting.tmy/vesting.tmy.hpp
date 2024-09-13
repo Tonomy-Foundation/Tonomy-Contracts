@@ -25,18 +25,26 @@ namespace vestingtoken
         microseconds cliff_period;
         microseconds start_delay;
         microseconds vesting_period;
+        float tge_unlock;
     };
 
     static const std::map<int, vesting_category> vesting_categories = {
-        {1, {days(6 * 30), days(0 * 30), days(2 * 365)}},  // Seed Private Sale,
-        {2, {days(6 * 30), days(6 * 30), days(2 * 365)}},  // Strategic Partnerships Private Sale,
-        {3, {days(0 * 30), days(0 * 30), days(0 * 30)}},   // Public Sale (DO NOT USED YET),
-        {4, {days(0 * 30), days(1 * 365), days(5 * 365)}}, // Team and Advisors, Ecosystem
-        {5, {days(0 * 30), days(0 * 30), days(1 * 365)}},  // Legal and Compliance
-        {6, {days(0 * 30), days(0 * 30), days(2 * 365)}},  // Reserves, Partnerships, Liquidly Allocation
-        {7, {days(0 * 30), days(0 * 30), days(5 * 365)}},  // Community and Marketing, Platform Dev, Infra Rewards
+        // Depreciated:
+        {1, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}}, // Seed Private Sale (DEPRECIATED),
+        {2, {days(6 * 30), days(6 * 30), days(2 * 365), 0.0}}, // Strategic Partnerships Private Sale (DEPRECIATED),
+        // Old:
+        {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},   // Public Sale (DO NOT USED YET),
+        {4, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}}, // Team and Advisors, Ecosystem
+        {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}},  // Legal and Compliance
+        {6, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Reserves, Partnerships, Liquidly Allocation
+        {7, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Community and Marketing, Platform Dev, Infra Rewards
+        // New (replacing depreciated):
+        {8, {days(0 * 30), days(0 * 30), days(2 * 365), 0.05}},  // Seed (Early Bird)
+        {9, {days(0 * 30), days(0 * 30), days(2 * 365), 0.025}}, // Seed (Last Chance)
+        {10, {days(0 * 30), days(0 * 30), days(2 * 365), 1.0}},  // Public (TGE)
 
-        {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20)}}, // TESTING ONLY
+        {998, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.5}}, // TESTING ONLY
+        {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.0}}, // TESTING ONLY
     };
 
     class [[eosio::contract("vesting.tmy")]] vestingToken : public eosio::contract
@@ -105,8 +113,22 @@ namespace vestingtoken
          */
         [[eosio::action]] void withdraw(eosio::name holder);
 
+        /**
+         * @details Migrates an allocation to a new amount and category
+         *
+         * @internal Auth required by the contract
+         *
+         * @param sender {name} - The account name of the sender who created the allocation.
+         * @param holder {name} - The account name of the token holder.
+         * @param allocation_id {uint64_t} - The ID of the allocation to be migrated.
+         * @param amount {asset} - The new amount of tokens to be assigned.
+         * @param category_id {int} - The new vesting category for the assigned tokens.
+         */
+        [[eosio::action]] void migratealloc(eosio::name sender, name holder, uint64_t allocation_id, eosio::asset amount, int category_id);
+
         using setsettings_action = action_wrapper<"setsettings"_n, &vestingToken::setsettings>;
         using assigntokens_action = action_wrapper<"assigntokens"_n, &vestingToken::assigntokens>;
         using withdraw_action = action_wrapper<"withdraw"_n, &vestingToken::withdraw>;
+        using migratealloc_action = action_wrapper<"migratealloc"_n, &vestingToken::migratealloc>;
     };
 }

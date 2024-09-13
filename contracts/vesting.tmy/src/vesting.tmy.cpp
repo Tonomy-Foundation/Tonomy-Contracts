@@ -2,6 +2,14 @@
 
 namespace vestingtoken
 {
+    void check_asset(const eosio::asset &asset)
+    {
+        auto sym = asset.symbol;
+        eosio::check(sym.is_valid(), "invalid amount symbol");
+        eosio::check(sym == vestingToken::system_resource_currency, "Symbol does not match system resource currency");
+        eosio::check(sym.precision() == vestingToken::system_resource_currency.precision(), "Symbol precision does not match");
+        eosio::check(asset.amount > 0, "Amount must be greater than 0");
+    }
 
     void vestingToken::setsettings(string sales_date_str, string launch_date_str)
     {
@@ -21,11 +29,7 @@ namespace vestingtoken
         eosio::check(vesting_categories.contains(category_id), "Invalid vesting category");
 
         // Check the symbol is correct and valid
-        auto sym = amount.symbol;
-        eosio::check(sym.is_valid(), "invalid amount symbol");
-        eosio::check(sym == system_resource_currency, "Symbol does not match system resource currency");
-        eosio::check(sym.precision() == system_resource_currency.precision(), "Symbol precision does not match");
-        eosio::check(amount.amount > 0, "Amount must be greater than 0");
+        check_asset(amount);
 
         // Create a new vesting schedule
         vesting_allocations vesting_table(get_self(), holder.value);
@@ -93,14 +97,14 @@ namespace vestingtoken
 
             vesting_category category = vesting_categories.at(vesting_allocation.vesting_category_type);
 
-            time_point vesting_start = launch_date + vesting_allocation.time_since_sale_start + category.start_delay;
-            time_point cliff_end = vesting_start + category.cliff_period;
+            time_point vesting_start = launch_date + category.start_delay;
+            time_point cliff_over = vesting_start + category.cliff_period;
 
             // Calculate the vesting end time
             time_point vesting_end = vesting_start + category.vesting_period;
 
             // Check if vesting period after cliff has started
-            if (now >= cliff_end)
+            if (now >= cliff_over)
             {
                 // Calculate the total claimable amount
                 int64_t claimable = 0;
@@ -111,7 +115,7 @@ namespace vestingtoken
                 else
                 {
                     double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
-                    claimable = vesting_allocation.tokens_allocated.amount * vesting_finished;
+                    claimable = vesting_allocation.tokens_allocated.amount * (vesting_finished + category.tge_unlock);
                 }
 
                 total_claimable += claimable - vesting_allocation.tokens_claimed.amount;
@@ -123,7 +127,6 @@ namespace vestingtoken
             }
         }
 
-        eosio::print("]");
         if (total_claimable > 0)
         {
             // Transfer the tokens to the holder
@@ -132,6 +135,54 @@ namespace vestingtoken
                           token_contract_name,
                           "transfer"_n,
                           std::make_tuple(get_self(), holder, total_tokens_claimed, std::string("Unlocked vested coins")))
+                .send();
+        }
+    }
+
+    // Migrates an allocation to a new amount and category
+    void vestingToken::migratealloc(eosio::name sender, name holder, uint64_t allocation_id, eosio::asset amount, int category_id)
+    {
+        require_auth(get_self());
+
+        // Check if the provided category exists in the map
+        eosio::check(vesting_categories.contains(category_id), "Invalid vesting category");
+
+        // Check the symbol is correct and valid
+        check_asset(amount);
+
+        // Get the vesting allocations
+        vesting_allocations vesting_table(get_self(), holder.value);
+        auto iter = vesting_table.find(allocation_id);
+        eosio::check(iter != vesting_table.end(), "Allocation not found");
+
+        // Calculate the change in the allocation amount
+        int64_t amount_change = amount.amount - iter->tokens_allocated.amount;
+
+        // Modify the table row data, and update the table
+        vesting_table.modify(iter, get_self(), [&](auto &row)
+                             {
+            row.tokens_allocated = amount;
+            row.vesting_category_type = category_id; });
+
+        // Notify the holder
+        eosio::require_recipient(holder);
+
+        // If new tokens were allocated, then send them to the contract
+        if (amount_change > 0)
+        {
+            eosio::action({sender, "active"_n},
+                          token_contract_name,
+                          "transfer"_n,
+                          std::make_tuple(sender, get_self(), amount_change, std::string("Allocated vested funds")))
+                .send();
+        }
+        // If tokens were removed, send them back to the sender
+        else if (amount_change < 0)
+        {
+            eosio::action({get_self(), "active"_n},
+                          token_contract_name,
+                          "transfer"_n,
+                          std::make_tuple(get_self(), sender, -amount_change, std::string("Refunded vested funds")))
                 .send();
         }
     }
