@@ -142,29 +142,36 @@ namespace vestingtoken
     }
 
     // Migrates an allocation to a new amount and category
-    void vestingToken::migratealloc(eosio::name sender, name holder, uint64_t allocation_id, eosio::asset amount, int category_id)
+    void vestingToken::migratealloc(eosio::name sender, name holder, uint64_t allocation_id, eosio::asset old_amount, eosio::asset new_amount, int old_category_id, int new_category_id)
     {
         require_auth(get_self());
 
         // Check if the provided category exists in the map
-        eosio::check(vesting_categories.contains(category_id), "Invalid vesting category");
+        eosio::check(vesting_categories.contains(new_category_id), "Invalid vesting category");
 
         // Check the symbol is correct and valid
-        check_asset(amount);
+        check_asset(new_amount);
 
         // Get the vesting allocations
         vesting_allocations vesting_table(get_self(), holder.value);
         auto iter = vesting_table.find(allocation_id);
         eosio::check(iter != vesting_table.end(), "Allocation not found");
 
+        // Check the new category is not in the list of depreciated categories
+        eosio::check(depreciated_categories.at(new_category_id), "Category is depreciated");
+
+        // Check the old amount and category match the existing allocation
+        eosio::check(iter->tokens_allocated == old_amount, "Old amount does not match existing allocation");
+        eosio::check(iter->vesting_category_type == old_category_id, "Old category does not match existing allocation");
+
         // Calculate the change in the allocation amount
-        int64_t amount_change = amount.amount - iter->tokens_allocated.amount;
+        int64_t amount_change = new_amount.amount - iter->tokens_allocated.amount;
 
         // Modify the table row data, and update the table
         vesting_table.modify(iter, get_self(), [&](auto &row)
                              {
-            row.tokens_allocated = amount;
-            row.vesting_category_type = category_id; });
+            row.tokens_allocated = new_amount;
+            row.vesting_category_type = new_category_id; });
 
         // Notify the holder
         eosio::require_recipient(holder);

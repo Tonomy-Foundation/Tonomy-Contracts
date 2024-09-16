@@ -126,7 +126,7 @@ namespace vestingtoken
          * @param amount {asset} - The new amount of tokens to be assigned.
          * @param category_id {int} - The new vesting category for the assigned tokens.
          */
-        [[eosio::action]] void migratealloc(eosio::name sender, name holder, uint64_t allocation_id, eosio::asset amount, int category_id);
+        [[eosio::action]] void migratealloc(eosio::name sender, name holder, uint64_t allocation_id, eosio::asset old_amount, eosio::asset new_amount, int old_category_id, int new_category_id);
 
         using setsettings_action = action_wrapper<"setsettings"_n, &vestingToken::setsettings>;
         using assigntokens_action = action_wrapper<"assigntokens"_n, &vestingToken::assigntokens>;
