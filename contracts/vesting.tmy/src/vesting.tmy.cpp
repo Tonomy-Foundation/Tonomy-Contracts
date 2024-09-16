@@ -11,6 +11,12 @@ namespace vestingtoken
         eosio::check(asset.amount > 0, "Amount must be greater than 0");
     }
 
+    void check_category(int category_id)
+    {
+        eosio::check(vesting_categories.contains(category_id), "Invalid new vesting category");
+        eosio::check(!depreciated_categories.contains(category_id), "New category is depreciated");
+    }
+
     void vestingToken::setsettings(string sales_date_str, string launch_date_str)
     {
         require_auth(get_self());
@@ -25,12 +31,7 @@ namespace vestingtoken
 
     void vestingToken::assigntokens(eosio::name sender, eosio::name holder, eosio::asset amount, int category_id)
     {
-        // Check if the provided category exists in the map
-        eosio::check(vesting_categories.contains(category_id), "Invalid vesting category");
-        // Check if the category is not in the list of depreciated categories
-        eosio::check(!depreciated_categories.contains(category_id), "Category is depreciated");
-
-        // Check the symbol is correct and valid
+        check_category(category_id);
         check_asset(amount);
 
         // Create a new vesting schedule
@@ -152,10 +153,7 @@ namespace vestingtoken
     {
         require_auth(get_self());
 
-        // Check if the provided category exists in the map
-        eosio::check(vesting_categories.contains(new_category_id), "Invalid vesting category");
-
-        // Check the symbol is correct and valid
+        check_category(new_category_id);
         check_asset(new_amount);
 
         // Get the vesting allocations
@@ -163,15 +161,10 @@ namespace vestingtoken
         auto iter = vesting_table.find(allocation_id);
         eosio::check(iter != vesting_table.end(), "Allocation not found");
 
-        // Check the new category is not in the list of depreciated categories
-        eosio::check(depreciated_categories.at(new_category_id), "Category is depreciated");
-
-        // Check the old amount and category match the existing allocation
-        eosio::check(iter->tokens_allocated == old_amount, "Old amount does not match existing allocation");
+        // Checks to verify new allocation is valid
+        eosio::check(iter->tokens_allocated.amount == old_amount.amount, "Old amount does not match existing allocation");
         eosio::check(iter->vesting_category_type == old_category_id, "Old category does not match existing allocation");
-
-        // Calculate the change in the allocation amount
-        int64_t amount_change = new_amount.amount - iter->tokens_allocated.amount;
+        eosio::check(iter->tokens_claimed.amount < new_amount.amount, "New amount is less than the amount already claimed");
 
         // Modify the table row data, and update the table
         vesting_table.modify(iter, get_self(), [&](auto &row)
@@ -182,13 +175,16 @@ namespace vestingtoken
         // Notify the holder
         eosio::require_recipient(holder);
 
+        // // Calculate the change in the allocation amount
+        int64_t amount_change = new_amount.amount - old_amount.amount;
+
         // If new tokens were allocated, then send them to the contract
         if (amount_change > 0)
         {
             eosio::action({sender, "active"_n},
                           token_contract_name,
                           "transfer"_n,
-                          std::make_tuple(sender, get_self(), amount_change, std::string("Allocated vested funds")))
+                          std::make_tuple(sender, get_self(), eosio::asset(amount_change, old_amount.symbol), std::string("Re-allocated vested funds")))
                 .send();
         }
         // If tokens were removed, send them back to the sender
@@ -197,7 +193,7 @@ namespace vestingtoken
             eosio::action({get_self(), "active"_n},
                           token_contract_name,
                           "transfer"_n,
-                          std::make_tuple(get_self(), sender, -amount_change, std::string("Refunded vested funds")))
+                          std::make_tuple(get_self(), sender, eosio::asset(-amount_change, old_amount.symbol), std::string("Refunded vested funds")))
                 .send();
         }
     }
