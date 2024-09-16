@@ -27,6 +27,8 @@ namespace vestingtoken
     {
         // Check if the provided category exists in the map
         eosio::check(vesting_categories.contains(category_id), "Invalid vesting category");
+        // Check if the category is not in the list of depreciated categories
+        eosio::check(depreciated_categories.at(category_id), "Category is depreciated");
 
         // Check the symbol is correct and valid
         check_asset(amount);

@@ -47,6 +47,8 @@ namespace vestingtoken
         {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.0}}, // TESTING ONLY
     };
 
+    static const std::map<int, bool> depreciated_categories = {{1, true}, {2, true}};
+
     class [[eosio::contract("vesting.tmy")]] vestingToken : public eosio::contract
     {
     public:
