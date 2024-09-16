@@ -116,8 +116,14 @@ namespace vestingtoken
                 }
                 else
                 {
+                    // Calculate the percentage of the vesting period that has passed
                     double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
-                    claimable = vesting_allocation.tokens_allocated.amount * std::min((vesting_finished + category.tge_unlock), 1.0);
+                    // Calculate the claimable amount:
+                    // + tokens allocated * TGE unlock percentage
+                    // + tokens allocated * % of vesting time that has passed * what is left after TGE unlock
+                    claimable = vesting_allocation.tokens_allocated.amount * ((1.0 - category.tge_unlock) * vesting_finished + category.tge_unlock);
+                    // Ensure the claimable amount is not greater than the total allocated amount
+                    claimable = std::min(claimable, vesting_allocation.tokens_allocated.amount);
                 }
 
                 total_claimable += claimable - vesting_allocation.tokens_claimed.amount;

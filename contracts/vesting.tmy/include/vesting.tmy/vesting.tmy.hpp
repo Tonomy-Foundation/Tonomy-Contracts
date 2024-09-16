@@ -29,7 +29,7 @@ namespace vestingtoken
     };
 
     static const std::map<int, vesting_category> vesting_categories = {
-        // Depreciated:
+        // DEPRECIATED:
         {1, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}}, // Seed Private Sale (DEPRECIATED),
         {2, {days(6 * 30), days(6 * 30), days(2 * 365), 0.0}}, // Strategic Partnerships Private Sale (DEPRECIATED),
         // Unchanged:
@@ -46,7 +46,7 @@ namespace vestingtoken
 
         // TESTING ONLY:
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
-        {998, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.5}}, // TESTING ONLY
+        {998, {eosio::seconds(0), eosio::seconds(10), eosio::seconds(20), 0.5}},  // TESTING ONLY
         {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.0}}, // TESTING ONLY
     };
 
