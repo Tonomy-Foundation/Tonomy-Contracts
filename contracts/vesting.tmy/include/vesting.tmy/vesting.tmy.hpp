@@ -25,14 +25,14 @@ namespace vestingtoken
         microseconds cliff_period;
         microseconds start_delay;
         microseconds vesting_period;
-        float tge_unlock;
+        double tge_unlock;
     };
 
     static const std::map<int, vesting_category> vesting_categories = {
         // Depreciated:
         {1, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}}, // Seed Private Sale (DEPRECIATED),
         {2, {days(6 * 30), days(6 * 30), days(2 * 365), 0.0}}, // Strategic Partnerships Private Sale (DEPRECIATED),
-        // Old:
+        // Unchanged:
         {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},   // Public Sale (DO NOT USED YET),
         {4, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}}, // Team and Advisors, Ecosystem
         {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}},  // Legal and Compliance
@@ -41,8 +41,11 @@ namespace vestingtoken
         // New (replacing depreciated):
         {8, {days(0 * 30), days(0 * 30), days(2 * 365), 0.05}},  // Seed (Early Bird)
         {9, {days(0 * 30), days(0 * 30), days(2 * 365), 0.025}}, // Seed (Last Chance)
-        {10, {days(0 * 30), days(0 * 30), days(2 * 365), 1.0}},  // Public (TGE)
+        {10, {days(0 * 30), days(14), days(0 * 365), 1.0}},      // Public (TGE)
+        // Public sale has a delay of 14 days to accommodate the "right of withdrawal" under EU's MICA regulations
 
+        // TESTING ONLY:
+        {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
         {998, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.5}}, // TESTING ONLY
         {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.0}}, // TESTING ONLY
     };

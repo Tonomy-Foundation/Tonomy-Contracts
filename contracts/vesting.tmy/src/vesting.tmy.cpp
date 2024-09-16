@@ -28,7 +28,7 @@ namespace vestingtoken
         // Check if the provided category exists in the map
         eosio::check(vesting_categories.contains(category_id), "Invalid vesting category");
         // Check if the category is not in the list of depreciated categories
-        eosio::check(depreciated_categories.at(category_id), "Category is depreciated");
+        eosio::check(!depreciated_categories.contains(category_id), "Category is depreciated");
 
         // Check the symbol is correct and valid
         check_asset(amount);
@@ -100,13 +100,13 @@ namespace vestingtoken
             vesting_category category = vesting_categories.at(vesting_allocation.vesting_category_type);
 
             time_point vesting_start = launch_date + category.start_delay;
-            time_point cliff_over = vesting_start + category.cliff_period;
+            time_point cliff_finished = vesting_start + category.cliff_period;
 
             // Calculate the vesting end time
             time_point vesting_end = vesting_start + category.vesting_period;
 
             // Check if vesting period after cliff has started
-            if (now >= cliff_over)
+            if (now >= cliff_finished)
             {
                 // Calculate the total claimable amount
                 int64_t claimable = 0;
@@ -117,7 +117,7 @@ namespace vestingtoken
                 else
                 {
                     double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
-                    claimable = vesting_allocation.tokens_allocated.amount * (vesting_finished + category.tge_unlock);
+                    claimable = vesting_allocation.tokens_allocated.amount * std::min((vesting_finished + category.tge_unlock), 1.0);
                 }
 
                 total_claimable += claimable - vesting_allocation.tokens_claimed.amount;
