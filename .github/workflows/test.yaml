@@ -1,11 +1,7 @@
 name: Compile all smart contracts
 
 on:
-  pull_request:
-    branches:
-      - master
-      - testnet
-      - development
+  push
       
 jobs:
   compile:
