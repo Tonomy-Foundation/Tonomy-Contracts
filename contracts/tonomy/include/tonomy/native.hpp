@@ -7,10 +7,11 @@
 #include <eosio/privileged.hpp>
 #include <eosio/producer_schedule.hpp>
 #include <eosio/asset.hpp>
+#include <eosio/singleton.hpp>
+#include <eosio.tonomy/eosio.tonomy.hpp>
 
-namespace eosiobios
+namespace tonomysystem
 {
-
    using eosio::action_wrapper;
    using eosio::asset;
    using eosio::check;
@@ -18,84 +19,30 @@ namespace eosiobios
    using eosio::ignore;
    using eosio::name;
    using eosio::permission_level;
+   using eosio::print;
    using eosio::public_key;
+   using eosio::singleton;
+   using std::string;
 
-   struct permission_level_weight
-   {
-      permission_level permission;
-      uint16_t weight;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(permission_level_weight, (permission)(weight))
-   };
-
-   struct key_weight
-   {
-      eosio::public_key key;
-      uint16_t weight;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(key_weight, (key)(weight))
-   };
-
-   struct wait_weight
-   {
-      uint32_t wait_sec;
-      uint16_t weight;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(wait_weight, (wait_sec)(weight))
-   };
-
-   struct authority
-   {
-      uint32_t threshold = 0;
-      std::vector<key_weight> keys;
-      std::vector<permission_level_weight> accounts;
-      std::vector<wait_weight> waits;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(authority, (threshold)(keys)(accounts)(waits))
-   };
+   using eosiotonomy::authority;
+   using eosiotonomy::block_header;
+   using eosiotonomy::key_weight;
+   using eosiotonomy::permission_level_weight;
+   using eosiotonomy::wait_weight;
 
    /**
-    * Blockchain block header.
-    *
-    * A block header is defined by:
-    * - a timestamp,
-    * - the producer that created it,
-    * - a confirmed flag default as zero,
-    * - a link to previous block,
-    * - a link to the transaction merkel root,
-    * - a link to action root,
-    * - a schedule version,
-    * - and a producers' schedule.
-    */
-   struct block_header
-   {
-      uint32_t timestamp;
-      name producer;
-      uint16_t confirmed = 0;
-      checksum256 previous;
-      checksum256 transaction_mroot;
-      checksum256 action_mroot;
-      uint32_t schedule_version = 0;
-      std::optional<eosio::producer_schedule> new_producers;
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE(block_header, (timestamp)(producer)(confirmed)(previous)(transaction_mroot)(action_mroot)(schedule_version)(new_producers))
-   };
-
-   /**
-    * The `eosio.bios` is the first sample of system contract provided by `block.one` through the EOSIO platform. It is a minimalist system contract because it only supplies the actions that are absolutely critical to bootstrap a chain and nothing more. This allows for a chain agnostic approach to bootstrapping a chain.
+    * The `eosio.tonomy` is the first sample of system contract provided by `block.one` through the EOSIO platform. It is a minimalist system contract because it only supplies the actions that are absolutely critical to bootstrap a chain and nothing more. This allows for a chain agnostic approach to bootstrapping a chain.
     *
     * Just like in the `eosio.system` sample contract implementation, there are a few actions which are not implemented at the contract level (`newaccount`, `updateauth`, `deleteauth`, `linkauth`, `unlinkauth`, `canceldelay`, `onerror`, `setabi`, `setcode`), they are just declared in the contract so they will show in the contract's ABI and users will be able to push those actions to the chain via the account holding the `eosio.system` contract, but the implementation is at the EOSIO core level. They are referred to as EOSIO native actions.
     */
-   class [[eosio::contract("eosio.bios")]] bios : public eosio::contract
+   class [[eosio::contract("tonomy")]] native : public eosio::contract
    {
-
    public:
       using contract::contract;
+      static constexpr eosio::name governance_name = "tonomy"_n;
+
+      native(name receiver, name code, eosio::datastream<const char *> ds) : contract(receiver, code, ds) {}
+
       /**
        * New account action, called after a new account is created. This code enforces resource-limits rules
        * for new accounts as well as new account naming conventions.
@@ -110,24 +57,23 @@ namespace eosiobios
        */
       [[eosio::action]] void newaccount(name creator,
                                         name name,
-                                        ignore<authority> owner,
-                                        ignore<authority> active)
-      {
-      }
+                                        authority owner,
+                                        authority active);
       /**
        * Update authorization action updates pemission for an account.
        *
        * @param account - the account for which the permission is updated,
        * @param pemission - the permission name which is updated,
        * @param parem - the parent of the permission which is updated,
-       * @param auth - the json describing the permission authorization.
+       * @param auth - the json describing the permission authorization,
+       * @param auth_parent - true if the parent permission should be checked, otherwise the "permission" will be used to authorize.
+       *                      should be true when a new permission is being created, otherwise false
        */
-      [[eosio::action]] void updateauth(ignore<name> account,
-                                        ignore<name> permission,
-                                        ignore<name> parent,
-                                        ignore<authority> auth)
-      {
-      }
+      [[eosio::action]] void updateauth(name account,
+                                        name permission,
+                                        name parent,
+                                        authority auth,
+                                        bool auth_parent);
 
       /**
        * Delete authorization action deletes the authorization for an account's permission.
@@ -135,10 +81,8 @@ namespace eosiobios
        * @param account - the account for which the permission authorization is deleted,
        * @param permission - the permission name been deleted.
        */
-      [[eosio::action]] void deleteauth(ignore<name> account,
-                                        ignore<name> permission)
-      {
-      }
+      [[eosio::action]] void deleteauth(name account,
+                                        name permission);
 
       /**
        * Link authorization action assigns a specific action from a contract to a permission you have created. Five system
@@ -155,12 +99,10 @@ namespace eosiobios
        * @param type - the action to be linked,
        * @param requirement - the permission to be linked.
        */
-      [[eosio::action]] void linkauth(ignore<name> account,
-                                      ignore<name> code,
-                                      ignore<name> type,
-                                      ignore<name> requirement)
-      {
-      }
+      [[eosio::action]] void linkauth(name account,
+                                      name code,
+                                      name type,
+                                      name requirement);
 
       /**
        * Unlink authorization action it's doing the reverse of linkauth action, by unlinking the given action.
@@ -169,11 +111,9 @@ namespace eosiobios
        * @param code - the owner of the action to be unlinked,
        * @param type - the action to be unlinked.
        */
-      [[eosio::action]] void unlinkauth(ignore<name> account,
-                                        ignore<name> code,
-                                        ignore<name> type)
-      {
-      }
+      [[eosio::action]] void unlinkauth(name account,
+                                        name code,
+                                        name type);
 
       /**
        * Cancel delay action cancels a deferred transaction.
@@ -181,9 +121,7 @@ namespace eosiobios
        * @param canceling_auth - the permission that authorizes this action,
        * @param trx_id - the deferred transaction id to be cancelled.
        */
-      [[eosio::action]] void canceldelay(ignore<permission_level> canceling_auth, ignore<checksum256> trx_id)
-      {
-      }
+      [[eosio::action]] void canceldelay(permission_level canceling_auth, checksum256 trx_id);
 
       /**
        * Set code action sets the contract code for an account.
@@ -193,9 +131,7 @@ namespace eosiobios
        * @param vmversion - reserved, set it to zero.
        * @param code - the code content to be set, in the form of a blob binary..
        */
-      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code)
-      {
-      }
+      [[eosio::action]] void setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code);
 
       /**
        * Set abi action sets the abi for contract identified by `account` name. Creates an entry in the abi_hash_table
@@ -215,7 +151,7 @@ namespace eosiobios
        * @param sender_id - the id for the deferred transaction chosen by the sender,
        * @param sent_trx - the deferred transaction that failed.
        */
-      [[eosio::action]] void onerror(ignore<uint128_t> sender_id, ignore<std::vector<char>> sent_trx);
+      [[eosio::action]] void onerror(uint128_t sender_id, std::vector<char> sent_trx);
 
       /**
        * Set privilege action allows to set privilege status for an account (turn it on/off).
@@ -273,39 +209,21 @@ namespace eosiobios
        */
       [[eosio::action]] void reqactivated(const eosio::checksum256 &feature_digest);
 
-      /**
-       * On block action. This special action is triggered when a block is applied by the given producer
-       * and cannot be generated from any other source.
-       *
-       * @param header - the block header produced.
-       */
-      [[eosio::action]] void onblock(ignore<block_header> header) {}
-
-      struct [[eosio::table]] abi_hash
-      {
-         name owner;
-         checksum256 hash;
-         uint64_t primary_key() const { return owner.value; }
-
-         EOSLIB_SERIALIZE(abi_hash, (owner)(hash))
-      };
-
-      typedef eosio::multi_index<"abihash"_n, abi_hash> abi_hash_table;
-
-      using newaccount_action = action_wrapper<"newaccount"_n, &bios::newaccount>;
-      using updateauth_action = action_wrapper<"updateauth"_n, &bios::updateauth>;
-      using deleteauth_action = action_wrapper<"deleteauth"_n, &bios::deleteauth>;
-      using linkauth_action = action_wrapper<"linkauth"_n, &bios::linkauth>;
-      using unlinkauth_action = action_wrapper<"unlinkauth"_n, &bios::unlinkauth>;
-      using canceldelay_action = action_wrapper<"canceldelay"_n, &bios::canceldelay>;
-      using setcode_action = action_wrapper<"setcode"_n, &bios::setcode>;
-      using setabi_action = action_wrapper<"setabi"_n, &bios::setabi>;
-      using setpriv_action = action_wrapper<"setpriv"_n, &bios::setpriv>;
-      using setalimits_action = action_wrapper<"setalimits"_n, &bios::setalimits>;
-      using setprods_action = action_wrapper<"setprods"_n, &bios::setprods>;
-      using setparams_action = action_wrapper<"setparams"_n, &bios::setparams>;
-      using reqauth_action = action_wrapper<"reqauth"_n, &bios::reqauth>;
-      using activate_action = action_wrapper<"activate"_n, &bios::activate>;
-      using reqactivated_action = action_wrapper<"reqactivated"_n, &bios::reqactivated>;
+      using newaccount_action = action_wrapper<"newaccount"_n, &native::newaccount>;
+      using updateauth_action = action_wrapper<"updateauth"_n, &native::updateauth>;
+      using deleteauth_action = action_wrapper<"deleteauth"_n, &native::deleteauth>;
+      using linkauth_action = action_wrapper<"linkauth"_n, &native::linkauth>;
+      using unlinkauth_action = action_wrapper<"unlinkauth"_n, &native::unlinkauth>;
+      using canceldelay_action = action_wrapper<"canceldelay"_n, &native::canceldelay>;
+      using setcode_action = action_wrapper<"setcode"_n, &native::setcode>;
+      using setabi_action = action_wrapper<"setabi"_n, &native::setabi>;
+      using onerror_action = action_wrapper<"onerror"_n, &native::onerror>;
+      using setpriv_action = action_wrapper<"setpriv"_n, &native::setpriv>;
+      using setalimits_action = action_wrapper<"setalimits"_n, &native::setalimits>;
+      using setprods_action = action_wrapper<"setprods"_n, &native::setprods>;
+      using setparams_action = action_wrapper<"setparams"_n, &native::setparams>;
+      using reqauth_action = action_wrapper<"reqauth"_n, &native::reqauth>;
+      using activate_action = action_wrapper<"activate"_n, &native::activate>;
+      using reqactivated_action = action_wrapper<"reqactivated"_n, &native::reqactivated>;
    };
 }

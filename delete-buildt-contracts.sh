@@ -9,11 +9,14 @@ PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 echo "Deleting built smart contracts"
 
 CONTRACTS=(
-    "eosio.boot"
+    "demo.tmy"
     "eosio.bios"
-    "eosio.bios.tonomy"
+    "eosio.boot"
+    "eosio.msig"
     "eosio.token"
-    "id.tmy"
+    "eosio.tonomy"
+    "tonomy"
+    "vesting.tmy"
 )
 for CONTRACT in "${CONTRACTS[@]}"
 do

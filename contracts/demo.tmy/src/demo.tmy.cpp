@@ -1,4 +1,4 @@
-#include <eosio.token/eosio.token.hpp>
+#include <demo.tmy/demo.tmy.hpp>
 
 namespace eosio
 {
@@ -9,6 +9,7 @@ namespace eosio
       require_auth(get_self());
 
       auto sym = maximum_supply.symbol;
+      check(sym.is_valid(), "invalid symbol name");
       check(maximum_supply.is_valid(), "invalid supply");
       check(maximum_supply.amount > 0, "max-supply must be positive");
 
@@ -26,7 +27,6 @@ namespace eosio
    void token::issue(const name &to, const asset &quantity, const string &memo)
    {
       auto sym = quantity.symbol;
-
       check(sym.is_valid(), "invalid symbol name");
       check(memo.size() <= 256, "memo has more than 256 bytes");
 
@@ -46,7 +46,31 @@ namespace eosio
       statstable.modify(st, same_payer, [&](auto &s)
                         { s.supply += quantity; });
 
-      add_balance(st.issuer, quantity, get_self());
+      add_balance(st.issuer, quantity, st.issuer);
+   }
+
+   void token::selfissue(const name &to, const asset &quantity, const string &memo)
+   {
+      auto sym = quantity.symbol;
+      check(sym.is_valid(), "invalid symbol name");
+      check(memo.size() <= 256, "memo has more than 256 bytes");
+
+      stats statstable(get_self(), sym.code().raw());
+      auto existing = statstable.find(sym.code().raw());
+      check(existing != statstable.end(), "token with symbol does not exist, create token before issue");
+      const auto &st = *existing;
+
+      require_auth({to, get_self()});
+      check(quantity.is_valid(), "invalid quantity");
+      check(quantity.amount > 0, "must issue positive quantity");
+
+      check(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+      check(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+
+      statstable.modify(st, same_payer, [&](auto &s)
+                        { s.supply += quantity; });
+
+      add_balance(to, quantity, to);
    }
 
    void token::retire(const asset &quantity, const string &memo)
@@ -78,11 +102,9 @@ namespace eosio
                         const string &memo)
    {
       check(from != to, "cannot transfer to self");
-      require_auth(from);
+
+      require_auth({from, get_self()});
       check(is_account(to), "to account does not exist");
-
-      // TODO need to write vesting contract code
-
       auto sym = quantity.symbol.code();
       stats statstable(get_self(), sym.raw());
       const auto &st = statstable.get(sym.raw());
@@ -95,7 +117,7 @@ namespace eosio
       check(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
       check(memo.size() <= 256, "memo has more than 256 bytes");
 
-      auto payer = get_self();
+      auto payer = has_auth(to) ? to : from;
 
       sub_balance(from, quantity);
       add_balance(to, quantity, payer);
@@ -108,7 +130,7 @@ namespace eosio
       const auto &from = from_acnts.get(value.symbol.code().raw(), "no balance object found");
       check(from.balance.amount >= value.amount, "overdrawn balance");
 
-      from_acnts.modify(from, get_self(), [&](auto &a)
+      from_acnts.modify(from, owner, [&](auto &a)
                         { a.balance -= value; });
    }
 
@@ -157,5 +179,4 @@ namespace eosio
       check(it->balance.amount == 0, "Cannot close because the balance is not zero.");
       acnts.erase(it);
    }
-
 } /// namespace eosio
