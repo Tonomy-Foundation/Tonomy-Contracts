@@ -24,19 +24,19 @@ jobs:
         run: ./contracts/tonomy/build.sh local
 
       - name: Add eosio.boot contracts to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: eosio.boot
           path: ./contracts/eosio.boot
 
       - name: Add eosio.bios contracts to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: eosio.bios
           path: ./contracts/eosio.bios
 
       - name: Add built contracts to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tonomy
           path: ./contracts/tonomy
