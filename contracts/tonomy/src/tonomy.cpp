@@ -381,7 +381,7 @@ namespace tonomysystem
       else
       {
          // Singleton does not exist, set the values and also set other values to 0
-         config = resource_config{ram_price, ram_fee, total_ram_available, 0, 0, 0};
+         config = resource_config{ram_fee, ram_price, total_ram_available, 0, 0, 0};
       }
 
       // Save the modified or new config back to the singleton
@@ -428,8 +428,8 @@ namespace tonomysystem
       // Read values from the table
       double ram_price = config.ram_price;
       double ram_fee = (1.0 + config.ram_fee);
-      uint64_t ram_purchase = (ram_price / ram_fee) * quant.amount;
-
+      double amount = static_cast<double>(quant.amount) / pow(10, quant.symbol.precision());
+      uint64_t ram_purchase = amount * ram_price / ram_fee;
       eosio::check(config.total_ram_available >= config.total_ram_used + ram_purchase, "Not enough RAM available");
 
       // modify the values and save them back to the table,
@@ -439,6 +439,7 @@ namespace tonomysystem
       // Allocate the RAM
       int64_t myRAM, myNET, myCPU;
       eosio::get_resource_limits(app, myRAM, myNET, myCPU);
+      eosio::print("RAM: ", myRAM, " --> ", myRAM + ram_purchase);
       eosio::set_resource_limits(app, myRAM + ram_purchase, myNET, myNET);
 
       eosio::action(permission_level{dao_owner, "active"_n},
@@ -472,17 +473,20 @@ namespace tonomysystem
       // Read values from the table
       double ram_price = config.ram_price;
       double ram_fee = (1.0 + config.ram_fee);
-      uint64_t ram_sold = ram_price * ram_fee * quant.amount;
+      double amount = static_cast<double>(quant.amount) / pow(10, quant.symbol.precision());
+      uint64_t ram_sold = ram_price * ram_fee * amount;
 
-      eosio::check(config.total_ram_used >= quant.amount, "Not enough RAM to sell");
       // Modify the values and save them back to the table
-      config.total_ram_used -= quant.amount;
+      config.total_ram_used -= ram_sold;
+      eosio::check(config.total_ram_used >= 0, "Cannot have less than 0 RAM used");
       resource_config_singleton.set(config, get_self());
 
       // Deallocate the RAM
       int64_t myRAM, myNET, myCPU;
       eosio::get_resource_limits(app, myRAM, myNET, myCPU);
-      eosio::set_resource_limits(app, myRAM - quant.amount, myNET, myNET);
+      eosio::print("RAM: ", myRAM, " --> ", myRAM - ram_sold);
+      eosio::check(myRAM - ram_sold >= 0, "Account cannot have less than 0 RAM");
+      eosio::set_resource_limits(app, myRAM - ram_sold, myNET, myNET);
 
       // Transfer token and sell RAM
       // TODO should buy and sell from proxy counttract, otherwise cannot autorize to sell ram
