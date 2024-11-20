@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - name: Get built contracts from cache
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: tonomy
           path: contracts/tonomy
@@ -79,13 +79,13 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Get eosio.boot contracts from cache
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: eosio.boot
           path: contracts/eosio.boot
 
       - name: Get eosio.bios contracts from cache
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: eosio.bios
           path: contracts/eosio.bios
