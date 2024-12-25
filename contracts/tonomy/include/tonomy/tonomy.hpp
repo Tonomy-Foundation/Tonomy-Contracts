@@ -207,7 +207,7 @@ namespace tonomysystem
        * @param account_name - the account name of the staker
        * @param allocation_id - the ID of the staking allocation
        */
-      [[eosio::action]] void requestunstake(name account_name, uint64_t allocation_id);
+      [[eosio::action]] void requnstake(name account_name, uint64_t allocation_id);
 
       /**
        * Finalize the unstaking process after 5 days
@@ -215,7 +215,7 @@ namespace tonomysystem
        * @param account_name - the account name of the staker
        * @param allocation_id - the ID of the staking allocation
        */
-      [[eosio::action]] void finalizeunstake(name account_name, uint64_t allocation_id);
+      [[eosio::action]] void releasetoken(name account_name, uint64_t allocation_id);
 
       struct [[eosio::table]] account_type_struct
       {
@@ -298,11 +298,11 @@ namespace tonomysystem
          uint64_t id;
          eosio::name account_name; // The account name of the staker.
          eosio::asset tokens_staked; //The amount of tokens staked.
-         eosio::time_point stake_start_time; //The time when the staking started.
+         eosio::time_point stake_time; //The time when the staking started.
          eosio::time_point unstake_time; //The time when the unstaking will occur.
-         bool is_unstaking; //A flag indicating whether the tokens are currently being unstaked.
+         bool unstake_requested; //A flag indicating whether the tokens are currently being unstaked.
          uint64_t primary_key() const { return id; }
-         EOSLIB_SERIALIZE(struct staking_allocation, (id)(account_name)(tokens_staked)(stake_start_time)(unstake_time)(is_unstaking))
+         EOSLIB_SERIALIZE(struct staking_allocation, (id)(account_name)(tokens_staked)(stake_time)(unstake_time)(unstake_requested))
       };
 
       // Define the mapping of staking allocations
@@ -358,7 +358,7 @@ namespace tonomysystem
       using buyram_action = action_wrapper<"buyram"_n, &tonomy::buyram>;
       using sellram_action = action_wrapper<"sellram"_n, &tonomy::sellram>;
       using staketokens_action = action_wrapper<"staketokens"_n, &tonomy::staketokens>;
-      using requestunstake_action = action_wrapper<"requestunstake"_n, &tonomy::requestunstake>;
-      using finalizeunstake_action = action_wrapper<"finalizeunstake"_n, &tonomy::finalizeunstake>;
+      using requnstake_action = action_wrapper<"requnstake"_n, &tonomy::requnstake>;
+      using releasetoken_action = action_wrapper<"releasetoken"_n, &tonomy::releasetoken>;
    };
 }

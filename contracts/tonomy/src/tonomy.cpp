@@ -500,12 +500,12 @@ namespace tonomysystem
    void tonomy::staketokens(name account_name, asset quantity) {
       require_auth(account_name);
       eosio::check(quantity.amount > 0, "Stake quantity must be greater than zero.");
-      staking_table _staking(get_self(), get_self().value);
+      staking_allocations _staking(get_self(), get_self().value);
 
       _staking.emplace(account_name, [&](auto& row) {
          row.id = _staking.available_primary_key();
          row.account_name = account_name;
-         row.quantity = quantity;
+         row.tokens_staked = quantity;
          row.stake_time = eosio::current_time_point();
          row.unstake_time = eosio::time_point_sec(0); // not unstaked yet
          row.unstake_requested = false;
@@ -520,10 +520,10 @@ namespace tonomysystem
       ).send();
    }  
 
-   void tonomy::requestunstake(name account_name, uint64_t allocation_id) {
+   void tonomy::requnstake(name account_name, uint64_t allocation_id) {
       require_auth(account_name);
 
-      staking_table _staking(get_self(), get_self().value);
+      staking_allocations _staking(get_self(), get_self().value);
       auto itr = _staking.find(allocation_id);
       check(itr != _staking.end(), "Staking allocation not found");
       check(itr->account_name == account_name, "Not authorized to unstake this allocation");
@@ -535,10 +535,10 @@ namespace tonomysystem
       });
    }
 
-   void tonomy::finalizeunstake(name account_name, uint64_t allocation_id) {
+   void tonomy::releasetoken(name account_name, uint64_t allocation_id) {
       require_auth(account_name);
 
-      staking_table _staking(get_self(), get_self().value);
+      staking_allocations _staking(get_self(), get_self().value);
       auto itr = _staking.find(allocation_id);
       check(itr != _staking.end(), "Staking allocation not found");
       check(itr->account_name == account_name, "Not authorized to finalize unstake for this allocation");
@@ -550,7 +550,7 @@ namespace tonomysystem
          eosio::permission_level{get_self(), "active"_n},
          token_contract_name,
          "transfer"_n,
-         std::make_tuple(get_self(), account_name, itr->quantity, std::string("unstake tokens"))
+         std::make_tuple(get_self(), account_name, itr->tokens_staked, std::string("unstake tokens"))
       ).send();
 
       _staking.erase(itr);
