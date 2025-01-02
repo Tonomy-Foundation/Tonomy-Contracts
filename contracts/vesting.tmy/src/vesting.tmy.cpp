@@ -37,19 +37,11 @@ namespace vestingtoken
         // Create a new vesting schedule
         vesting_allocations vesting_table(get_self(), holder.value);
 
-        // Check the number of rows for the user
-        uint32_t num_rows = 0;
-        for (auto itr = vesting_table.begin(); itr != vesting_table.end(); ++itr)
-        {
-            ++num_rows;
-            // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
-            // may no longer be able to withdraw from the account.
-            // For more information, see https://swcregistry.io/docs/SWC-128/
-            if (num_rows >= MAX_ALLOCATIONS)
-            {
-                eosio::check(false, "Too many purchases received on this account.");
-            }
-        }
+        // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
+        // may no longer be able to withdraw from the account.
+        // For more information, see https://swcregistry.io/docs/SWC-128/
+        std::ptrdiff_t allocations_count = std::distance(vesting_table.begin(), vesting_table.end());
+        eosio::check(allocations_count >= MAX_ALLOCATIONS, "Too many purchases received on this account.");
 
         // Calculate the number of seconds since sales start
         time_point now = eosio::current_time_point();
