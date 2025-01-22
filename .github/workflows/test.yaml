@@ -1,8 +1,7 @@
 name: Compile all smart contracts
 
-on:
-  push
-      
+on: push
+
 jobs:
   compile:
     runs-on: ubuntu-20.04
@@ -13,7 +12,7 @@ jobs:
 
       - name: Compile demo.tmy
         run: ./contracts/demo.tmy/build.sh local
-      
+
       - name: Compile eosio.bios
         run: ./contracts/eosio.bios/build.sh local
 
@@ -34,3 +33,6 @@ jobs:
 
       - name: Compile vesting.tmy
         run: ./contracts/vesting.tmy/build.sh local
+
+      - name: Compile staking.tmy
+        run: ./contracts/staking.tmy/build.sh local
