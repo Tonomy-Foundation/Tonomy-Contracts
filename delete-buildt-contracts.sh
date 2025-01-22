@@ -17,6 +17,7 @@ CONTRACTS=(
     "eosio.tonomy"
     "tonomy"
     "vesting.tmy"
+    "staking.tmy"
 )
 for CONTRACT in "${CONTRACTS[@]}"
 do
