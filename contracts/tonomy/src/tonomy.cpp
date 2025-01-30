@@ -330,6 +330,13 @@ namespace tonomysystem
       }
    }
 
+   void tonomy::updateactive(name account, authority active)
+   {
+      // eosio::require_auth(account); // this is not needed as tonomy::tonomy::updateauth_action checks the permission
+      eosiotonomy::bios::updateauth_action updateauthaction("eosio"_n, {account, "active"_n});
+      updateauthaction.send(account, "active"_n, "owner"_n, active);
+   }
+
    void tonomy::loginwithapp(
        name account,
        name app,
