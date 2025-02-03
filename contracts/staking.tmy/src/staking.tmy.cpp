@@ -1,5 +1,8 @@
 #include <staking.tmy/staking.tmy.hpp>
 
+// TODO:
+// - yield function
+
 namespace stakingtoken
 {
    void check_asset(const eosio::asset &asset)
@@ -18,9 +21,13 @@ namespace stakingtoken
 
       stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
 
+      // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
+      // may no longer be able to withdraw from the account.
+      // For more information, see https://swcregistry.io/docs/SWC-128/
       std::ptrdiff_t allocations_count = std::distance(staking_allocations_table.begin(), staking_allocations_table.end());
       eosio::check(allocations_count >= MAX_ALLOCATIONS, "Too many stakes received on this account.");
 
+      // Add the staking allocation
       staking_allocations_table.emplace(get_self(), [&](auto &row)
                        {
          row.id = staking_allocations_table.available_primary_key();
@@ -29,6 +36,25 @@ namespace stakingtoken
          row.stake_time = eosio::current_time_point();
          row.unstake_time = eosio::time_point_sec(0); // not unstaked yet
          row.unstake_requested = false; });
+
+      // Add the user to the accounts table if they are not already there
+      stakingToken::staking_accounts staking_accounts_table(get_self(), get_self().value);
+
+      auto itr = staking_accounts_table.find(staker.value);
+      if (itr == staking_accounts_table.end())
+      {
+         staking_accounts_table.emplace(get_self(), [&](auto &row)
+         {
+            row.staker = staker;
+            row.total_yield = eosio::asset(0, system_resource_currency);
+         });
+      }
+
+      // Update the total staked amount
+      stakingToken::settings_table settings_table_instance(get_self(), get_self().value);
+      staking_settings settings = settings_table_instance.get();
+      settings.total_staked += quantity;
+      settings_table_instance.set(settings, get_self());
 
       // Transfer tokens to the contract
       eosio::action(
@@ -54,7 +80,15 @@ namespace stakingtoken
       staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
       {
          row.unstake_requested = true;
-         row.unstake_time = now; });
+         row.unstake_time = now;
+      });
+
+      // Update the settings total staked and releasing amounts
+      settings_table settings_table_instance(get_self(), get_self().value);
+      staking_settings settings = settings_table_instance.get();
+      settings.total_staked -= itr->tokens_staked;
+      settings.total_releasing += itr->tokens_staked;
+      settings_table_instance.set(settings, get_self());
    }
 
    void stakingToken::releasetoken(name staker, uint64_t allocation_id)
@@ -67,6 +101,12 @@ namespace stakingtoken
       check(itr->staker == staker, "Not authorized to finalize unstake for this allocation");
       check(itr->unstake_requested, "Unstake not requested");
       check(itr->unstake_time + RELEASE_PERIOD > eosio::current_time_point(), "Release period not yet completed");
+
+      // Update the settings total staked and releasing amounts
+      settings_table settings_table_instance(get_self(), get_self().value);
+      staking_settings settings = settings_table_instance.get();
+      settings.total_releasing -= itr->tokens_staked;
+      settings_table_instance.set(settings, get_self());
 
       // Transfer tokens back to the account
       eosio::action(
