@@ -12,7 +12,7 @@ namespace stakingtoken
       _staking.emplace(get_self(), [&](auto &row)
                        {
          row.id = _staking.available_primary_key();
-         row.account_name = staker;
+         row.staker = staker;
          row.tokens_staked = quantity;
          row.stake_time = eosio::current_time_point();
          row.unstake_time = eosio::time_point_sec(0); // not unstaked yet
@@ -34,7 +34,7 @@ namespace stakingtoken
       staking_allocations _staking(get_self(), staker.value);
       auto itr = _staking.find(allocation_id);
       check(itr != _staking.end(), "Staking allocation not found");
-      check(itr->account_name == staker, "Not authorized to unstake this allocation");
+      check(itr->staker == staker, "Not authorized to unstake this allocation");
       check(!itr->unstake_requested, "Unstake already requested");
 
       _staking.modify(itr, eosio::same_payer, [&](auto &row)
@@ -50,7 +50,7 @@ namespace stakingtoken
       staking_allocations _staking(get_self(), staker.value);
       auto itr = _staking.find(allocation_id);
       check(itr != _staking.end(), "Staking allocation not found");
-      check(itr->account_name == staker, "Not authorized to finalize unstake for this allocation");
+      check(itr->staker == staker, "Not authorized to finalize unstake for this allocation");
       check(itr->unstake_requested, "Unstake not requested");
       check(eosio::current_time_point() >= itr->unstake_time, "Unstaking period not yet completed");
 
