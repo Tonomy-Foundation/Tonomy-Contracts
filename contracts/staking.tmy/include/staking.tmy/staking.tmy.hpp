@@ -24,7 +24,11 @@ namespace stakingtoken
     {
     public:
         using contract::contract;
+        static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
         static constexpr eosio::name token_contract_name = "eosio.token"_n;
+        static const uint32_t MAX_ALLOCATIONS = 100;
+        eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
+        eosio::microseconds RELEASE_PERIOD = eosio::days(5);
         
         /**
         * Stake tokens for 30 days

@@ -2,16 +2,28 @@
 
 namespace stakingtoken
 {
+   void check_asset(const eosio::asset &asset)
+   {
+      auto sym = asset.symbol;
+      eosio::check(sym.is_valid(), "invalid amount symbol");
+      eosio::check(sym == stakingToken::system_resource_currency, "Symbol does not match system resource currency");
+      eosio::check(sym.precision() == stakingToken::system_resource_currency.precision(), "Symbol precision does not match");
+      eosio::check(asset.amount > 0, "Amount must be greater than 0");
+   }
+
    void stakingToken::staketokens(name staker, asset quantity)
    {
       // eosio::require_auth(staker); // this is not needed as eosio.token::transfer checks the permission
+      check_asset(quantity);
 
-      eosio::check(quantity.amount > 0, "Stake quantity must be greater than zero.");
-      stakingToken::staking_allocations _staking(get_self(), staker.value);
+      stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
 
-      _staking.emplace(get_self(), [&](auto &row)
+      std::ptrdiff_t allocations_count = std::distance(staking_allocations_table.begin(), staking_allocations_table.end());
+      eosio::check(allocations_count >= MAX_ALLOCATIONS, "Too many stakes received on this account.");
+
+      staking_allocations_table.emplace(get_self(), [&](auto &row)
                        {
-         row.id = _staking.available_primary_key();
+         row.id = staking_allocations_table.available_primary_key();
          row.staker = staker;
          row.tokens_staked = quantity;
          row.stake_time = eosio::current_time_point();
@@ -31,28 +43,30 @@ namespace stakingtoken
    {
       require_auth(staker);
 
-      staking_allocations _staking(get_self(), staker.value);
-      auto itr = _staking.find(allocation_id);
-      check(itr != _staking.end(), "Staking allocation not found");
-      check(itr->staker == staker, "Not authorized to unstake this allocation");
-      check(!itr->unstake_requested, "Unstake already requested");
+      const eosio::time_point now = eosio::current_time_point();
 
-      _staking.modify(itr, eosio::same_payer, [&](auto &row)
-                      {
+      staking_allocations staking_allocations_table(get_self(), staker.value);
+      auto itr = staking_allocations_table.find(allocation_id);
+      check(itr != staking_allocations_table.end(), "Staking allocation not found");
+      check(!itr->unstake_requested, "Unstake already requested");
+      check(itr->stake_time + LOCKUP_PERIOD > now, "Tokens are still locked up");
+
+      staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
+      {
          row.unstake_requested = true;
-         row.unstake_time = eosio::current_time_point() + eosio::days(5); });
+         row.unstake_time = now; });
    }
 
    void stakingToken::releasetoken(name staker, uint64_t allocation_id)
    {
       require_auth(staker);
 
-      staking_allocations _staking(get_self(), staker.value);
-      auto itr = _staking.find(allocation_id);
-      check(itr != _staking.end(), "Staking allocation not found");
+      staking_allocations staking_allocations_table(get_self(), staker.value);
+      auto itr = staking_allocations_table.find(allocation_id);
+      check(itr != staking_allocations_table.end(), "Staking allocation not found");
       check(itr->staker == staker, "Not authorized to finalize unstake for this allocation");
       check(itr->unstake_requested, "Unstake not requested");
-      check(eosio::current_time_point() >= itr->unstake_time, "Unstaking period not yet completed");
+      check(itr->unstake_time + RELEASE_PERIOD > eosio::current_time_point(), "Release period not yet completed");
 
       // Transfer tokens back to the account
       eosio::action(
@@ -62,7 +76,7 @@ namespace stakingtoken
           std::make_tuple(get_self(), staker, itr->tokens_staked, std::string("unstake tokens")))
           .send(); // This will also run eosio::require_auth(get_self())
 
-      _staking.erase(itr);
+      staking_allocations_table.erase(itr);
    }
 
 }
