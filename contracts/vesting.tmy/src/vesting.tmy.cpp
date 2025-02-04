@@ -41,7 +41,7 @@ namespace vestingtoken
         // may no longer be able to withdraw from the account.
         // For more information, see https://swcregistry.io/docs/SWC-128/
         std::ptrdiff_t allocations_count = std::distance(vesting_table.begin(), vesting_table.end());
-        eosio::check(allocations_count >= MAX_ALLOCATIONS, "Too many purchases received on this account.");
+        eosio::check(allocations_count <= MAX_ALLOCATIONS, "Too many purchases received on this account.");
 
         // Calculate the number of seconds since sales start
         time_point now = eosio::current_time_point();

@@ -49,7 +49,7 @@ namespace stakingtoken
       // may no longer be able to withdraw from the account.
       // For more information, see https://swcregistry.io/docs/SWC-128/
       std::ptrdiff_t allocations_count = std::distance(staking_allocations_table.begin(), staking_allocations_table.end());
-      eosio::check(allocations_count >= MAX_ALLOCATIONS, "Too many stakes received on this account.");
+      eosio::check(allocations_count <= MAX_ALLOCATIONS, "Too many stakes received on this account.");
 
       time_point now = eosio::current_time_point();
 
@@ -74,6 +74,7 @@ namespace stakingtoken
             row.staker = staker;
             row.total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
             row.last_payout = now;
+            row.version = 1;
          });
       }
 
@@ -102,7 +103,7 @@ namespace stakingtoken
       auto itr = staking_allocations_table.find(allocation_id);
       check(itr != staking_allocations_table.end(), "Staking allocation not found");
       check(!itr->unstake_requested, "Unstake already requested");
-      check(itr->stake_time + LOCKUP_PERIOD >= now, "Tokens are still locked up");
+      check(itr->stake_time + LOCKUP_PERIOD > now, "Tokens are still locked up");
 
       staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
       {
@@ -127,7 +128,7 @@ namespace stakingtoken
       check(itr != staking_allocations_table.end(), "Staking allocation not found");
       check(itr->staker == staker, "Not authorized to finalize unstake for this allocation");
       check(itr->unstake_requested, "Unstake not requested");
-      check(itr->unstake_time + RELEASE_PERIOD >= eosio::current_time_point(), "Release period not yet completed");
+      check(itr->unstake_time + RELEASE_PERIOD > eosio::current_time_point(), "Release period not yet completed");
 
       // Update the settings total staked and releasing amounts
       settings_table settings_table_instance(get_self(), get_self().value);
@@ -197,7 +198,7 @@ namespace stakingtoken
       // Calculate the range of account names for this batch
       uint64_t range_size = (HIGHEST_PERSON_NAME - LOWEST_PERSON_NAME) / 24;
       uint64_t lower_bound = LOWEST_PERSON_NAME + (current_hour * range_size);
-      uint64_t upper_bound = (current_hour == 23) ? HIGHEST_PERSON_NAME : (lower_bound + range_size);
+      uint64_t upper_bound = (current_hour == 23) ? HIGHEST_PERSON_NAME + 1 : (lower_bound + range_size);
 
       // Find the first account in the range
       auto itr = staking_accounts_table.lower_bound(lower_bound);
