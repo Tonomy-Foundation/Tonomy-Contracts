@@ -172,6 +172,41 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
+   void stakingToken::yieldcron()
+   {
+      // If the sender is not the system contract, require auth
+      // This is so that it can be run from the eosio::onblock() action as a cron
+      // or alternatively be called manually if needed
+      if (eosio::get_sender() != SYSTEM_CONTRACT) {
+         require_auth(get_self());
+      }
+
+      staking_accounts staking_accounts_table(get_self(), get_self().value);
+      
+      // this is going to be called every hour of the day
+      // for each hour, we will iterate through 1/24th of the stakers using the staker.value
+      // this is to avoid hitting the CPU limit
+
+       // Determine the batch to process based on the current hour
+      uint8_t current_hour = (eosio::current_time_point().sec_since_epoch() / 3600) % 24;
+
+      // Calculate the range of account names for this batch
+      uint64_t range_size = (HIGHEST_PERSON_NAME - LOWEST_PERSON_NAME) / 24;
+      uint64_t lower_bound = LOWEST_PERSON_NAME + (current_hour * range_size);
+      uint64_t upper_bound = (current_hour == 23) ? HIGHEST_PERSON_NAME : (lower_bound + range_size);
+
+      // Find the first account in the range
+      auto itr = staking_accounts_table.lower_bound(lower_bound);
+
+      while (itr != staking_accounts_table.end() && itr->staker.value < upper_bound)
+      {
+         create_account_yield(itr->staker);
+         itr++;
+      }
+
+
+   }
+
    void stakingToken::create_account_yield(name staker)
    {
       stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
