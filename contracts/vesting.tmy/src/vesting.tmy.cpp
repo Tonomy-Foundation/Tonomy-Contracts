@@ -40,7 +40,7 @@ namespace vestingtoken
         // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
         // may no longer be able to withdraw from the account.
         // For more information, see https://swcregistry.io/docs/SWC-128/
-        std::ptrdiff_t allocations_count = std::distance(vesting_table.begin(), vesting_table.end());
+        std::ptrdiff_t allocations_count = vesting_table.begin() == vesting_table.end() ? 0 : (--vesting_table.end())->id + 1;
         eosio::check(allocations_count <= MAX_ALLOCATIONS, "Too many purchases received on this account.");
 
         // Calculate the number of seconds since sales start
@@ -86,7 +86,7 @@ namespace vestingtoken
         eosio::check(now >= launch_date, "Launch date not yet reached");
 
         int64_t total_claimable = 0;
-        for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
+        for (auto iter = vesting_table.begin(); iter != vesting_table.end();)
         {
             const vested_allocation &vesting_allocation = *iter;
 
@@ -121,10 +121,20 @@ namespace vestingtoken
 
                 total_claimable += claimable - vesting_allocation.tokens_claimed.amount;
 
-                // Update the tokens_claimed field
                 eosio::asset tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
-                vesting_table.modify(iter, get_self(), [&](auto &row)
+                
+                // Check if all tokens have been claimed and erase the row if true
+                if (tokens_claimed.amount == vesting_allocation.tokens_allocated.amount)
+                {
+                    iter = vesting_table.erase(iter);
+                }
+                else
+                {
+                    // Update the tokens_claimed field
+                    vesting_table.modify(iter, get_self(), [&](auto &row)
                                      { row.tokens_claimed = tokens_claimed; });
+                    ++iter;
+                }
             }
         }
 
