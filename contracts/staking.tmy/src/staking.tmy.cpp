@@ -198,13 +198,15 @@ namespace stakingtoken
       // Find the first account in the range
       auto itr = staking_accounts_table.lower_bound(lower_bound);
 
+      uint64_t count = 0;
       while (itr != staking_accounts_table.end() && itr->staker.value < upper_bound)
       {
          create_account_yield(itr->staker);
          itr++;
+         count++;
       }
 
-
+      eosio::print("Processed ", count, " staking accounts in batch ", current_hour);
    }
 
    void stakingToken::create_account_yield(name staker)

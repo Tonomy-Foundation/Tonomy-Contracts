@@ -94,8 +94,6 @@ namespace eosiotonomy
    private:
       void check_sender(name sender);
       static constexpr eosio::name tonomy_system_name = "tonomy"_n;
-      static constexpr eosio::name tonomy_staking_name = "staking.tmy"_n;
-      static const int cron_delay_blocks = 120; // every minute (assuming 2 blocks per second)
 
    public:
       using contract::contract;
