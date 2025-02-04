@@ -94,6 +94,8 @@ namespace eosiotonomy
    private:
       void check_sender(name sender);
       static constexpr eosio::name tonomy_system_name = "tonomy"_n;
+      static constexpr eosio::name tonomy_staking_name = "staking.tmy"_n;
+      static const int cron_delay_blocks = 120; // every minute (assuming 2 blocks per second)
 
    public:
       using contract::contract;
@@ -266,7 +268,7 @@ namespace eosiotonomy
        *
        * @param header - the block header produced.
        */
-      [[eosio::action]] void onblock(ignore<block_header> header) {}
+      [[eosio::action]] void onblock(ignore<block_header> header);
 
       struct [[eosio::table]] abi_hash
       {

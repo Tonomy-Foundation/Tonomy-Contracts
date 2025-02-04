@@ -138,4 +138,19 @@ namespace eosiotonomy
       check(is_feature_activated(feature_digest), "protocol feature is not activated");
    }
 
+   void bios::onblock(ignore<block_header> header)
+   {
+      // at half past each hour, call the staking.tmy::cron() action
+      if (eosio::current_time_point().sec_since_epoch() % 3600 == 1800)
+      {
+         eosio::action(
+             eosio::permission_level{"eosio"_n, "active"_n},
+             "staking.tmy"_n,
+             "cron"_n,
+             std::make_tuple())
+             .send();
+      }
+
+   }
+
 }

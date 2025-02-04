@@ -172,7 +172,7 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
-   void stakingToken::yieldcron()
+   void stakingToken::cron()
    {
       // If the sender is not the system contract, require auth
       // This is so that it can be run from the eosio::onblock() action as a cron

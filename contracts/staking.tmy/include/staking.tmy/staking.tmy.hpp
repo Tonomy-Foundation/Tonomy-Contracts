@@ -40,6 +40,7 @@ namespace stakingtoken
         static constexpr double DAYS_PER_YEAR = 365.0;
         static constexpr uint64_t LOWEST_PERSON_NAME  = ("p1111111111"_n).value;
         static constexpr uint64_t HIGHEST_PERSON_NAME  = ("pzzzzzzzzzz"_n).value;        
+
         stakingToken(name receiver, name code, eosio::datastream<const char *> ds);
 
         /**
@@ -67,9 +68,9 @@ namespace stakingtoken
         [[eosio::action]] void releasetoken(name account_name, uint64_t allocation_id);
 
         /**
-         * Cron job to be called every interval to distribute yield to stakers
+         * Cron job to be called every hour to distribute yield to stakers
          */
-        [[eosio::action]] void yieldcron();
+        [[eosio::action]] void cron();
 
         /**
          * Adds new tokens available for yield
