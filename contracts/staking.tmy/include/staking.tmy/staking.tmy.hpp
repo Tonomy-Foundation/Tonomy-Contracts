@@ -38,6 +38,8 @@ namespace stakingtoken
         static constexpr double MICROSECONDS_PER_DAY = 24 * 60 * 60 * 1000000.0;
         static constexpr double DAYS_PER_YEAR = 365.0;
         
+        stakingToken(name receiver, name code, eosio::datastream<const char *> ds);
+
         /**
         * Stake tokens for 30 days
         *
@@ -67,10 +69,15 @@ namespace stakingtoken
         //  */
         // [[eosio::action]] void yieldcron();
 
-        // /**
-        //  * Adds new tokens available for yield
-        //  */
-        // [[eosio::action]] void addyield(asset quantity);
+        /**
+         * Adds new tokens available for yield
+         */
+        [[eosio::action]] void addyield(name sender, asset quantity);
+
+        /**
+         * Sets the settings
+         */
+        [[eosio::action]] void setsettings(asset yearly_stake_pool);
 
         // Define the structure of a staking allocation
         struct [[eosio::table]] staking_allocation

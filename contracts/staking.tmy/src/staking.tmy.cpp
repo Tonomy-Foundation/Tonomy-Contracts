@@ -7,6 +7,24 @@
 
 namespace stakingtoken
 {
+   stakingToken::stakingToken(name receiver, name code, eosio::datastream<const char *> ds): contract(receiver, code, ds)
+   {
+      settings_table settings_table_instance(get_self(), get_self().value);
+
+      // Check if settings already exist, to avoid overwriting settings on redeploy
+      if (!settings_table_instance.exists())
+      {
+         staking_settings default_settings = {
+               asset(0, SYSTEM_RESOURCE_CURRENCY), // current_yield_pool
+               asset(0, SYSTEM_RESOURCE_CURRENCY), // yearly_stake_pool
+               asset(0, SYSTEM_RESOURCE_CURRENCY), // total_staked
+               asset(0, SYSTEM_RESOURCE_CURRENCY)  // total_releasing
+         };
+
+         settings_table_instance.set(default_settings, get_self());
+      }
+   }
+
    void check_asset(const asset &asset)
    {
       auto sym = asset.symbol;
@@ -122,6 +140,36 @@ namespace stakingtoken
           "transfer"_n,
           std::make_tuple(get_self(), staker, itr->tokens_staked, std::string("unstake tokens")))
           .send(); // This will also run eosio::require_auth(get_self())
+   }
+
+   void stakingToken::addyield(name sender, asset quantity)
+   {
+      require_auth(get_self());
+      check_asset(quantity);
+
+      settings_table settings_table_instance(get_self(), get_self().value);
+      staking_settings settings = settings_table_instance.get();
+      settings.current_yield_pool += quantity;
+      settings_table_instance.set(settings, get_self());
+
+      // Transfer tokens to the contract
+      eosio::action(
+          {sender, "active"_n},
+          TOKEN_CONTRACT,
+          "transfer"_n,
+          std::make_tuple(sender, get_self(), quantity, std::string("add yield")))
+          .send(); // This will also run eosio::require_auth(sender)
+   }
+
+   void stakingToken::setsettings(asset yearly_stake_pool)
+   {
+      require_auth(get_self());
+      check_asset(yearly_stake_pool);
+
+      settings_table settings_table_instance(get_self(), get_self().value);
+      staking_settings settings = settings_table_instance.get();
+      settings.yearly_stake_pool = yearly_stake_pool;
+      settings_table_instance.set(settings, get_self());
    }
 
    void stakingToken::create_account_yield(name staker)
