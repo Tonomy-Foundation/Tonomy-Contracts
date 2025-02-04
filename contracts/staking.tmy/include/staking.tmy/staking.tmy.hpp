@@ -22,6 +22,11 @@ namespace stakingtoken
 
     class [[eosio::contract("staking.tmy")]] stakingToken : public eosio::contract
     {
+    private:
+        /**
+         * Add yield to an account
+         */
+        void create_account_yield(name staker);
     public:
         using contract::contract;
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
@@ -29,6 +34,8 @@ namespace stakingtoken
         static const uint32_t MAX_ALLOCATIONS = 100;
         eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
         eosio::microseconds RELEASE_PERIOD = eosio::days(5);
+        static constexpr double MAX_APY = 2.0; // 200% APY
+        static const int COMPOUND_INTERVAL_DAYS = 1; // 1 day
         
         /**
         * Stake tokens for 30 days
@@ -54,7 +61,17 @@ namespace stakingtoken
         */
         [[eosio::action]] void releasetoken(name account_name, uint64_t allocation_id);
 
-          // Define the structure of a staking allocation
+        // /**
+        //  * Cron job to be called every interval to distribute yield to stakers
+        //  */
+        // [[eosio::action]] void yieldcron();
+
+        // /**
+        //  * Adds new tokens available for yield
+        //  */
+        // [[eosio::action]] void addyield(asset quantity);
+
+        // Define the structure of a staking allocation
         struct [[eosio::table]] staking_allocation
         {
           uint64_t id;
@@ -73,6 +90,7 @@ namespace stakingtoken
         {
           eosio::name staker; // The account name of the staker.
           eosio::asset total_yield; //The total amount of yield ever received
+          eosio::time_point last_payout; //The time of the last yield payout
           int version; // The version of the staking allocation
           uint64_t primary_key() const { return staker.value; }
           EOSLIB_SERIALIZE(struct staking_account, (staker)(total_yield)(version))
@@ -82,6 +100,8 @@ namespace stakingtoken
 
         struct [[eosio::table]] staking_settings
         {
+            eosio::asset current_yield_pool; // The amount of tokens available for staking yield each month.
+            eosio::asset yearly_stake_pool; // The amount of tokens that should be available for staking yield each month.
             eosio::asset total_staked; // The total amount of tokens staked.
             eosio::asset total_releasing; // The total amount of tokens being unstaked.
             

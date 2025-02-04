@@ -1,11 +1,13 @@
 #include <staking.tmy/staking.tmy.hpp>
+#include <math.h>
+#include <cmath>
 
 // TODO:
 // - yield function
 
 namespace stakingtoken
 {
-   void check_asset(const eosio::asset &asset)
+   void check_asset(const asset &asset)
    {
       auto sym = asset.symbol;
       eosio::check(sym.is_valid(), "invalid amount symbol");
@@ -34,7 +36,7 @@ namespace stakingtoken
          row.staker = staker;
          row.tokens_staked = quantity;
          row.stake_time = eosio::current_time_point();
-         row.unstake_time = eosio::time_point_sec(0); // not unstaked yet
+         // row.unstake_time = unset as does not mean anything. this could be any value
          row.unstake_requested = false; });
 
       // Add the user to the accounts table if they are not already there
@@ -46,7 +48,7 @@ namespace stakingtoken
          staking_accounts_table.emplace(get_self(), [&](auto &row)
          {
             row.staker = staker;
-            row.total_yield = eosio::asset(0, system_resource_currency);
+            row.total_yield = asset(0, system_resource_currency);
          });
       }
 
@@ -69,7 +71,7 @@ namespace stakingtoken
    {
       require_auth(staker);
 
-      const eosio::time_point now = eosio::current_time_point();
+      const time_point now = eosio::current_time_point();
 
       staking_allocations staking_allocations_table(get_self(), staker.value);
       auto itr = staking_allocations_table.find(allocation_id);
@@ -119,4 +121,48 @@ namespace stakingtoken
       staking_allocations_table.erase(itr);
    }
 
+   void stakingToken::create_account_yield(name staker)
+   {
+      stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
+      stakingToken::staking_accounts staking_accounts_table(get_self(), get_self().value);
+      settings_table settings_table_instance(get_self(), get_self().value);
+      staking_settings settings = settings_table_instance.get();
+
+      auto accounts_itr = staking_accounts_table.find(staker.value);
+      time_point now = eosio::current_time_point();
+      microseconds since_last_payout = now - accounts_itr->last_payout;
+      const double microseconds_per_day = 24 * 60 * 60 * 1000000.0;
+
+      // Calculate the yield rate for the interval
+      double apy = std::max(static_cast<double>(settings.yearly_stake_pool.amount) / static_cast<double>(settings.total_staked.amount), MAX_APY);
+      double interval_yield_percentage = std::pow(apy, (static_cast<double>(since_last_payout.count()) / static_cast<double>(microseconds_per_day)) / 365.0);
+
+      asset total_yield = asset(0, system_resource_currency);
+
+      // Iterate through allocations and add yield (if not unstaking)
+      for (auto itr = staking_allocations_table.begin(); itr != staking_allocations_table.end(); itr++)
+      {
+         if (!itr->unstake_requested)
+         {
+            asset yield = itr->tokens_staked * interval_yield_percentage;
+
+            staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
+            {
+               row.tokens_staked += yield;
+            });
+
+            total_yield += yield;
+         }
+      }
+
+      staking_accounts_table.modify(accounts_itr, eosio::same_payer, [&](auto &row)
+      {
+         row.total_yield += total_yield;
+         row.last_payout = now;
+      });
+
+      settings.total_staked += total_yield;
+      settings.current_yield_pool -= total_yield;
+      settings_table_instance.set(settings, get_self());      
+   }
 }
