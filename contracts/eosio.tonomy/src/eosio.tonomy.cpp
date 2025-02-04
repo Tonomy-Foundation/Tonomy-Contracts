@@ -150,7 +150,6 @@ namespace eosiotonomy
              std::make_tuple())
              .send();
       }
-
    }
 
 }

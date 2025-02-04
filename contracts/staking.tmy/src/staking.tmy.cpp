@@ -37,6 +37,10 @@ namespace stakingtoken
    void stakingToken::staketokens(name staker, asset quantity)
    {
       // eosio::require_auth(staker); // this is not needed as eosio.token::transfer checks the permission
+
+      // check that the staker is a person account
+      eosio::check(staker.value >= LOWEST_PERSON_NAME && staker.value <= HIGHEST_PERSON_NAME, "Invalid staker account");
+
       check_asset(quantity);
 
       stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
