@@ -228,7 +228,6 @@ namespace stakingtoken
       
       time_point now = eosio::current_time_point();
       microseconds since_last_payout = now - accounts_itr->last_payout;
-      const double microseconds_per_day = 24 * 60 * 60 * 1000000.0;
 
       // Calculate the yield rate for the interval
       double apy = std::min(static_cast<double>(settings.yearly_stake_pool.amount) / static_cast<double>(settings.total_staked.amount), MAX_APY);

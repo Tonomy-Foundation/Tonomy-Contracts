@@ -33,8 +33,13 @@ namespace stakingtoken
         static constexpr eosio::name TOKEN_CONTRACT = "eosio.token"_n;
         static constexpr eosio::name SYSTEM_CONTRACT = "eosio"_n;
         static const uint32_t MAX_ALLOCATIONS = 100;
-        eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
-        eosio::microseconds RELEASE_PERIOD = eosio::days(5);
+        #ifdef BUILD_TEST
+          eosio::microseconds LOCKUP_PERIOD = eosio::seconds(30);
+          eosio::microseconds RELEASE_PERIOD = eosio::seconds(5);
+        #else
+          eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
+          eosio::microseconds RELEASE_PERIOD = eosio::days(5);
+        #endif
         static constexpr double MAX_APY = 2.0; // 200% APY
         static constexpr double MICROSECONDS_PER_DAY = 24 * 60 * 60 * 1000000.0;
         static constexpr double DAYS_PER_YEAR = 365.0;
