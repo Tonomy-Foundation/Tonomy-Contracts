@@ -87,6 +87,7 @@ namespace stakingtoken
         {
           uint64_t id;
           eosio::name staker; // The account name of the staker.
+          eosio::asset initial_stake; // The amount of tokens initially staked.
           eosio::asset tokens_staked; //The amount of tokens staked.
           eosio::time_point stake_time; //The time when the staking started.
           eosio::time_point unstake_time; //The time when the unstaking will occur.

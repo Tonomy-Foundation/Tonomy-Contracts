@@ -42,6 +42,8 @@ namespace stakingtoken
       eosio::check(staker.value >= LOWEST_PERSON_NAME && staker.value <= HIGHEST_PERSON_NAME, "Invalid staker account");
 
       check_asset(quantity);
+      // Check there is more than 1000 LEOS to prevent DOS of the contract
+      eosio::check(quantity.amount >= 10000000, "Minimum stake amount is 1000 LEOS");
 
       stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
 
@@ -58,6 +60,7 @@ namespace stakingtoken
                        {
          row.id = staking_allocations_table.available_primary_key();
          row.staker = staker;
+         row.initial_stake = quantity;
          row.tokens_staked = quantity;
          row.stake_time = now;
          // row.unstake_time = unset as does not mean anything. this could be any value
