@@ -73,6 +73,7 @@ namespace tonomysystem
 
       static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
       static constexpr eosio::name token_contract_name = "eosio.token"_n;
+      static constexpr eosio::name app_controller_account = "gov.tmy"_n;
 
       /**
        * Constructor for the contract, which initializes the _accounts table

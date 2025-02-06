@@ -94,6 +94,14 @@ namespace tonomysystem
       return new_authority;
    }
 
+   authority create_authority_with_account(const eosio::name &account)
+   {
+      permission_level_weight new_account = permission_level_weight{.permission = permission_level(account, "active"_n), .weight = 1};
+      authority new_authority{.threshold = 1, .keys = {}, .accounts = {new_account}, .waits = {}};
+
+      return new_authority;
+   }
+
    // add the eosio.code permission to allow the account to call the smart contract properly
    // https://developers.eos.io/welcome/v2.1/smart-contract-guides/adding-inline-actions#step-1-adding-eosiocode-to-permissions
    permission_level create_eosio_code_permission_level(const name &account)
@@ -163,12 +171,13 @@ namespace tonomysystem
       const eosio::name random_name = random_account_name(username_hash, description_hash, enum_account_type::App);
 
       // use the password_key public key for the owner authority
-      authority key_authority = create_authority_with_key(key);
-      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
+      authority owner_authority = create_authority_with_account(app_controller_account);
+      authority active_authority = create_authority_with_key(key);
+      active_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       // If the account name exists, this will fail
       newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      newaccountaction.send(get_self(), random_name, key_authority, key_authority);
+      newaccountaction.send(get_self(), random_name, owner_authority, active_authority);
 
       // Check the username is not already taken
       auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
