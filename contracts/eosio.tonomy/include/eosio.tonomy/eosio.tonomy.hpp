@@ -94,7 +94,12 @@ namespace eosiotonomy
    private:
       void check_sender(name sender);
       static constexpr eosio::name tonomy_system_name = "tonomy"_n;
-
+      #ifdef BUILD_TEST
+        const int64_t CRON_PERIOD_MICROSECONDS = eosio::seconds(10).count(); // should correspond the the same in staking.tmy.hpp
+      #else
+        const int64_t CRON_PERIOD_MICROSECONDS = eosio::hours(1).count(); // should correspond the the same in staking.tmy.hpp
+      #endif
+      const int64_t half_cron_period = CRON_PERIOD_MICROSECONDS / 2;
    public:
       using contract::contract;
       /**

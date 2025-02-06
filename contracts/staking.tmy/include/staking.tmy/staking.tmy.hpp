@@ -36,13 +36,18 @@ namespace stakingtoken
         #ifdef BUILD_TEST
           eosio::microseconds LOCKUP_PERIOD = eosio::seconds(10);
           eosio::microseconds RELEASE_PERIOD = eosio::seconds(5);
+          const int64_t CRON_PERIOD_MICROSECONDS = eosio::seconds(10).count(); // should correspond the the same in eosio.tonomy.hpp
+          const int64_t CRON_CYCLE_MICROSECONDS = eosio::seconds(60).count();
         #else
           eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
           eosio::microseconds RELEASE_PERIOD = eosio::days(5);
+          const int64_t CRON_PERIOD_MICROSECONDS = eosio::hours(1).count(); // should correspond the the same in eosio.tonomy.hpp
+          const int64_t CRON_CYCLE_MICROSECONDS = eosio::hours(24).count();
         #endif
+        // TODO: make sure that this does not need to be rounded otherwise will create a bug. if the cycle is 17 seconds and the period is 3 seconds there. 3 does not fit into 17 exactly
+        const uint8_t cron_intervals = CRON_CYCLE_MICROSECONDS / CRON_PERIOD_MICROSECONDS;
         static constexpr double MAX_APY = 2.0; // 200% APY
-        static constexpr double MICROSECONDS_PER_DAY = 24 * 60 * 60 * 1000000.0;
-        static constexpr double DAYS_PER_YEAR = 365.0;
+        const double MICROSECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000000;
         static constexpr uint64_t LOWEST_PERSON_NAME  = ("p1111111111"_n).value;
         static constexpr uint64_t HIGHEST_PERSON_NAME  = ("pzzzzzzzzzz"_n).value;        
 

@@ -189,13 +189,13 @@ namespace stakingtoken
       // for each hour, we will iterate through 1/24th of the stakers using the staker.value
       // this is to avoid hitting the CPU limit
 
-       // Determine the batch to process based on the current hour
-      uint8_t current_hour = (eosio::current_time_point().sec_since_epoch() / 3600) % 24;
+       // Determine the interval of the cron cycle that we are up to
+      uint8_t current_cron_interval = (eosio::current_time_point().time_since_epoch().count() % CRON_CYCLE_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
 
-      // Calculate the range of account names for this batch
-      uint64_t range_size = (HIGHEST_PERSON_NAME - LOWEST_PERSON_NAME) / 24;
-      uint64_t lower_bound = LOWEST_PERSON_NAME + (current_hour * range_size);
-      uint64_t upper_bound = (current_hour == 23) ? HIGHEST_PERSON_NAME + 1 : (lower_bound + range_size);
+      // Calculate the range of account names for this interval
+      uint64_t range_size = (HIGHEST_PERSON_NAME - LOWEST_PERSON_NAME) / cron_intervals;
+      uint64_t lower_bound = LOWEST_PERSON_NAME + (current_cron_interval * range_size);
+      uint64_t upper_bound = (current_cron_interval == (cron_intervals-1)) ? HIGHEST_PERSON_NAME + 1 : (lower_bound + range_size);
 
       // Find the first account in the range
       auto itr = staking_accounts_table.lower_bound(lower_bound);
@@ -208,7 +208,7 @@ namespace stakingtoken
          count++;
       }
 
-      eosio::print("Processed ", count, " staking accounts in batch ", current_hour);
+      eosio::print("Processed ", count, " staking accounts in batch ", current_cron_interval);
    }
 
    void stakingToken::create_account_yield(name staker)
@@ -225,8 +225,7 @@ namespace stakingtoken
 
       // Calculate the yield rate for the interval
       double apy = std::min(static_cast<double>(settings.yearly_stake_pool.amount) / static_cast<double>(settings.total_staked.amount), MAX_APY);
-      double interval_yield_percentage = std::pow(1 + apy, (static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_DAY) / DAYS_PER_YEAR) - 1;
-
+      double interval_yield_percentage = std::pow(1 + apy, static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_YEAR) - 1;
       asset total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
 
       // Iterate through allocations and add yield (if not unstaking)

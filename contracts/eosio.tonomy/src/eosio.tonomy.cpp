@@ -140,8 +140,11 @@ namespace eosiotonomy
 
    void bios::onblock(ignore<block_header> header)
    {
-      // at half past each hour, call the staking.tmy::cron() action
-      if (eosio::current_time_point().sec_since_epoch() % 3600 == 1800)
+      int64_t current_time = eosio::current_time_point().time_since_epoch().count();
+      int64_t time_rounded_to_half_periods = (current_time + (half_cron_period/2)) / half_cron_period * half_cron_period; // Round to the nearest half-second
+
+      // at half past each cron period, call the staking.tmy::cron() action
+      if (time_rounded_to_half_periods % CRON_PERIOD_MICROSECONDS == half_cron_period)
       {
          eosio::action(
              eosio::permission_level{"eosio"_n, "active"_n},
