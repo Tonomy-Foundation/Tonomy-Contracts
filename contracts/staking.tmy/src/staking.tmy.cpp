@@ -7,23 +7,6 @@
 
 namespace stakingtoken
 {
-   stakingToken::stakingToken(name receiver, name code, eosio::datastream<const char *> ds): contract(receiver, code, ds)
-   {
-      settings_table settings_table_instance(get_self(), get_self().value);
-
-      // Check if settings already exist, to avoid overwriting settings on redeploy
-      if (!settings_table_instance.exists())
-      {
-         staking_settings default_settings = {
-               asset(0, SYSTEM_RESOURCE_CURRENCY), // current_yield_pool
-               asset(0, SYSTEM_RESOURCE_CURRENCY), // yearly_stake_pool
-               asset(0, SYSTEM_RESOURCE_CURRENCY), // total_staked
-               asset(0, SYSTEM_RESOURCE_CURRENCY)  // total_releasing
-         };
-
-         settings_table_instance.set(default_settings, get_self());
-      }
-   }
 
    void check_asset(const asset &asset)
    {
@@ -34,6 +17,12 @@ namespace stakingtoken
       eosio::check(asset.amount > 0, "Amount must be greater than 0");
    }
 
+   // Check minimum amount needed to prevent DOSing the action
+   void check_minimum_asset_prevent_dos(const asset &compare_to, const asset &minimum)
+   {
+      eosio::check(compare_to.amount >= minimum.amount, "Amount must be greater than or equal to " + minimum.to_string());
+   }
+
    void stakingToken::staketokens(name staker, asset quantity)
    {
       // eosio::require_auth(staker); // this is not needed as eosio.token::transfer checks the permission
@@ -42,8 +31,7 @@ namespace stakingtoken
       eosio::check(staker.value >= LOWEST_PERSON_NAME && staker.value <= HIGHEST_PERSON_NAME, "Invalid staker account");
 
       check_asset(quantity);
-      // Check there is more than 1000 LEOS to prevent DOS of the contract
-      eosio::check(quantity.amount >= 10000000, "Minimum stake amount is 1000 LEOS");
+      check_minimum_asset_prevent_dos(quantity, asset(1000, SYSTEM_RESOURCE_CURRENCY));
 
       stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
 
@@ -152,12 +140,13 @@ namespace stakingtoken
 
    void stakingToken::addyield(name sender, asset quantity)
    {
-      require_auth(get_self());
       check_asset(quantity);
+      check_minimum_asset_prevent_dos(quantity, asset(1000, SYSTEM_RESOURCE_CURRENCY));
 
       settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get();
       settings.current_yield_pool += quantity;
+      // settings.current_yield_pool += asset(quantity.amount, SYSTEM_RESOURCE_CURRENCY);
       settings_table_instance.set(settings, get_self());
 
       // Transfer tokens to the contract
@@ -175,7 +164,12 @@ namespace stakingtoken
       check_asset(yearly_stake_pool);
 
       settings_table settings_table_instance(get_self(), get_self().value);
-      staking_settings settings = settings_table_instance.get();
+      staking_settings settings = settings_table_instance.get_or_default({
+            asset(0, SYSTEM_RESOURCE_CURRENCY), // current_yield_pool
+            asset(0, SYSTEM_RESOURCE_CURRENCY), // yearly_stake_pool
+            asset(0, SYSTEM_RESOURCE_CURRENCY), // total_staked
+            asset(0, SYSTEM_RESOURCE_CURRENCY)  // total_releasing
+      });
       settings.yearly_stake_pool = yearly_stake_pool;
       settings_table_instance.set(settings, get_self());
    }

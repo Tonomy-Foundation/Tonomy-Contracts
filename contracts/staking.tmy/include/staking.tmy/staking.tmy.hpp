@@ -34,7 +34,7 @@ namespace stakingtoken
         static constexpr eosio::name SYSTEM_CONTRACT = "eosio"_n;
         static const uint32_t MAX_ALLOCATIONS = 100;
         #ifdef BUILD_TEST
-          eosio::microseconds LOCKUP_PERIOD = eosio::seconds(30);
+          eosio::microseconds LOCKUP_PERIOD = eosio::seconds(10);
           eosio::microseconds RELEASE_PERIOD = eosio::seconds(5);
         #else
           eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
@@ -45,8 +45,6 @@ namespace stakingtoken
         static constexpr double DAYS_PER_YEAR = 365.0;
         static constexpr uint64_t LOWEST_PERSON_NAME  = ("p1111111111"_n).value;
         static constexpr uint64_t HIGHEST_PERSON_NAME  = ("pzzzzzzzzzz"_n).value;        
-
-        stakingToken(name receiver, name code, eosio::datastream<const char *> ds);
 
         /**
         * Stake tokens for 30 days
@@ -98,7 +96,7 @@ namespace stakingtoken
           eosio::time_point unstake_time; //The time when the unstaking will occur.
           bool unstake_requested; //A flag indicating whether the tokens are currently being unstaked.
           uint64_t primary_key() const { return id; }
-          EOSLIB_SERIALIZE(struct staking_allocation, (id)(staker)(tokens_staked)(stake_time)(unstake_time)(unstake_requested))
+          EOSLIB_SERIALIZE(struct staking_allocation, (id)(staker)(initial_stake)(tokens_staked)(stake_time)(unstake_time)(unstake_requested))
         };
         // Define the mapping of staking allocations
         typedef eosio::multi_index<"stakingalloc"_n, staking_allocation> staking_allocations;
@@ -110,7 +108,7 @@ namespace stakingtoken
           eosio::time_point last_payout; //The time of the last yield payout
           int version; // The version of the staking allocation
           uint64_t primary_key() const { return staker.value; }
-          EOSLIB_SERIALIZE(struct staking_account, (staker)(total_yield)(version))
+          EOSLIB_SERIALIZE(struct staking_account, (staker)(total_yield)(last_payout)(version))
         };
         // Define the mapping of staking accounts
         typedef eosio::multi_index<"stakingaccou"_n, staking_account> staking_accounts;
@@ -122,7 +120,7 @@ namespace stakingtoken
             eosio::asset total_staked; // The total amount of tokens staked.
             eosio::asset total_releasing; // The total amount of tokens being unstaked.
             
-            EOSLIB_SERIALIZE(staking_settings, (total_staked)(total_releasing))
+            EOSLIB_SERIALIZE(staking_settings, (current_yield_pool)(yearly_stake_pool)(total_staked)(total_releasing))
         };
 
         typedef eosio::singleton<"settings"_n, staking_settings> settings_table;
