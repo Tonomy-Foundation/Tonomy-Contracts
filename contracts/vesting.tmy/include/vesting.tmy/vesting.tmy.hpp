@@ -59,9 +59,9 @@ namespace vestingtoken
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
         static constexpr eosio::name token_contract_name = "eosio.token"_n;
         #ifdef BUILD_TEST
-            static const uint32_t MAX_ALLOCATIONS = 150;
-        #else
             static const uint32_t MAX_ALLOCATIONS = 5;
+        #else
+            static const uint32_t MAX_ALLOCATIONS = 150;
         #endif
         struct [[eosio::table]] vesting_settings
         {

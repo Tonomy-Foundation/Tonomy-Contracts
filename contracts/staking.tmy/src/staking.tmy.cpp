@@ -38,8 +38,8 @@ namespace stakingtoken
       // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
       // may no longer be able to withdraw from the account.
       // For more information, see https://swcregistry.io/docs/SWC-128/
-      std::ptrdiff_t allocations_count = staking_allocations_table.begin() == staking_allocations_table.end() ? 0 : (--staking_allocations_table.end())->id + 1;
-      eosio::check(allocations_count <= MAX_ALLOCATIONS, "Too many stakes received on this account.");
+      std::ptrdiff_t allocations_count = std::distance(staking_allocations_table.begin(),staking_allocations_table.end());
+      eosio::check(allocations_count < MAX_ALLOCATIONS, "Too many stakes received on this account.");
 
       time_point now = eosio::current_time_point();
 
