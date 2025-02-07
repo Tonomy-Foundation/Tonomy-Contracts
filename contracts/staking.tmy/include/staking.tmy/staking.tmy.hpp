@@ -39,8 +39,8 @@ namespace stakingtoken
         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("LEOS", 6);
         static constexpr eosio::name TOKEN_CONTRACT = "eosio.token"_n;
         static constexpr eosio::name SYSTEM_CONTRACT = "eosio"_n;
-        static const uint32_t MAX_ALLOCATIONS = 100;
         #ifdef BUILD_TEST
+          static const uint8_t MAX_ALLOCATIONS = 5;
           // Lockup period is how long the tokens are locked up for before they can be unstaked
           eosio::microseconds LOCKUP_PERIOD = eosio::seconds(10);
           // Release period is how long the unstaking process takes before the tokens are released
@@ -52,6 +52,7 @@ namespace stakingtoken
           // Minimum transfer amount for DOS protection
           const asset MINIMUM_TRANSFER = asset(1 * std::pow(10, SYSTEM_RESOURCE_CURRENCY.precision()), SYSTEM_RESOURCE_CURRENCY); // 1 LEOS
         #else
+          static const uint8_t MAX_ALLOCATIONS = 100;
           // Lockup period is how long the tokens are locked up for before they can be unstaked
           eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
           // Release period is how long the unstaking process takes before the tokens are released

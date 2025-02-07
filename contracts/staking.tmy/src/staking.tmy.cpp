@@ -67,7 +67,7 @@ namespace stakingtoken
       // may no longer be able to withdraw from the account.
       // For more information, see https://swcregistry.io/docs/SWC-128/
       std::ptrdiff_t allocations_count = std::distance(staking_allocations_table.begin(),staking_allocations_table.end());
-      eosio::check(allocations_count < MAX_ALLOCATIONS, "Too many stakes received on this account.");
+      eosio::check(allocations_count < MAX_ALLOCATIONS, "Too many stakes received on this account");
 
       time_point now = eosio::current_time_point();
 
