@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <math.h>
+#include <cmath>
 #include <eosio/action.hpp>
 #include <eosio/eosio.hpp>
 #include <eosio/asset.hpp>
@@ -27,6 +29,11 @@ namespace stakingtoken
          * Add yield to an account
          */
         void create_account_yield(name staker);
+
+        /**
+         * Check minimum amount needed to prevent DOSing the action
+         */
+        void check_minimum_asset_prevent_dos(const asset &compare_to);
     public:
         using contract::contract;
         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("LEOS", 6);
@@ -42,6 +49,8 @@ namespace stakingtoken
           const int64_t CRON_PERIOD_MICROSECONDS = eosio::seconds(10).count(); // should correspond the the same in eosio.tonomy.hpp
           // Staking cycle is how often the staking yield is distributed per account.
           const int64_t STAKING_CYCLE_MICROSECONDS = eosio::seconds(60).count();
+          // Minimum transfer amount for DOS protection
+          const asset MINIMUM_TRANSFER = asset(1 * std::pow(10, SYSTEM_RESOURCE_CURRENCY.precision()), SYSTEM_RESOURCE_CURRENCY); // 1 LEOS
         #else
           // Lockup period is how long the tokens are locked up for before they can be unstaked
           eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
@@ -51,6 +60,8 @@ namespace stakingtoken
           const int64_t CRON_PERIOD_MICROSECONDS = eosio::hours(1).count();
           // Staking cycle is how often the staking yield is distributed per account.
           const int64_t STAKING_CYCLE_MICROSECONDS = eosio::hours(24).count();
+          // Minimum transfer amount for DOS protection
+          const asset MINIMUM_TRANSFER = asset(1000 * std::pow(10, SYSTEM_RESOURCE_CURRENCY.precision()), SYSTEM_RESOURCE_CURRENCY); // 1000 LEOS
         #endif
         // TODO: make sure that this does not need to be rounded otherwise will create a bug. if the cycle is 17 seconds and the period is 3 seconds there. 3 does not fit into 17 exactly
         const uint8_t cron_intervals = STAKING_CYCLE_MICROSECONDS / CRON_PERIOD_MICROSECONDS;
@@ -58,7 +69,17 @@ namespace stakingtoken
         static constexpr double MAX_APY = 2.0; // 200% APY
         const double MICROSECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000000;
         static constexpr uint64_t LOWEST_PERSON_NAME  = ("p1111111111"_n).value;
-        static constexpr uint64_t HIGHEST_PERSON_NAME  = ("pzzzzzzzzzz"_n).value;        
+        static constexpr uint64_t HIGHEST_PERSON_NAME  = ("pzzzzzzzzzz"_n).value;    
+
+        /**
+         * Sets the settings
+         */
+        [[eosio::action]] void setsettings(asset yearly_stake_pool);
+
+        /**
+         * Adds new tokens available for yield
+         */
+        [[eosio::action]] void addyield(name sender, asset quantity);
 
         /**
         * Stake tokens for 30 days
@@ -88,16 +109,6 @@ namespace stakingtoken
          * Cron job to be called every hour to distribute yield to stakers
          */
         [[eosio::action]] void cron();
-
-        /**
-         * Adds new tokens available for yield
-         */
-        [[eosio::action]] void addyield(name sender, asset quantity);
-
-        /**
-         * Sets the settings
-         */
-        [[eosio::action]] void setsettings(asset yearly_stake_pool);
 
         // Define the structure of a staking allocation
         struct [[eosio::table]] staking_allocation

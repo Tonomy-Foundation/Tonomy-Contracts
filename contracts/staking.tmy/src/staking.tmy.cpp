@@ -1,13 +1,7 @@
 #include <staking.tmy/staking.tmy.hpp>
-#include <math.h>
-#include <cmath>
-
-// TODO:
-// - yield function
 
 namespace stakingtoken
 {
-
    void check_asset(const asset &asset)
    {
       auto sym = asset.symbol;
@@ -17,10 +11,44 @@ namespace stakingtoken
       eosio::check(asset.amount > 0, "Amount must be greater than 0");
    }
 
-   // Check minimum amount needed to prevent DOSing the action
-   void check_minimum_asset_prevent_dos(const asset &compare_to, const asset &minimum)
+   void stakingToken::check_minimum_asset_prevent_dos(const asset &compare_to)
    {
-      eosio::check(compare_to.amount >= minimum.amount, "Amount must be greater than or equal to " + minimum.to_string());
+      eosio::check(compare_to.amount >= MINIMUM_TRANSFER.amount, "Amount must be greater than or equal to " + MINIMUM_TRANSFER.to_string());
+   }
+
+   void stakingToken::setsettings(asset yearly_stake_pool)
+   {
+      require_auth(get_self());
+      check_asset(yearly_stake_pool);
+
+      settings_table settings_table_instance(get_self(), get_self().value);
+      staking_settings settings = settings_table_instance.get_or_default({
+            asset(0, SYSTEM_RESOURCE_CURRENCY), // current_yield_pool
+            asset(0, SYSTEM_RESOURCE_CURRENCY), // yearly_stake_pool
+            asset(0, SYSTEM_RESOURCE_CURRENCY), // total_staked
+            asset(0, SYSTEM_RESOURCE_CURRENCY)  // total_releasing
+      });
+      settings.yearly_stake_pool = yearly_stake_pool;
+      settings_table_instance.set(settings, get_self());
+   }
+
+   void stakingToken::addyield(name sender, asset quantity)
+   {
+      check_asset(quantity);
+      check_minimum_asset_prevent_dos(quantity);
+
+      settings_table settings_table_instance(get_self(), get_self().value);
+      staking_settings settings = settings_table_instance.get();
+      settings.current_yield_pool += quantity;
+      settings_table_instance.set(settings, get_self());
+
+      // Transfer tokens to the contract
+      eosio::action(
+          {sender, "active"_n},
+          TOKEN_CONTRACT,
+          "transfer"_n,
+          std::make_tuple(sender, get_self(), quantity, std::string("add yield")))
+          .send(); // This will also run eosio::require_auth(sender)
    }
 
    void stakingToken::staketokens(name staker, asset quantity)
@@ -31,7 +59,7 @@ namespace stakingtoken
       eosio::check(staker.value >= LOWEST_PERSON_NAME && staker.value <= HIGHEST_PERSON_NAME, "Invalid staker account");
 
       check_asset(quantity);
-      check_minimum_asset_prevent_dos(quantity, asset(1000, SYSTEM_RESOURCE_CURRENCY));
+      check_minimum_asset_prevent_dos(quantity);
 
       stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
 
@@ -136,42 +164,6 @@ namespace stakingtoken
           "transfer"_n,
           std::make_tuple(get_self(), staker, itr->tokens_staked, std::string("unstake tokens")))
           .send(); // This will also run eosio::require_auth(get_self())
-   }
-
-   void stakingToken::addyield(name sender, asset quantity)
-   {
-      check_asset(quantity);
-      check_minimum_asset_prevent_dos(quantity, asset(1000, SYSTEM_RESOURCE_CURRENCY));
-
-      settings_table settings_table_instance(get_self(), get_self().value);
-      staking_settings settings = settings_table_instance.get();
-      settings.current_yield_pool += quantity;
-      // settings.current_yield_pool += asset(quantity.amount, SYSTEM_RESOURCE_CURRENCY);
-      settings_table_instance.set(settings, get_self());
-
-      // Transfer tokens to the contract
-      eosio::action(
-          {sender, "active"_n},
-          TOKEN_CONTRACT,
-          "transfer"_n,
-          std::make_tuple(sender, get_self(), quantity, std::string("add yield")))
-          .send(); // This will also run eosio::require_auth(sender)
-   }
-
-   void stakingToken::setsettings(asset yearly_stake_pool)
-   {
-      require_auth(get_self());
-      check_asset(yearly_stake_pool);
-
-      settings_table settings_table_instance(get_self(), get_self().value);
-      staking_settings settings = settings_table_instance.get_or_default({
-            asset(0, SYSTEM_RESOURCE_CURRENCY), // current_yield_pool
-            asset(0, SYSTEM_RESOURCE_CURRENCY), // yearly_stake_pool
-            asset(0, SYSTEM_RESOURCE_CURRENCY), // total_staked
-            asset(0, SYSTEM_RESOURCE_CURRENCY)  // total_releasing
-      });
-      settings.yearly_stake_pool = yearly_stake_pool;
-      settings_table_instance.set(settings, get_self());
    }
 
    void stakingToken::cron()
