@@ -122,7 +122,7 @@ namespace stakingtoken
       auto itr = staking_allocations_table.find(allocation_id);
       check(itr != staking_allocations_table.end(), "Staking allocation not found");
       check(!itr->unstake_requested, "Unstake already requested");
-      check(itr->stake_time + LOCKUP_PERIOD > now, "Tokens are still locked up");
+      check(itr->stake_time + LOCKUP_PERIOD <= now, "Tokens are still locked up");
 
       staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
       {
@@ -147,7 +147,7 @@ namespace stakingtoken
       check(itr != staking_allocations_table.end(), "Staking allocation not found");
       check(itr->staker == staker, "Not authorized to finalize unstake for this allocation");
       check(itr->unstake_requested, "Unstake not requested");
-      check(itr->unstake_time + RELEASE_PERIOD > eosio::current_time_point(), "Release period not yet completed");
+      check(itr->unstake_time + RELEASE_PERIOD <= eosio::current_time_point(), "Release period not yet completed");
 
       // Update the settings total staked and releasing amounts
       settings_table settings_table_instance(get_self(), get_self().value);
