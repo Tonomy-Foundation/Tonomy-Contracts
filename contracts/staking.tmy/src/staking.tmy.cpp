@@ -190,7 +190,7 @@ namespace stakingtoken
       // this is to avoid hitting the CPU limit
 
        // Determine the interval of the cron cycle that we are up to
-      uint8_t current_cron_interval = (eosio::current_time_point().time_since_epoch().count() % CRON_CYCLE_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
+      uint8_t current_cron_interval = (eosio::current_time_point().time_since_epoch().count() % STAKING_CYCLE_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
 
       // Calculate the range of account names for this interval
       uint64_t range_size = (HIGHEST_PERSON_NAME - LOWEST_PERSON_NAME) / cron_intervals;

@@ -34,18 +34,27 @@ namespace stakingtoken
         static constexpr eosio::name SYSTEM_CONTRACT = "eosio"_n;
         static const uint32_t MAX_ALLOCATIONS = 100;
         #ifdef BUILD_TEST
+          // Lockup period is how long the tokens are locked up for before they can be unstaked
           eosio::microseconds LOCKUP_PERIOD = eosio::seconds(10);
+          // Release period is how long the unstaking process takes before the tokens are released
           eosio::microseconds RELEASE_PERIOD = eosio::seconds(5);
+          // Cron period is how often the cron job is called. This should be the same as the period in eosio.tonomy.hpp
           const int64_t CRON_PERIOD_MICROSECONDS = eosio::seconds(10).count(); // should correspond the the same in eosio.tonomy.hpp
-          const int64_t CRON_CYCLE_MICROSECONDS = eosio::seconds(60).count();
+          // Staking cycle is how often the staking yield is distributed per account.
+          const int64_t STAKING_CYCLE_MICROSECONDS = eosio::seconds(60).count();
         #else
+          // Lockup period is how long the tokens are locked up for before they can be unstaked
           eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
+          // Release period is how long the unstaking process takes before the tokens are released
           eosio::microseconds RELEASE_PERIOD = eosio::days(5);
-          const int64_t CRON_PERIOD_MICROSECONDS = eosio::hours(1).count(); // should correspond the the same in eosio.tonomy.hpp
-          const int64_t CRON_CYCLE_MICROSECONDS = eosio::hours(24).count();
+          // Cron period is how often the cron job is called. This should be the same as the period in eosio.tonomy.hpp
+          const int64_t CRON_PERIOD_MICROSECONDS = eosio::hours(1).count();
+          // Staking cycle is how often the staking yield is distributed per account.
+          const int64_t STAKING_CYCLE_MICROSECONDS = eosio::hours(24).count();
         #endif
         // TODO: make sure that this does not need to be rounded otherwise will create a bug. if the cycle is 17 seconds and the period is 3 seconds there. 3 does not fit into 17 exactly
-        const uint8_t cron_intervals = CRON_CYCLE_MICROSECONDS / CRON_PERIOD_MICROSECONDS;
+        const uint8_t cron_intervals = STAKING_CYCLE_MICROSECONDS / CRON_PERIOD_MICROSECONDS;
+        // Annual Percentage Yield for staking
         static constexpr double MAX_APY = 2.0; // 200% APY
         const double MICROSECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000000;
         static constexpr uint64_t LOWEST_PERSON_NAME  = ("p1111111111"_n).value;
