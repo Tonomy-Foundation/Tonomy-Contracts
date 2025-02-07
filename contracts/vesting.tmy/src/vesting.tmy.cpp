@@ -86,7 +86,7 @@ namespace vestingtoken
         eosio::check(now >= launch_date, "Launch date not yet reached");
 
         int64_t total_claimable = 0;
-        for (auto iter = vesting_table.begin(); iter != vesting_table.end();)
+        for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
             const vested_allocation &vesting_allocation = *iter;
 
@@ -127,9 +127,6 @@ namespace vestingtoken
                 vesting_table.modify(iter, get_self(), [&](auto &row)
                                      { row.tokens_claimed = tokens_claimed; });
             }
-
-            total_claimable += claimable - vesting_allocation.tokens_claimed.amount;
-
         }
 
         if (total_claimable > 0)
