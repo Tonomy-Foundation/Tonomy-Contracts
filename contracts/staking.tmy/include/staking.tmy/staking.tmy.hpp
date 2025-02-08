@@ -111,6 +111,14 @@ namespace stakingtoken
          */
         [[eosio::action]] void cron();
 
+        #ifdef BUILD_TEST
+        /**
+         * Resets all the contract data
+         * For testing purposes only
+         */
+        [[eosio::action]] void resetall();
+        #endif
+        
         // Define the structure of a staking allocation
         struct [[eosio::table]] staking_allocation
         {

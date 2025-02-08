@@ -246,4 +246,36 @@ namespace stakingtoken
       settings.current_yield_pool -= total_yield;
       settings_table_instance.set(settings, get_self());      
    }
+
+   void stakingToken::resetall()
+   {
+      require_auth(get_self());
+
+      staking_accounts staking_accounts_table(get_self(), get_self().value);
+      auto account_itr = staking_accounts_table.begin();
+      while (account_itr != staking_accounts_table.end())
+      {
+         staking_allocations staking_allocations_table(get_self(), account_itr->staker.value);
+         auto allocation_itr = staking_allocations_table.begin();
+         while (allocation_itr != staking_allocations_table.end())
+         {
+            allocation_itr = staking_allocations_table.erase(allocation_itr);
+         }
+
+         account_itr = staking_accounts_table.erase(account_itr);
+      }
+
+      settings_table settings_table_instance(get_self(), get_self().value);
+
+      // send all tokens back to infra.tmy
+      staking_settings settings = settings_table_instance.get();
+      eosio::action(
+          {get_self(), "active"_n},
+          TOKEN_CONTRACT,
+          "transfer"_n,
+          std::make_tuple(get_self(), "infra.tmy"_n, settings.total_staked + settings.total_releasing + settings.current_yield_pool, std::string("reset all")))
+          .send(); // This will also run eosio::require_auth(get_self())
+          
+      settings_table_instance.remove();
+   }
 }
