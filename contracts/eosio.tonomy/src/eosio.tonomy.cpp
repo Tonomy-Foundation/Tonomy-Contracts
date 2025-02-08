@@ -116,7 +116,7 @@ namespace eosiotonomy
 
    void bios::reqauth(name from)
    {
-      // TODO is this function needed?
+      // TODO: is this function needed?
       require_auth(from);
    }
 
@@ -134,7 +134,7 @@ namespace eosiotonomy
 
    void bios::reqactivated(const eosio::checksum256 &feature_digest)
    {
-      // TODO is this function needed?
+      // TODO: is this function needed?
       check(is_feature_activated(feature_digest), "protocol feature is not activated");
    }
 

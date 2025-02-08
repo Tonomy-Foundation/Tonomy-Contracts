@@ -105,7 +105,7 @@ namespace tonomysystem
 
    void native::setpriv(name account, uint8_t is_priv)
    {
-      // TODO disable proxying: this contract is priviledged and can execute the required API calls directly
+      // TODO: disable proxying: this contract is priviledged and can execute the required API calls directly
       require_governance_owner();
       native::setpriv_action action("eosio"_n, {governance_name, "active"_n});
       action.send(account, is_priv);
@@ -113,7 +113,7 @@ namespace tonomysystem
 
    void native::setalimits(name account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight)
    {
-      // TODO delete function. This is handled by our own resource management
+      // TODO: delete function. This is handled by our own resource management
       require_governance_owner();
       native::setalimits_action action("eosio"_n, {governance_name, "active"_n});
       action.send(account, ram_bytes, net_weight, cpu_weight);
@@ -128,7 +128,7 @@ namespace tonomysystem
 
    void native::setparams(const eosio::blockchain_parameters &params)
    {
-      // TODO disable proxying: this contract is priviledged and can execute the required API calls directly
+      // TODO: disable proxying: this contract is priviledged and can execute the required API calls directly
       require_governance_owner();
       native::setparams_action action("eosio"_n, {governance_name, "active"_n});
       action.send(params);
@@ -136,7 +136,7 @@ namespace tonomysystem
 
    void native::reqauth(name from)
    {
-      // TODO delete as not needed. Check in Telegram first
+      // TODO: delete as not needed. Check in Telegram first
       require_governance_owner();
       native::reqauth_action action("eosio"_n, {from, "active"_n});
       action.send(from);
@@ -158,7 +158,7 @@ namespace tonomysystem
 
    void native::onerror(uint128_t sender_id, std::vector<char> sent_trx)
    {
-      // TODO delete: this is not needed in this contract. It is not supposed to be called in the eosio contract
+      // TODO: delete: this is not needed in this contract. It is not supposed to be called in the eosio contract
       require_governance_owner();
       native::onerror_action action("eosio"_n, {governance_name, "active"_n});
       action.send(sender_id, sent_trx);
