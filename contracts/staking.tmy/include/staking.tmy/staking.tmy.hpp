@@ -140,7 +140,7 @@ namespace stakingtoken
           eosio::name staker; // The account name of the staker.
           eosio::asset total_yield; //The total amount of yield ever received
           eosio::time_point last_payout; //The time of the last yield payout
-          uint32_t payments; // The number of payments made to the account
+          uint32_t payments; // The number of payments made to the account. TODO: this field is not strictly needed so could be optimized out of code. It is pretty handy to understand the cron job though...
           int version; // The version of the staking allocation
           uint64_t primary_key() const { return staker.value; }
           EOSLIB_SERIALIZE(struct staking_account, (staker)(total_yield)(last_payout)(payments)(version))

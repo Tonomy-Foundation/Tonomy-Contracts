@@ -182,8 +182,9 @@ namespace stakingtoken
       // for each hour, we will iterate through 1/24th of the stakers using the staker.value
       // this is to avoid hitting the CPU limit
 
-       // Determine the interval of the cron cycle that we are up to
-      uint8_t current_cron_interval = (eosio::current_time_point().time_since_epoch().count() % STAKING_CYCLE_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
+      // Determine the interval of the cron cycle that we are up to
+      const time_point now = eosio::current_time_point();
+      uint8_t current_cron_interval = (now.time_since_epoch().count() % STAKING_CYCLE_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
 
       // Calculate the range of account names for this interval
       uint64_t range_size = (HIGHEST_PERSON_NAME - LOWEST_PERSON_NAME) / cron_intervals;
@@ -196,9 +197,13 @@ namespace stakingtoken
       uint64_t count = 0;
       while (itr != staking_accounts_table.end() && itr->staker.value < upper_bound)
       {
+         // check did not call create_account_yield() since before the last cron period
+         // If so then this batch of accounts has already been processed in this interval, so exit
+         if (itr->last_payout + microseconds(1.01 * CRON_PERIOD_MICROSECONDS) > now) return;
+
          create_account_yield(itr->staker);
-         itr++;
          count++;
+         itr++;
       }
 
       eosio::print("Processed ", count, " staking accounts in batch ", current_cron_interval);
@@ -243,7 +248,7 @@ namespace stakingtoken
          {
             row.total_yield += total_yield;
             row.last_payout = now;
-            row.payments++;
+            row.payments = accounts_itr->payments + 1;
          });
 
          settings.total_staked += total_yield;
