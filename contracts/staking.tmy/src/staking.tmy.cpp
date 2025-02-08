@@ -93,6 +93,7 @@ namespace stakingtoken
             row.staker = staker;
             row.total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
             row.last_payout = now;
+            row.payments = 0;
             row.version = 1;
          });
       }
@@ -217,7 +218,7 @@ namespace stakingtoken
 
       // Calculate the yield rate for the interval
       double apy = std::min(static_cast<double>(settings.yearly_stake_pool.amount) / static_cast<double>(settings.total_staked.amount), MAX_APY);
-      double interval_yield_percentage = std::pow(1 + apy, static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_YEAR) - 1;
+      double interval_percentage_yield = std::pow(1 + apy, static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_YEAR) - 1;
       asset total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
 
       // Iterate through allocations and add yield (if not unstaking)
@@ -225,7 +226,7 @@ namespace stakingtoken
       {
          if (!itr->unstake_requested)
          {
-            asset yield = asset(static_cast<int64_t>(itr->tokens_staked.amount * interval_yield_percentage), SYSTEM_RESOURCE_CURRENCY);
+            asset yield = asset(static_cast<int64_t>(itr->tokens_staked.amount * interval_percentage_yield), SYSTEM_RESOURCE_CURRENCY);
 
             staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
             {
@@ -236,15 +237,19 @@ namespace stakingtoken
          }
       }
 
-      staking_accounts_table.modify(accounts_itr, eosio::same_payer, [&](auto &row)
+      if (total_yield.amount != 0)
       {
-         row.total_yield += total_yield;
-         row.last_payout = now;
-      });
+         staking_accounts_table.modify(accounts_itr, eosio::same_payer, [&](auto &row)
+         {
+            row.total_yield += total_yield;
+            row.last_payout = now;
+            row.payments++;
+         });
 
-      settings.total_staked += total_yield;
-      settings.current_yield_pool -= total_yield;
-      settings_table_instance.set(settings, get_self());      
+         settings.total_staked += total_yield;
+         settings.current_yield_pool -= total_yield;
+         settings_table_instance.set(settings, get_self());   
+      }
    }
 
    void stakingToken::resetall()

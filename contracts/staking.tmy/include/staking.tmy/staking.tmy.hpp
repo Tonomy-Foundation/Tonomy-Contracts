@@ -140,9 +140,10 @@ namespace stakingtoken
           eosio::name staker; // The account name of the staker.
           eosio::asset total_yield; //The total amount of yield ever received
           eosio::time_point last_payout; //The time of the last yield payout
+          uint32_t payments; // The number of payments made to the account
           int version; // The version of the staking allocation
           uint64_t primary_key() const { return staker.value; }
-          EOSLIB_SERIALIZE(struct staking_account, (staker)(total_yield)(last_payout)(version))
+          EOSLIB_SERIALIZE(struct staking_account, (staker)(total_yield)(last_payout)(payments)(version))
         };
         // Define the mapping of staking accounts
         typedef eosio::multi_index<"stakingaccou"_n, staking_account> staking_accounts;
