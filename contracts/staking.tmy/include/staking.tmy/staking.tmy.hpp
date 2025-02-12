@@ -54,7 +54,7 @@ namespace stakingtoken
         #else
           static const uint8_t MAX_ALLOCATIONS = 100;
           // Lockup period is how long the tokens are locked up for before they can be unstaked
-          eosio::microseconds LOCKUP_PERIOD = eosio::days(30);
+          eosio::microseconds LOCKUP_PERIOD = eosio::days(14);
           // Release period is how long the unstaking process takes before the tokens are released
           eosio::microseconds RELEASE_PERIOD = eosio::days(5);
           // Cron period is how often the cron job is called. This should be the same as the period in eosio.tonomy.hpp
@@ -83,7 +83,7 @@ namespace stakingtoken
         [[eosio::action]] void addyield(name sender, asset quantity);
 
         /**
-        * Stake tokens for 30 days
+        * Stake tokens for 14 days
         *
         * @param account_name - the account name of the staker
         * @param quantity - the amount of tokens to stake
