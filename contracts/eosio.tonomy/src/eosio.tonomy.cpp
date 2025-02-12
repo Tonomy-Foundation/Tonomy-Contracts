@@ -144,6 +144,7 @@ namespace eosiotonomy
       int64_t time_rounded_to_half_periods = (current_time + (half_cron_period/2)) / half_cron_period * half_cron_period; // Round to the nearest half-second
 
       // at half past each cron period, call the staking.tmy::cron() action
+      // FIXME: this is calling on every block still (I think), not every cron period
       if (time_rounded_to_half_periods % CRON_PERIOD_MICROSECONDS == half_cron_period)
       {
          eosio::action(
