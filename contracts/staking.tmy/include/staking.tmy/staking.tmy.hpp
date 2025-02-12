@@ -31,6 +31,12 @@ namespace stakingtoken
         void create_account_yield(name staker);
 
         /**
+         * Resets all the contract data
+         * For testing purposes only
+         */
+        void resetall();
+
+        /**
          * Check minimum amount needed to prevent DOSing the action
          */
         void check_minimum_asset_prevent_dos(const asset &compare_to);
