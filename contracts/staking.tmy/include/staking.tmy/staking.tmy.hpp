@@ -29,13 +29,7 @@ namespace stakingtoken
          * Add yield to an account
          */
         void create_account_yield(name staker);
-
-        /**
-         * Resets all the contract data
-         * For testing purposes only
-         */
-        void resetall();
-
+       
         /**
          * Check minimum amount needed to prevent DOSing the action
          */
