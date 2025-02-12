@@ -116,7 +116,7 @@ namespace eosiotonomy
 
    void bios::reqauth(name from)
    {
-      // TODO is this function needed?
+      // TODO: is this function needed?
       require_auth(from);
    }
 
@@ -134,8 +134,26 @@ namespace eosiotonomy
 
    void bios::reqactivated(const eosio::checksum256 &feature_digest)
    {
-      // TODO is this function needed?
+      // TODO: is this function needed?
       check(is_feature_activated(feature_digest), "protocol feature is not activated");
+   }
+
+   void bios::onblock(ignore<block_header> header)
+   {
+      int64_t current_time = eosio::current_time_point().time_since_epoch().count();
+      int64_t time_rounded_to_half_periods = (current_time + (half_cron_period/2)) / half_cron_period * half_cron_period; // Round to the nearest half-second
+
+      // at half past each cron period, call the staking.tmy::cron() action
+      // FIXME: this is calling on every block still (I think), not every cron period
+      if (time_rounded_to_half_periods % CRON_PERIOD_MICROSECONDS == half_cron_period)
+      {
+         eosio::action(
+             eosio::permission_level{"eosio"_n, "active"_n},
+             "staking.tmy"_n,
+             "cron"_n,
+             std::make_tuple())
+             .send();
+      }
    }
 
 }

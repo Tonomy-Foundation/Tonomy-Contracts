@@ -81,8 +81,6 @@ namespace eosio
       require_auth(from);
       check(is_account(to), "to account does not exist");
 
-      // TODO need to write vesting contract code
-
       auto sym = quantity.symbol.code();
       stats statstable(get_self(), sym.raw());
       const auto &st = statstable.get(sym.raw());

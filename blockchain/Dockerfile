@@ -5,7 +5,7 @@ RUN apt install -y wget curl
 
 RUN wget https://github.com/AntelopeIO/leap/releases/download/v3.2.3/leap_3.2.3-ubuntu20.04_amd64.deb
 RUN apt install -y ./leap_3.2.3-ubuntu20.04_amd64.deb
-# TODO update to use stable 4.x release
+# TODO: update to use stable 4.x release
 # RUN wget https://github.com/AntelopeIO/leap/releases/download/v4.0.0-rc3/leap_4.0.0-rc3-ubuntu20.04_amd64.deb
 # RUN apt install -y ./leap_4.0.0-rc3-ubuntu20.04_amd64.deb
 

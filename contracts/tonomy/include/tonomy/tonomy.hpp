@@ -25,6 +25,8 @@ namespace tonomysystem
    using eosio::singleton;
    using std::string;
 
+   using eosiotonomy::authority;
+
    // Create an enum type and an eosio type for enums
    // https://eosio.stackexchange.com/questions/4950/store-enum-value-in-table
    enum enum_account_type
@@ -71,6 +73,7 @@ namespace tonomysystem
 
       static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
       static constexpr eosio::name token_contract_name = "eosio.token"_n;
+      static constexpr eosio::name app_controller_account = "gov.tmy"_n;
 
       /**
        * Constructor for the contract, which initializes the _accounts table
@@ -154,6 +157,17 @@ namespace tonomysystem
                                           permission_level_name permission,
                                           public_key key,
                                           bool link_auth = false);
+
+      /**
+       * Update active of a person
+       * (this is so that users can add staking.tmy@eosio.code authorization to use the staking contract)
+       *
+       * @param account - name of the account to update
+       * @param permission - permission level of the key to update
+       * @param key - public key to update
+       */
+      [[eosio::action]] void updateactive(name account,
+                                          authority active);
 
       /**
        * Set the resource parameters for the system
