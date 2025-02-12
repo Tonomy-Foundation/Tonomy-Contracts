@@ -257,6 +257,7 @@ namespace stakingtoken
       }
    }
 
+   #ifdef BUILD_TEST
    void stakingToken::resetall()
    {
       require_auth(get_self());
@@ -288,4 +289,5 @@ namespace stakingtoken
           
       settings_table_instance.remove();
    }
+   #endif
 }

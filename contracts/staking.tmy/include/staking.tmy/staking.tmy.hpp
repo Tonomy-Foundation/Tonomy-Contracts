@@ -29,7 +29,7 @@ namespace stakingtoken
          * Add yield to an account
          */
         void create_account_yield(name staker);
-
+       
         /**
          * Check minimum amount needed to prevent DOSing the action
          */
