@@ -67,7 +67,7 @@ namespace stakingtoken
         // TODO: make sure that this does not need to be rounded otherwise will create a bug. if the cycle is 17 seconds and the period is 3 seconds there. 3 does not fit into 17 exactly
         const uint8_t cron_intervals = STAKING_CYCLE_MICROSECONDS / CRON_PERIOD_MICROSECONDS;
         // Annual Percentage Yield for staking
-        static constexpr double MAX_APY = 2.0; // 200% APY
+        static constexpr double MAX_APY = 1.0; // 200% APY
         const double MICROSECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000000;
         static constexpr uint64_t LOWEST_PERSON_NAME  = ("p1111111111"_n).value;
         static constexpr uint64_t HIGHEST_PERSON_NAME  = ("pzzzzzzzzzz"_n).value;    
