@@ -139,11 +139,22 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
-   void stakingToken::_releasetoken(name staker, uint64_t allocation_id) {
+   void stakingToken::_releasetoken(name staker, eosio::asset tokens_staked) {
+      // Transfer tokens back to the account
+      eosio::action(
+         {get_self(), "active"_n},
+            TOKEN_CONTRACT,
+            "transfer"_n,
+            std::make_tuple(get_self(), staker, tokens_staked, std::string("unstake tokens")))
+            .send(); // This will also run eosio::require_auth(get_self())
+   }
+
+   void stakingToken::releasetoken(name staker, uint64_t allocation_id)
+   {
+      require_auth(staker);
       staking_allocations staking_allocations_table(get_self(), staker.value);
       auto itr = staking_allocations_table.find(allocation_id);
       check(itr != staking_allocations_table.end(), "Staking allocation not found");
-      check(itr->staker == staker, "Not authorized to finalize unstake for this allocation");
       check(itr->unstake_requested, "Unstake not requested");
       check(itr->unstake_time + RELEASE_PERIOD <= eosio::current_time_point(), "Release period not yet completed");
 
@@ -154,20 +165,7 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
 
       staking_allocations_table.erase(itr);
-
-      // Transfer tokens back to the account
-      eosio::action(
-         {get_self(), "active"_n},
-            TOKEN_CONTRACT,
-            "transfer"_n,
-            std::make_tuple(get_self(), staker, itr->tokens_staked, std::string("unstake tokens")))
-            .send(); // This will also run eosio::require_auth(get_self())
-   }
-
-   void stakingToken::releasetoken(name staker, uint64_t allocation_id)
-   {
-      require_auth(staker);
-      _releasetoken(staker, allocation_id);
+      _releasetoken(staker, itr->tokens_staked);
    }
 
    void stakingToken::cron()
@@ -246,7 +244,13 @@ namespace stakingtoken
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
          {
             // If user has requested unstake, check if the release period has passed since unstake request
-            _releasetoken(staker, itr->id);
+            settings.total_releasing -= itr->tokens_staked;
+            settings_table_instance.set(settings, get_self());
+
+            staking_allocations_table.erase(itr);
+            settings_table_instance.set(settings, get_self());   
+
+            _releasetoken(staker, itr->tokens_staked);
          }
       }
 
