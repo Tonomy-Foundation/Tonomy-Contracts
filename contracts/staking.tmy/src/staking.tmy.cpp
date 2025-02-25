@@ -234,18 +234,18 @@ namespace stakingtoken
       {
          if (!itr->unstake_requested)
          {
-            asset yield = asset(static_cast<int64_t>(itr->tokens_staked.amount * interval_percentage_yield), SYSTEM_RESOURCE_CURRENCY);
+         asset yield = asset(static_cast<int64_t>(itr->tokens_staked.amount * interval_percentage_yield), SYSTEM_RESOURCE_CURRENCY);
 
-            staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
-            {
-               row.tokens_staked += yield;
-            });
-
-            total_yield += yield;
-         } 
-         else if (itr->unstake_requested && eosio::current_time_point() >= itr->unstake_time + eosio::days(5) ) 
+         staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
          {
-            // If user has requested unstake, check if 5 days have passed since unstake request
+            row.tokens_staked += yield;
+         });
+
+         total_yield += yield;
+         } 
+         else if (now >= itr->unstake_time + RELEASE_PERIOD) 
+         {
+            // If user has requested unstake, check if the release period has passed since unstake request
             _releasetoken(staker, itr->id);
          }
       }
