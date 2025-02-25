@@ -34,6 +34,8 @@ namespace stakingtoken
          * Check minimum amount needed to prevent DOSing the action
          */
         void check_minimum_asset_prevent_dos(const asset &compare_to);
+
+        void _releasetoken(name staker, uint64_t allocation_id);
     public:
         using contract::contract;
         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("LEOS", 6);

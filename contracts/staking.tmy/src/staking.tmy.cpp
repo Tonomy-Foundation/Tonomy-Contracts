@@ -139,10 +139,7 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
-   void stakingToken::releasetoken(name staker, uint64_t allocation_id)
-   {
-      require_auth(staker);
-
+   void stakingToken::_releasetoken(name staker, uint64_t allocation_id) {
       staking_allocations staking_allocations_table(get_self(), staker.value);
       auto itr = staking_allocations_table.find(allocation_id);
       check(itr != staking_allocations_table.end(), "Staking allocation not found");
@@ -160,11 +157,17 @@ namespace stakingtoken
 
       // Transfer tokens back to the account
       eosio::action(
-          {get_self(), "active"_n},
-          TOKEN_CONTRACT,
-          "transfer"_n,
-          std::make_tuple(get_self(), staker, itr->tokens_staked, std::string("unstake tokens")))
-          .send(); // This will also run eosio::require_auth(get_self())
+         {get_self(), "active"_n},
+            TOKEN_CONTRACT,
+            "transfer"_n,
+            std::make_tuple(get_self(), staker, itr->tokens_staked, std::string("unstake tokens")))
+            .send(); // This will also run eosio::require_auth(get_self())
+   }
+
+   void stakingToken::releasetoken(name staker, uint64_t allocation_id)
+   {
+      require_auth(staker);
+      _releasetoken(staker, allocation_id);
    }
 
    void stakingToken::cron()
@@ -243,7 +246,7 @@ namespace stakingtoken
          else if (itr->unstake_requested && eosio::current_time_point() >= itr->unstake_time + eosio::days(5) ) 
          {
             // If user has requested unstake, check if 5 days have passed since unstake request
-            releasetoken(staker, itr->id);
+            _releasetoken(staker, itr->id);
          }
       }
 
