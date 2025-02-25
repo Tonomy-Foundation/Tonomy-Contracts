@@ -239,6 +239,11 @@ namespace stakingtoken
             });
 
             total_yield += yield;
+         } 
+         else if (itr->unstake_requested && eosio::current_time_point() >= itr->unstake_time + eosio::days(5) ) 
+         {
+            // If user has requested unstake, check if 5 days have passed since unstake request
+            releasetoken(staker, itr->id);
          }
       }
 
