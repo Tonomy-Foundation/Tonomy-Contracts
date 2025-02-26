@@ -139,15 +139,27 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
-   void stakingToken::_releasetoken(name staker, eosio::asset tokens_staked) {
-      // Transfer tokens back to the account
+   void stakingToken::_releasetoken(
+      name staker, 
+      staking_settings& settings, 
+      staking_allocations::const_iterator allocation)  {
+
+      settings_table settings_table_instance(get_self(), get_self().value);
+      settings.total_releasing -= allocation->tokens_staked;
+      settings_table_instance.set(settings, get_self());
+  
+      // Erase the staking allocation
+      staking_allocations staking_allocations_table(get_self(), staker.value);
+      staking_allocations_table.erase(allocation);
+  
+      // Transfer tokens back to the staker
       eosio::action(
-         {get_self(), "active"_n},
-            TOKEN_CONTRACT,
-            "transfer"_n,
-            std::make_tuple(get_self(), staker, tokens_staked, std::string("unstake tokens")))
-            .send(); // This will also run eosio::require_auth(get_self())
-   }
+          {get_self(), "active"_n},
+          TOKEN_CONTRACT,
+          "transfer"_n,
+          std::make_tuple(get_self(), staker, allocation->tokens_staked, std::string("unstake tokens"))
+      ).send();
+  }
 
    void stakingToken::releasetoken(name staker, uint64_t allocation_id)
    {
@@ -161,11 +173,8 @@ namespace stakingtoken
       // Update the settings total staked and releasing amounts
       settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get();
-      settings.total_releasing -= itr->tokens_staked;
-      settings_table_instance.set(settings, get_self());
 
-      staking_allocations_table.erase(itr);
-      _releasetoken(staker, itr->tokens_staked);
+      _releasetoken(staker, settings, itr);
    }
 
    void stakingToken::cron()
@@ -232,25 +241,20 @@ namespace stakingtoken
       {
          if (!itr->unstake_requested)
          {
-         asset yield = asset(static_cast<int64_t>(itr->tokens_staked.amount * interval_percentage_yield), SYSTEM_RESOURCE_CURRENCY);
+            asset yield = asset(static_cast<int64_t>(itr->tokens_staked.amount * interval_percentage_yield), SYSTEM_RESOURCE_CURRENCY);
 
-         staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
-         {
-            row.tokens_staked += yield;
-         });
+            staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
+            {
+               row.tokens_staked += yield;
+            });
 
-         total_yield += yield;
+            total_yield += yield;
          } 
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
          {
-            // If user has requested unstake, check if the release period has passed since unstake request
-            settings.total_releasing -= itr->tokens_staked;
-            settings_table_instance.set(settings, get_self());
+            
 
-            staking_allocations_table.erase(itr);
-            settings_table_instance.set(settings, get_self());   
-
-            _releasetoken(staker, itr->tokens_staked);
+            _releasetoken(staker, settings, itr);
          }
       }
 

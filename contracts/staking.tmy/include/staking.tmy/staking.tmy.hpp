@@ -35,7 +35,7 @@ namespace stakingtoken
          */
         void check_minimum_asset_prevent_dos(const asset &compare_to);
 
-        void _releasetoken(name staker, eosio::asset tokens_staked);
+        void _releasetoken(name staker,settings_table settings, staking_allocations::const_iterator itr);
     public:
         using contract::contract;
         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("LEOS", 6);

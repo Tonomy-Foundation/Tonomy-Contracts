@@ -106,7 +106,7 @@ namespace vestingtoken
                 if (now >= vesting_end)
                 {
                     claimable = vesting_allocation.tokens_allocated.amount;
-                    // TODO: should delete the row from the table 
+                    iter = vesting_table.erase(iter);
                 }
                 else
                 {
@@ -138,6 +138,7 @@ namespace vestingtoken
                           "transfer"_n,
                           std::make_tuple(get_self(), holder, total_tokens_claimed, std::string("Unlocked vested coins")))
                 .send();
+            
         }
     }
 
