@@ -139,10 +139,7 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
-   void stakingToken::_releasetoken(
-      name staker, 
-      staking_settings& settings, 
-      staking_allocations::const_iterator allocation)  {
+   void stakingToken:: _releasetoken(name staker, staking_settings settings, staking_allocations::const_iterator allocation)  {
 
       settings_table settings_table_instance(get_self(), get_self().value);
       settings.total_releasing -= allocation->tokens_staked;
