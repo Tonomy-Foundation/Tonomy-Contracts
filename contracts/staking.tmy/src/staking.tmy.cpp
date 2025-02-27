@@ -168,6 +168,7 @@ namespace stakingtoken
       // Update the settings total staked and releasing amounts
       settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get();
+      require_recipient(staker);
 
       _releasetoken(staker, settings, itr);
    }
@@ -255,6 +256,7 @@ namespace stakingtoken
 
       if (total_yield.amount != 0)
       {
+         require_recipient(staker);
          staking_accounts_table.modify(accounts_itr, eosio::same_payer, [&](auto &row)
          {
             row.total_yield += total_yield;
