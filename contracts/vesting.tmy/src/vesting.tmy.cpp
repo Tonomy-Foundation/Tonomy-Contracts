@@ -106,7 +106,6 @@ namespace vestingtoken
                 if (now >= vesting_end)
                 {
                     claimable = vesting_allocation.tokens_allocated.amount;
-                    iter = vesting_table.erase(iter);
                 }
                 else
                 {
@@ -124,10 +123,23 @@ namespace vestingtoken
 
                 // Update the tokens_claimed field
                 eosio::asset tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
-                vesting_table.modify(iter, get_self(), [&](auto &row)
-                                     { row.tokens_claimed = tokens_claimed; });
+
+                if (claimable == vesting_allocation.tokens_allocated.amount)
+                {
+                    // Erase and update iterator correctly
+                    iter = vesting_table.erase(iter);
+                    break;
+                }
+                else
+                {
+                    vesting_table.modify(iter, get_self(), [&](auto &row)
+                    {
+                        row.tokens_claimed = tokens_claimed;
+                    });
+                }
             }
         }
+
 
         if (total_claimable > 0)
         {
