@@ -129,13 +129,14 @@ namespace stakingtoken
      struct [[eosio::table]] staking_allocation
      {
        uint64_t id;
+       eosio::name staker; // The account name of the staker.
        eosio::asset initial_stake; // The amount of tokens initially staked.
        eosio::asset tokens_staked; //The amount of tokens staked.
        eosio::time_point stake_time; //The time when the staking started.
        eosio::time_point unstake_time; //The time when the unstaking will occur.
        bool unstake_requested; //A flag indicating whether the tokens are currently being unstaked.
        uint64_t primary_key() const { return id; }
-       EOSLIB_SERIALIZE(struct staking_allocation, (id)(initial_stake)(tokens_staked)(stake_time)(unstake_time)(unstake_requested))
+       EOSLIB_SERIALIZE(struct staking_allocation, (id)(staker)(initial_stake)(tokens_staked)(stake_time)(unstake_time)(unstake_requested))
      };
      // Define the mapping of staking allocations
      typedef eosio::multi_index<"stakingalloc"_n, staking_allocation> staking_allocations;

@@ -75,6 +75,7 @@ namespace stakingtoken
       staking_allocations_table.emplace(get_self(), [&](auto &row)
                        {
          row.id = staking_allocations_table.available_primary_key();
+         row.staker = staker;
          row.initial_stake = quantity;
          row.tokens_staked = quantity;
          row.stake_time = now;
@@ -89,6 +90,7 @@ namespace stakingtoken
       {
          staking_accounts_table.emplace(get_self(), [&](auto &row)
          {
+            row.staker = staker;
             row.total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
             row.last_payout = now;
             row.payments = 0;
@@ -248,7 +250,6 @@ namespace stakingtoken
          } 
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
          {
-            
 
             _releasetoken(staker, settings, itr);
          }
