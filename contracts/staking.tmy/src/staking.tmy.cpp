@@ -138,25 +138,6 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
-//    void stakingToken:: _releasetoken(name staker, staking_settings settings, staking_allocations::const_iterator allocation)  {
-
-//       settings_table settings_table_instance(get_self(), get_self().value);
-//       settings.total_releasing -= allocation->tokens_staked;
-//       settings_table_instance.set(settings, get_self());
-  
-//       // Erase the staking allocation
-//       staking_allocations staking_allocations_table(get_self(), staker.value);
-//       allocation = staking_allocations_table.erase(allocation);
-  
-//       // Transfer tokens back to the staker
-//       eosio::action(
-//           {get_self(), "active"_n},
-//           TOKEN_CONTRACT,
-//           "transfer"_n,
-//           std::make_tuple(get_self(), staker, allocation->tokens_staked, std::string("unstake tokens"))
-//       ).send();
-//   }
-
    void stakingToken::_releasetoken(name staker, staking_settings settings, staking_allocations& staking_allocations_table, staking_allocations::const_iterator allocation)
    {
       settings_table settings_table_instance(get_self(), get_self().value);
@@ -173,7 +154,6 @@ namespace stakingtoken
          std::make_tuple(get_self(), staker, allocation->tokens_staked, std::string("unstake tokens"))
       ).send();
    }
-
 
    void stakingToken::releasetoken(name staker, uint64_t allocation_id)
    {
@@ -252,25 +232,32 @@ namespace stakingtoken
       asset total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
 
       // Iterate through allocations and add yield (if not unstaking)
-      for (auto itr = staking_allocations_table.begin(); itr != staking_allocations_table.end(); itr++)
+      for (auto itr = staking_allocations_table.begin(); itr != staking_allocations_table.end();)
       {
          if (!itr->unstake_requested)
          {
             asset yield = asset(static_cast<int64_t>(itr->tokens_staked.amount * interval_percentage_yield), SYSTEM_RESOURCE_CURRENCY);
-
+      
             staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
             {
                row.tokens_staked += yield;
             });
-
+      
             total_yield += yield;
+            ++itr; // Move to the next element
          } 
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
          {
-
-            _releasetoken(staker, settings, staking_allocations_table, itr);
+            auto current_itr = itr; // Save the current iterator
+            ++itr; // Move to the next element before erasing
+            _releasetoken(staker, settings, staking_allocations_table, current_itr);
+         }
+         else
+         {
+            ++itr; // Ensure we don't get stuck in an infinite loop
          }
       }
+      
 
       if (total_yield.amount != 0)
       {
