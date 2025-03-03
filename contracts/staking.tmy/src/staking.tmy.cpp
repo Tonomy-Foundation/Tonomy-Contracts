@@ -75,7 +75,6 @@ namespace stakingtoken
       staking_allocations_table.emplace(get_self(), [&](auto &row)
                        {
          row.id = staking_allocations_table.available_primary_key();
-         row.staker = staker;
          row.initial_stake = quantity;
          row.tokens_staked = quantity;
          row.stake_time = now;
@@ -90,8 +89,8 @@ namespace stakingtoken
       {
          staking_accounts_table.emplace(get_self(), [&](auto &row)
          {
-            row.staker = staker;
             row.total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
+            row.staker = staker;
             row.last_payout = now;
             row.payments = 0;
             row.version = 1;
@@ -139,24 +138,42 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
-   void stakingToken:: _releasetoken(name staker, staking_settings settings, staking_allocations::const_iterator allocation)  {
+//    void stakingToken:: _releasetoken(name staker, staking_settings settings, staking_allocations::const_iterator allocation)  {
 
+//       settings_table settings_table_instance(get_self(), get_self().value);
+//       settings.total_releasing -= allocation->tokens_staked;
+//       settings_table_instance.set(settings, get_self());
+  
+//       // Erase the staking allocation
+//       staking_allocations staking_allocations_table(get_self(), staker.value);
+//       allocation = staking_allocations_table.erase(allocation);
+  
+//       // Transfer tokens back to the staker
+//       eosio::action(
+//           {get_self(), "active"_n},
+//           TOKEN_CONTRACT,
+//           "transfer"_n,
+//           std::make_tuple(get_self(), staker, allocation->tokens_staked, std::string("unstake tokens"))
+//       ).send();
+//   }
+
+   void stakingToken::_releasetoken(name staker, staking_settings settings, staking_allocations& staking_allocations_table, staking_allocations::const_iterator allocation)
+   {
       settings_table settings_table_instance(get_self(), get_self().value);
       settings.total_releasing -= allocation->tokens_staked;
       settings_table_instance.set(settings, get_self());
-  
-      // Erase the staking allocation
-      staking_allocations staking_allocations_table(get_self(), staker.value);
+
       staking_allocations_table.erase(allocation);
-  
+
       // Transfer tokens back to the staker
       eosio::action(
-          {get_self(), "active"_n},
-          TOKEN_CONTRACT,
-          "transfer"_n,
-          std::make_tuple(get_self(), staker, allocation->tokens_staked, std::string("unstake tokens"))
+         {get_self(), "active"_n},
+         TOKEN_CONTRACT,
+         "transfer"_n,
+         std::make_tuple(get_self(), staker, allocation->tokens_staked, std::string("unstake tokens"))
       ).send();
-  }
+   }
+
 
    void stakingToken::releasetoken(name staker, uint64_t allocation_id)
    {
@@ -172,7 +189,7 @@ namespace stakingtoken
       staking_settings settings = settings_table_instance.get();
       require_recipient(staker);
 
-      _releasetoken(staker, settings, itr);
+      _releasetoken(staker, settings,staking_allocations_table,  itr);
    }
 
    void stakingToken::cron()
@@ -251,7 +268,7 @@ namespace stakingtoken
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
          {
 
-            _releasetoken(staker, settings, itr);
+            _releasetoken(staker, settings, staking_allocations_table, itr);
          }
       }
 
