@@ -91,7 +91,7 @@ namespace eosiotonomy
       }
    }
 
-   void bios::onerror(ignore<uint128_t>, ignore<std::vector<char>>)
+   void bios::onerror(ignore<uint128_t>, ignore<std::vector<char> >)
    {
       check(false, "the onerror action cannot be called directly");
    }
@@ -140,13 +140,16 @@ namespace eosiotonomy
 
    void bios::onblock(ignore<block_header> header)
    {
-      int64_t current_time = eosio::current_time_point().time_since_epoch().count();
+      eosio::time_point now = eosio::current_time_point();
+      eosio::print("{\"event_log\":{\"account\":\"eosio\",\"action\":\"onblock\"},\"time\":\"", now.to_string(), "Z\",\"events\":[");
+      int64_t current_time = now.time_since_epoch().count();
       int64_t time_rounded_to_half_periods = (current_time + (half_cron_period/2)) / half_cron_period * half_cron_period; // Round to the nearest half-second
 
       // at half past each cron period, call the staking.tmy::cron() action
       // FIXME: this is calling on every block still (I think), not every cron period
       if (time_rounded_to_half_periods % CRON_PERIOD_MICROSECONDS == half_cron_period)
       {
+         eosio::print("\"called staking.tmy::cron()\",");
          eosio::action(
              eosio::permission_level{"eosio"_n, "active"_n},
              "staking.tmy"_n,
@@ -154,6 +157,7 @@ namespace eosiotonomy
              std::make_tuple())
              .send();
       }
+      eosio::print("]}");
    }
 
 }
