@@ -455,7 +455,7 @@ namespace tonomysystem
       // Allocate the RAM
       int64_t myRAM, myNET, myCPU;
       eosio::get_resource_limits(app, myRAM, myNET, myCPU);
-      eosio::print("RAM: ", myRAM, " --> ", myRAM + ram_purchase);
+      eosio::print("{\"event_log\":{\"account\":\"tonomy\",\"action\":\"buyram\"},\"time\":\"", eosio::current_time_point().to_string(), "Z\",\"events\":[{\"previous\":", myRAM, ",\"current\":", myRAM + ram_purchase, "}]");
       eosio::set_resource_limits(app, myRAM + ram_purchase, myNET, myNET);
 
       eosio::action(permission_level{dao_owner, "active"_n},
@@ -500,7 +500,7 @@ namespace tonomysystem
       // Deallocate the RAM
       int64_t myRAM, myNET, myCPU;
       eosio::get_resource_limits(app, myRAM, myNET, myCPU);
-      eosio::print("RAM: ", myRAM, " --> ", myRAM - ram_sold);
+      eosio::print("{\"event_log\":{\"account\":\"tonomy\",\"action\":\"sellram\"},\"time\":\"", eosio::current_time_point().to_string(), "Z\",\"events\":[{\"previous\":", myRAM, ",\"current\":", myRAM - ram_sold, "}]");
       eosio::check(myRAM - ram_sold >= 0, "Account cannot have less than 0 RAM");
       eosio::set_resource_limits(app, myRAM - ram_sold, myNET, myNET);
 
