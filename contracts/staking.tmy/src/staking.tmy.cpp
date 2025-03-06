@@ -169,6 +169,8 @@ namespace stakingtoken
 
    void stakingToken::cron()
    {
+      const time_point now = eosio::current_time_point();
+      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"cron\"},\"time\":\"", now.to_string(), "Z\",\"events\":[");
       // If the sender is not the system contract, require auth
       // This is so that it can be run from the eosio::onblock() action as a cron
       // or alternatively be called manually if needed
@@ -183,7 +185,6 @@ namespace stakingtoken
       // this is to avoid hitting the CPU limit
 
       // Determine the interval of the cron cycle that we are up to
-      const time_point now = eosio::current_time_point();
       uint8_t current_cron_interval = (now.time_since_epoch().count() % STAKING_CYCLE_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
 
       // Calculate the range of account names for this interval
@@ -206,7 +207,8 @@ namespace stakingtoken
          itr++;
       }
 
-      eosio::print("Processed ", count, " staking accounts in batch ", current_cron_interval);
+      eosio::print("\"Processed ", count, " staking accounts in batch ", current_cron_interval,"\"");
+      eosio::print("]}");
    }
 
    void stakingToken::create_account_yield(name staker)
