@@ -138,31 +138,29 @@ namespace eosiotonomy
       check(is_feature_activated(feature_digest), "protocol feature is not activated");
    }
 
-   void bios::onblock(ignore<block_header> header)
-   {
+   void bios::onblock(ignore<block_header> header) {
       eosio::time_point now = eosio::current_time_point();
-      eosio::print("{\"event_log\":{\"account\":\"eosio\",\"action\":\"onblock\"},\"time\":\"", now.to_string(), "Z\",\"events\":[");
       int64_t current_time = now.time_since_epoch().count();
-      int64_t time_rounded_to_half_periods = (current_time + (half_cron_period/2)) / half_cron_period * half_cron_period; // Round to the nearest half-second
-
-      bool first_event = true;
-
-      // at half past each cron period, call the staking.tmy::cron() action
-      // FIXME: this is calling on every block still (I think), not every cron period
-      if (time_rounded_to_half_periods % CRON_PERIOD_MICROSECONDS == half_cron_period)
-      {
-         if (!first_event) {
-            eosio::print(",");
-         }
+   
+      eosio::print("{\"event_log\":{\"account\":\"eosio\",\"action\":\"onblock\"},\"time\":\"",
+                   now.to_string(), "Z\",\"events\":[\"current_time:\",", current_time, "]}");
+   
+      // Determine the current period and what the previous block's period would have been
+      int64_t current_period = current_time / CRON_PERIOD_MICROSECONDS;
+     
+      int64_t previous_period = (current_time - BLOCK_INTERVAL_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
+    
+      // Only trigger if this block is the first in a new cron period.
+      if (current_period != previous_period) {
          eosio::print("\"called staking.tmy::cron()\"");
+
          eosio::action(
-             eosio::permission_level{"eosio"_n, "active"_n},
-             "staking.tmy"_n,
-             "cron"_n,
-             std::make_tuple())
-             .send();
+            eosio::permission_level{"eosio"_n, "active"_n},
+            "staking.tmy"_n,
+            "cron"_n,
+            std::make_tuple())
+            .send();
       }
-      eosio::print("]}");
    }
 
 }

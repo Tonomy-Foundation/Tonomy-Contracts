@@ -245,7 +245,7 @@ namespace stakingtoken
                row.tokens_staked += yield;
             });
       
-            total_yield += yield;
+            total_yield += yield;            
             ++itr; // Move to the next element
          } 
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
@@ -257,7 +257,7 @@ namespace stakingtoken
          else
          {
             ++itr; // Ensure we don't get stuck in an infinite loop
-         }
+         }  
       }
       
 
