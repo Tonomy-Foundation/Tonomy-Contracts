@@ -75,7 +75,6 @@ namespace stakingtoken
       staking_allocations_table.emplace(get_self(), [&](auto &row)
                        {
          row.id = staking_allocations_table.available_primary_key();
-         row.staker = staker;
          row.initial_stake = quantity;
          row.tokens_staked = quantity;
          row.stake_time = now;
@@ -90,8 +89,8 @@ namespace stakingtoken
       {
          staking_accounts_table.emplace(get_self(), [&](auto &row)
          {
-            row.staker = staker;
             row.total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
+            row.staker = staker;
             row.last_payout = now;
             row.payments = 0;
             row.version = 1;
@@ -139,32 +138,38 @@ namespace stakingtoken
       settings_table_instance.set(settings, get_self());
    }
 
+   void stakingToken::_releasetoken(name staker, staking_settings settings, staking_allocations& staking_allocations_table, staking_allocations::const_iterator allocation)
+   {
+      settings_table settings_table_instance(get_self(), get_self().value);
+      settings.total_releasing -= allocation->tokens_staked;
+      settings_table_instance.set(settings, get_self());
+
+      staking_allocations_table.erase(allocation);
+
+      // Transfer tokens back to the staker
+      eosio::action(
+         {get_self(), "active"_n},
+         TOKEN_CONTRACT,
+         "transfer"_n,
+         std::make_tuple(get_self(), staker, allocation->tokens_staked, std::string("unstake tokens"))
+      ).send();
+   }
+
    void stakingToken::releasetoken(name staker, uint64_t allocation_id)
    {
       require_auth(staker);
-
       staking_allocations staking_allocations_table(get_self(), staker.value);
       auto itr = staking_allocations_table.find(allocation_id);
       check(itr != staking_allocations_table.end(), "Staking allocation not found");
-      check(itr->staker == staker, "Not authorized to finalize unstake for this allocation");
       check(itr->unstake_requested, "Unstake not requested");
       check(itr->unstake_time + RELEASE_PERIOD <= eosio::current_time_point(), "Release period not yet completed");
 
       // Update the settings total staked and releasing amounts
       settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get();
-      settings.total_releasing -= itr->tokens_staked;
-      settings_table_instance.set(settings, get_self());
+      require_recipient(staker);
 
-      staking_allocations_table.erase(itr);
-
-      // Transfer tokens back to the account
-      eosio::action(
-          {get_self(), "active"_n},
-          TOKEN_CONTRACT,
-          "transfer"_n,
-          std::make_tuple(get_self(), staker, itr->tokens_staked, std::string("unstake tokens")))
-          .send(); // This will also run eosio::require_auth(get_self())
+      _releasetoken(staker, settings,staking_allocations_table,  itr);
    }
 
    void stakingToken::cron()
@@ -191,6 +196,8 @@ namespace stakingtoken
       uint64_t range_size = (HIGHEST_PERSON_NAME - LOWEST_PERSON_NAME) / cron_intervals;
       uint64_t lower_bound = LOWEST_PERSON_NAME + (current_cron_interval * range_size);
       uint64_t upper_bound = (current_cron_interval == (cron_intervals-1)) ? HIGHEST_PERSON_NAME + 1 : (lower_bound + range_size);
+
+      eosio::print("Processing stakers in range: ", lower_bound, " -> ", upper_bound, "\n");
 
       // Find the first account in the range
       auto itr = staking_accounts_table.lower_bound(lower_bound);
@@ -228,24 +235,40 @@ namespace stakingtoken
       double interval_percentage_yield = std::pow(1 + apy, static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_YEAR) - 1;
       asset total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
 
+      eosio::print("staking.tmy::create_account_yield() called on account: ", staker, "\n");
+
       // Iterate through allocations and add yield (if not unstaking)
-      for (auto itr = staking_allocations_table.begin(); itr != staking_allocations_table.end(); itr++)
+      for (auto itr = staking_allocations_table.begin(); itr != staking_allocations_table.end();)
       {
          if (!itr->unstake_requested)
          {
             asset yield = asset(static_cast<int64_t>(itr->tokens_staked.amount * interval_percentage_yield), SYSTEM_RESOURCE_CURRENCY);
-
+      
             staking_allocations_table.modify(itr, eosio::same_payer, [&](auto &row)
             {
                row.tokens_staked += yield;
             });
-
-            total_yield += yield;
+      
+            total_yield += yield;            
+            eosio::print("staking.tmy::create_account_yield() staking allocation ", itr->id, " ", yield.to_string(), " yield added\n");
+            ++itr; // Move to the next element
+         } 
+         else if (now >= itr->unstake_time + RELEASE_PERIOD) 
+         {
+            auto current_itr = itr; // Save the current iterator
+            ++itr; // Move to the next element before erasing
+            _releasetoken(staker, settings, staking_allocations_table, current_itr);
+            eosio::print("staking.tmy::create_account_yield() staking allocation ", current_itr->id, " released\n");
          }
+         else
+         {
+            ++itr; // Ensure we don't get stuck in an infinite loop
+         }  
       }
-
+      
       if (total_yield.amount != 0)
       {
+         require_recipient(staker);
          staking_accounts_table.modify(accounts_itr, eosio::same_payer, [&](auto &row)
          {
             row.total_yield += total_yield;
@@ -256,6 +279,8 @@ namespace stakingtoken
          settings.total_staked += total_yield;
          settings.current_yield_pool -= total_yield;
          settings_table_instance.set(settings, get_self());   
+
+         eosio::print("staking.tmy::create_account_yield() ", total_yield.to_string(), " added to account\n");
       }
    }
 
