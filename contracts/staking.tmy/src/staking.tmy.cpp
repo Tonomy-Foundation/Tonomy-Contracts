@@ -197,6 +197,8 @@ namespace stakingtoken
       uint64_t lower_bound = LOWEST_PERSON_NAME + (current_cron_interval * range_size);
       uint64_t upper_bound = (current_cron_interval == (cron_intervals-1)) ? HIGHEST_PERSON_NAME + 1 : (lower_bound + range_size);
 
+      eosio::print("Processing stakers in range: ", lower_bound, " -> ", upper_bound, "\n");
+
       // Find the first account in the range
       auto itr = staking_accounts_table.lower_bound(lower_bound);
 
@@ -233,6 +235,8 @@ namespace stakingtoken
       double interval_percentage_yield = std::pow(1 + apy, static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_YEAR) - 1;
       asset total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
 
+      eosio::print("staking.tmy::create_account_yield() called on account: ", staker, "\n");
+
       // Iterate through allocations and add yield (if not unstaking)
       for (auto itr = staking_allocations_table.begin(); itr != staking_allocations_table.end();)
       {
@@ -246,6 +250,7 @@ namespace stakingtoken
             });
       
             total_yield += yield;            
+            eosio::print("staking.tmy::create_account_yield() staking allocation ", itr->id, " ", yield.to_string(), " yield added\n");
             ++itr; // Move to the next element
          } 
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
@@ -253,6 +258,7 @@ namespace stakingtoken
             auto current_itr = itr; // Save the current iterator
             ++itr; // Move to the next element before erasing
             _releasetoken(staker, settings, staking_allocations_table, current_itr);
+            eosio::print("staking.tmy::create_account_yield() staking allocation ", current_itr->id, " released\n");
          }
          else
          {
@@ -260,7 +266,6 @@ namespace stakingtoken
          }  
       }
       
-
       if (total_yield.amount != 0)
       {
          require_recipient(staker);
@@ -274,6 +279,8 @@ namespace stakingtoken
          settings.total_staked += total_yield;
          settings.current_yield_pool -= total_yield;
          settings_table_instance.set(settings, get_self());   
+
+         eosio::print("staking.tmy::create_account_yield() ", total_yield.to_string(), " added to account\n");
       }
    }
 
