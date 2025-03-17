@@ -138,28 +138,31 @@ namespace eosiotonomy
       check(is_feature_activated(feature_digest), "protocol feature is not activated");
    }
 
-   void bios::onblock(ignore<block_header> header) {
+   void bios::onblock(ignore<block_header> header)
+   {
       eosio::time_point now = eosio::current_time_point();
       int64_t current_time = now.time_since_epoch().count();
-   
-      eosio::print("{\"event_log\":{\"account\":\"eosio\",\"action\":\"onblock\"},\"time\":\"",
-                   now.to_string(), "Z\",\"events\":[\"current_time:\",", current_time, "]}");
-   
+
+      eosio::print("{\"event_log\":{\"account\":\"eosio\",\"action\":\"onblock\"},\"time\":\"", now.to_string(), "Z\",\"events\":[]}");
+
       // Determine the current period and what the previous block's period would have been
       int64_t current_period = current_time / CRON_PERIOD_MICROSECONDS;
-     
       int64_t previous_period = (current_time - BLOCK_INTERVAL_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
-    
+
       // Only trigger if this block is the first in a new cron period.
-      if (current_period != previous_period) {
-         eosio::print("\"called staking.tmy::cron()\"");
+      if (current_period != previous_period)
+      {
+         // eosio::print("{\"event_log\":{\"account\":\"eosio\",\"action\":\"onblock\"},\"time\":\"", now.to_string(),
+         //    "Z\",\"events\":[{\"inline_action\":{\"account\":\"staking.tmy\",\"action\":\"cron\"}}]}");
+         eosio::print("{\"event_log\":{\"account\":\"eosio\",\"action\":\"onblock\"},\"time\":\"", now.to_string(),
+            "Z\",\"events\":[\"calling staking.tmy::cron()\"]}");
 
          eosio::action(
-            eosio::permission_level{"eosio"_n, "active"_n},
-            "staking.tmy"_n,
-            "cron"_n,
-            std::make_tuple())
-            .send();
+             eosio::permission_level{"eosio"_n, "active"_n},
+             "staking.tmy"_n,
+             "cron"_n,
+             std::make_tuple())
+             .send();
       }
    }
 
