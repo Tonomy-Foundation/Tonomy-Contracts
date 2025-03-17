@@ -275,7 +275,7 @@ namespace stakingtoken
          settings.current_yield_pool -= total_yield;
          settings_table_instance.set(settings, get_self());
          
-         eosio::print(",{\"account\":\"", staker.to_string(), ",\"total_yield\":", total_yield.to_string(), "}");
+         eosio::print(",{\"account\":\"", staker.to_string(), ",\"total_yield\":\"", total_yield.to_string(), "\"}");
       }
    }
 
