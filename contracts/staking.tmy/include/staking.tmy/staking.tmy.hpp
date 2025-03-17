@@ -163,7 +163,7 @@ namespace stakingtoken
         /**
          * Add yield to an account
          */
-        void create_account_yield(name staker);
+        void create_account_yield(time_point now, const name &staker, double apy, staking_settings &settings, staking_accounts::const_iterator accounts_itr);
       
         /**
          * Check minimum amount needed to prevent DOSing the action
@@ -173,6 +173,6 @@ namespace stakingtoken
         /**
           *  Releases staked tokens back to the staker.
         */
-        void _releasetoken(name staker, staking_settings settings, staking_allocations& staking_allocations_table, staking_allocations::const_iterator allocation);
+        void _releasetoken(const name &staker, staking_settings &settings, staking_allocations &staking_allocations_table, staking_allocations::const_iterator allocation);
     };
 }
