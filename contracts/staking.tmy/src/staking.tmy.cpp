@@ -169,13 +169,18 @@ namespace stakingtoken
       staking_settings settings = settings_table_instance.get();
       require_recipient(staker);
 
+      const time_point now = eosio::current_time_point();
+      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"releasetoken\"},\"time\":\"", now.to_string(),
+            "Z\",\"events\":[\"account\":\"", staker.to_string(), ",\"allocation_id\":", allocation_id,
+            ",\"calling _releasetoken()\"]}");
+
       _releasetoken(staker, settings,staking_allocations_table,  itr);
    }
 
    void stakingToken::cron()
    {
       const time_point now = eosio::current_time_point();
-      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"cron\"},\"time\":\"", now.to_string(), "Z\",\"events\":[");
+      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"cron\"},\"time\":\"", now.to_string(), "Z\",\"events\":[]");
       // If the sender is not the system contract, require auth
       // This is so that it can be run from the eosio::onblock() action as a cron
       // or alternatively be called manually if needed
@@ -197,7 +202,8 @@ namespace stakingtoken
       uint64_t lower_bound = LOWEST_PERSON_NAME + (current_cron_interval * range_size);
       uint64_t upper_bound = (current_cron_interval == (cron_intervals-1)) ? HIGHEST_PERSON_NAME + 1 : (lower_bound + range_size);
 
-      eosio::print("Processing stakers in range: ", lower_bound, " -> ", upper_bound, "\n");
+      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"cron\"},\"time\":\"", now.to_string(),
+         "Z\",\"events\":[\"Processing stakers in range: ", name(lower_bound).to_string(), " -> ", name(upper_bound).to_string(), "\"]");
 
       // Find the first account in the range
       auto itr = staking_accounts_table.lower_bound(lower_bound);
@@ -213,13 +219,14 @@ namespace stakingtoken
          count++;
          itr++;
       }
-
-      eosio::print("\"Processed ", count, " staking accounts in batch ", current_cron_interval,"\"");
-      eosio::print("]}");
+      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"cron\"},\"time\":\"", now.to_string(),
+         "Z\",\"events\":[\"processed\":", count, "]}");
    }
 
    void stakingToken::create_account_yield(name staker)
    {
+      time_point now = eosio::current_time_point();
+      
       stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
       stakingToken::staking_accounts staking_accounts_table(get_self(), get_self().value);
       settings_table settings_table_instance(get_self(), get_self().value);
@@ -227,7 +234,6 @@ namespace stakingtoken
 
       auto accounts_itr = staking_accounts_table.find(staker.value);
       
-      time_point now = eosio::current_time_point();
       microseconds since_last_payout = now - accounts_itr->last_payout;
 
       // Calculate the yield rate for the interval
@@ -235,7 +241,10 @@ namespace stakingtoken
       double interval_percentage_yield = std::pow(1 + apy, static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_YEAR) - 1;
       asset total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
 
-      eosio::print("staking.tmy::create_account_yield() called on account: ", staker, "\n");
+      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"create_account_yield\"},\"time\":\"", now.to_string(),
+         "Z\",\"events\":[\"account\":\"", staker.to_string(), ",\"apy\":", apy,
+         "\",\"interval_percentage_yield\":", interval_percentage_yield, ",\"payments\":", accounts_itr->payments,
+         ",\"last_payout\":", accounts_itr->last_payout.to_string(), "]}");
 
       // Iterate through allocations and add yield (if not unstaking)
       for (auto itr = staking_allocations_table.begin(); itr != staking_allocations_table.end();)
@@ -249,8 +258,11 @@ namespace stakingtoken
                row.tokens_staked += yield;
             });
       
-            total_yield += yield;            
-            eosio::print("staking.tmy::create_account_yield() staking allocation ", itr->id, " ", yield.to_string(), " yield added\n");
+            total_yield += yield;
+            eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"create_account_yield\"},\"time\":\"", now.to_string(),
+               "Z\",\"events\":[\"account\":\"", staker.to_string(), ",\"allocation_id\":", itr->id,
+               ",\"yield\":", yield.to_string(), "]}");
+      
             ++itr; // Move to the next element
          } 
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
@@ -258,7 +270,9 @@ namespace stakingtoken
             auto current_itr = itr; // Save the current iterator
             ++itr; // Move to the next element before erasing
             _releasetoken(staker, settings, staking_allocations_table, current_itr);
-            eosio::print("staking.tmy::create_account_yield() staking allocation ", current_itr->id, " released\n");
+            eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"create_account_yield\"},\"time\":\"", now.to_string(),
+            "Z\",\"events\":[\"account\":\"", staker.to_string(), ",\"allocation_id\":", itr->id,
+            ",\"calling _releasetoken()\"]}");
          }
          else
          {
@@ -280,7 +294,8 @@ namespace stakingtoken
          settings.current_yield_pool -= total_yield;
          settings_table_instance.set(settings, get_self());   
 
-         eosio::print("staking.tmy::create_account_yield() ", total_yield.to_string(), " added to account\n");
+         eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"create_account_yield\"},\"time\":\"", now.to_string(),
+               "Z\",\"events\":[\"account\":\"", staker.to_string(), ",\"total_yield\":", total_yield.to_string(), "]}");
       }
    }
 
