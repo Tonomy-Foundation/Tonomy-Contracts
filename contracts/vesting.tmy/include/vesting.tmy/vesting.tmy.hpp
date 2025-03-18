@@ -135,6 +135,11 @@ namespace vestingtoken
          */
         [[eosio::action]] void migratealloc(eosio::name sender, name holder, uint64_t allocation_id, eosio::asset old_amount, eosio::asset new_amount, int old_category_id, int new_category_id);
 
+        /**
+         * Migrates the allocation symbols of an account from the old symbol to the new symbol
+         */
+        [[eosio::action]] void migrateacc(const name &account);
+
         using setsettings_action = action_wrapper<"setsettings"_n, &vestingToken::setsettings>;
         using assigntokens_action = action_wrapper<"assigntokens"_n, &vestingToken::assigntokens>;
         using withdraw_action = action_wrapper<"withdraw"_n, &vestingToken::withdraw>;
