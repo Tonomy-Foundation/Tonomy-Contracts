@@ -109,6 +109,16 @@ namespace stakingtoken
          */
         [[eosio::action]] void cron();
 
+        /**
+         * Migrate the settings
+         */
+        [[eosio::action]] void migrateset();
+
+        /**
+         * Migrate the account and allocations from the old to the new symbol
+         */
+        [[eosio::action]] void migrateacc(name account);
+
         #ifdef BUILD_TEST
         /**
          * Resets all the contract data
