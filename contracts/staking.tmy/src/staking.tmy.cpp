@@ -227,8 +227,8 @@ namespace stakingtoken
       double interval_percentage_yield = std::pow(1 + apy, static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_YEAR) - 1;
       asset total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
 
-      eosio::print(",{\"account\":\"", staker.to_string(), "\",\"interval_percentage_yield\":", std::to_string(interval_percentage_yield),
-         ",\"payments\":", accounts_itr->payments, ",\"last_payout\":\"", accounts_itr->last_payout.to_string(), "Z\"}");
+      eosio::print(",{\"account\":\"", staker.to_string(), "\",\"interval_percentage_yield\":\"",interval_percentage_yield,
+         "\",\"payments\":", accounts_itr->payments, ",\"last_payout\":\"", accounts_itr->last_payout.to_string(), "Z\"}");
 
       staking_allocations staking_allocations_table(get_self(), staker.value);
       // Iterate through allocations and add yield (if not unstaking)
