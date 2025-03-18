@@ -103,6 +103,18 @@ namespace eosio {
          [[eosio::action]]
          void close( const name& owner, const symbol& symbol );
 
+         /**
+          * Migrates an accounts tokens from the old symbol to the new symbol
+          */
+         [[eosio::action]]
+         void migrateacc(const name &account);
+
+         /**
+          * Migrates a currency statistics from the old symbol to the new symbol
+          */
+         [[eosio::action]]
+         void migratestats();
+
          static asset get_supply( const name& token_contract_account, const symbol_code& sym_code )
          {
             stats statstable( token_contract_account, sym_code.raw() );
