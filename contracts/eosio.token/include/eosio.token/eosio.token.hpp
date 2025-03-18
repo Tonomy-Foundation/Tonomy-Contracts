@@ -25,6 +25,8 @@ namespace eosio {
    class [[eosio::contract("eosio.token")]] token : public contract {
       public:
          using contract::contract;
+         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("TONO", 6);
+         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY_OLD = eosio::symbol("LEOS", 6);
 
          /**
           * Allows `issuer` account to create a token in supply of `maximum_supply`. If validation is successful a new entry in statstable for token symbol scope gets created.

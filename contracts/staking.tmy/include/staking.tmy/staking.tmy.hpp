@@ -29,6 +29,7 @@ namespace stakingtoken
       public:
         using contract::contract;
         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("TONO", 6);
+        static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY_OLD = eosio::symbol("LEOS", 6);
         static constexpr eosio::name TOKEN_CONTRACT = "eosio.token"_n;
         static constexpr eosio::name SYSTEM_CONTRACT = "eosio"_n;
         #ifdef BUILD_TEST
