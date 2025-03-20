@@ -1,0 +1,74 @@
+FROM ubuntu:20.04 AS deb_builder
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update
+RUN apt-get install -y \
+    wget \
+    build-essential \
+    cmake \
+    git \
+    libcurl4-openssl-dev \
+    libgmp-dev \
+    llvm-11-dev \
+    python3-numpy \
+    file \
+    zlib1g-dev \
+    libboost-all-dev \
+    libssl-dev
+
+RUN mkdir -p /source/
+RUN cd /source && git clone https://github.com/AntelopeIO/leap.git && \
+    cd leap && \
+    git fetch --all --tags && git checkout v3.2.3 && \
+    git submodule update --init --recursive && \
+    mkdir build
+RUN apt install -y pkg-config libusb-1.0-0-dev
+RUN cd /source/leap/build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/lib/llvm-11 ..
+RUN cd /source/leap/build && make -j 3 package && ls -l /source/leap/build/leap_3.2.3-ubuntu20.04_arm64.deb
+
+FROM ubuntu:20.04 as antelope_blockchain
+
+RUN apt update
+RUN apt install -y wget curl
+
+COPY --from=deb_builder /source/leap/build/leap_3.2.3-ubuntu20.04_arm64.deb .
+# COPY leap_3.2.3-ubuntu20.04_arm64.deb /leap_3.2.3-ubuntu20.04_arm64.deb
+RUN apt install -y ./leap_3.2.3-ubuntu20.04_arm64.deb
+# TODO update to use stable 4.x release
+# RUN wget https://github.com/AntelopeIO/leap/releases/download/v4.0.0-rc3/leap_4.0.0-rc3-ubuntu20.04_amd64.deb
+# RUN apt install -y ./leap_4.0.0-rc3-ubuntu20.04_amd64.deb
+
+RUN wget https://github.com/AntelopeIO/cdt/releases/download/v3.1.0/cdt_3.1.0_arm64.deb
+RUN apt install ./cdt_3.1.0_arm64.deb
+
+CMD nodeos
+
+FROM antelope_blockchain as tonomy_blockchain_base
+
+RUN mkdir /var/config
+COPY . /var/contracts
+WORKDIR /var/contracts/blockchain
+
+RUN cp ./config.ini /var/config/config.ini
+
+CMD ./nodeos.sh
+
+### Intialize the blockchain
+FROM tonomy_blockchain_base as tonomy_blockchain_initialized
+
+## Run bootstrap script
+RUN bash -c "./nodeos.sh &" && sleep 10 && ./initialize-blockchain.sh && ./nodeos.sh stop
+
+### Install nodejs
+FROM tonomy_blockchain_initialized as tonomy_blockchain_nodejs
+
+RUN wget nodejs.org/dist/v22.3.0/node-v22.3.0-linux-arm64.tar.gz
+RUN tar -C /usr/local --strip-components 1 -xzf node-v22.3.0-linux-arm64.tar.gz
+
+### Easy cleos script
+FROM tonomy_blockchain_initialized as tonomy_blockchain_easycleos
+
+RUN mkdir /var/easycleos
+
+# Copy the script to the container
+RUN cp ./create-key.sh /var/easycleos/create-key.sh
+RUN cp ./transact.sh /var/easycleos/transact.sh
