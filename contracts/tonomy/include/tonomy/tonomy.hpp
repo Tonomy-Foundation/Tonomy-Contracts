@@ -103,6 +103,9 @@ namespace tonomysystem
        * @param username_hash - hash of the username
        * @param logo_url - url to the logo of the app
        * @param origin - domain associated with the app
+       * @param background_color - background color of the app
+       * @param text_color - text color of the app
+       * @param branding_color - branding color of the app
        */
       [[eosio::action]] void adminsetapp(
           name account_name,
@@ -110,8 +113,11 @@ namespace tonomysystem
           string description,
           checksum256 username_hash,
           string logo_url,
-          string origin);
-
+          string origin,
+          string background_color,
+          string text_color,
+          string branding_color);
+      
       /**
        * Create a new account for an app and registers it's details
        *
@@ -123,6 +129,9 @@ namespace tonomysystem
        * @param logo_url - url to the logo of the app
        * @param origin - domain associated with the app
        * @param password_key - public key generated from the account's password
+       * @param background_color - background color of the app
+       * @param text_color - text color of the app
+       * @param branding_color - branding color of the app
        */
       [[eosio::action]] void newapp(
           string app_name,
@@ -130,8 +139,23 @@ namespace tonomysystem
           checksum256 username_hash,
           string logo_url,
           string origin,
-          public_key key);
-
+          public_key key,
+          string background_color,
+          string text_color,
+          string branding_color);
+      
+      /**
+       * @brief Update the branding colors for a specific application.
+       *
+       * @param app_name The name of the application
+       * @param background_color The background color of the application 
+       * @param text_color The text color used in the application 
+       * @param branding_color The primary branding color of the application 
+       */
+       [[eosio::action]] void setappcolors(string app_name,
+         string background_color,
+          string text_color,
+          string branding_color);
       /**
        * Adds a new key to a person's account to log into an app with
        *
@@ -157,6 +181,7 @@ namespace tonomysystem
                                           permission_level_name permission,
                                           public_key key,
                                           bool link_auth = false);
+
 
       /**
        * Update active of a person
@@ -248,6 +273,9 @@ namespace tonomysystem
          string description;
          string logo_url;
          string origin;
+         string background_color;
+         string text_color;
+         string branding_color;
 
          // primary key automatically added by EOSIO method
          uint64_t primary_key() const { return account_name.value; }
@@ -325,6 +353,7 @@ namespace tonomysystem
       using newperson_action = action_wrapper<"newperson"_n, &tonomy::newperson>;
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &tonomy::updatekeyper>;
       using newapp_action = action_wrapper<"newapp"_n, &tonomy::newapp>;
+      using setappcolors_action = action_wrapper<"setappcolors"_n, &tonomy::setappcolors>;
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
       using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;

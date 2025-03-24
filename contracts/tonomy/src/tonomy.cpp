@@ -159,7 +159,10 @@ namespace tonomysystem
        checksum256 username_hash,
        string logo_url,
        string origin,
-       public_key key)
+       public_key key,
+       string background_color,
+       string text_color,
+       string branding_color)
    {
       // TODO: in the future only an organization type can create an app
       // check the transaction is signed by the `id.tmy` account
@@ -210,7 +213,11 @@ namespace tonomysystem
                            app_itr.description = description;
                            app_itr.logo_url = logo_url;
                            app_itr.origin = origin;
-                           app_itr.username_hash = username_hash; });
+                           app_itr.username_hash = username_hash;
+                           app_itr.background_color = background_color;
+                           app_itr.text_color = text_color;
+                           app_itr.branding_color = branding_color;
+                        });
 
       // Store the account type in the account_type table
       account_type_table account_type(get_self(), get_self().value);
@@ -221,13 +228,41 @@ namespace tonomysystem
          row.version = 1; });
    }
 
+   void tonomy::setappcolors(
+      string app_name,
+      string background_color,
+      string text_color,
+      string branding_color)
+   {
+     eosio::require_auth(get_self());
+
+     // Check if the app exists in the `_apps` table
+     uint64_t key = std::stoull(app_name);
+     auto apps_itr = _apps.find(key);
+     if (apps_itr == _apps.end())
+     {
+        throwError("TCON1005", "App does not exist");
+     }
+
+     // Update the colors in the `_apps` table
+     _apps.modify(apps_itr, get_self(), [&](auto &app_itr)
+                  {
+                     app_itr.background_color = background_color;
+                     app_itr.text_color = text_color;
+                     app_itr.branding_color = branding_color;
+                  });
+   }
+
    void tonomy::adminsetapp(
        name account_name,
        string app_name,
        string description,
        checksum256 username_hash,
        string logo_url,
-       string origin)
+       string origin,
+       string background_color,
+       string text_color,
+       string branding_color)
    {
       eosio::require_auth(get_self()); // signed by active@id.tmy permission
 
@@ -277,7 +312,11 @@ namespace tonomysystem
                            app_itr.description = description;
                            app_itr.logo_url = logo_url;
                            app_itr.origin = origin;
-                           app_itr.username_hash = username_hash; });
+                           app_itr.username_hash = username_hash;
+                           app_itr.background_color = background_color;
+                           app_itr.text_color = text_color;
+                           app_itr.branding_color = branding_color;
+                         });
    }
 
    void tonomy::updatekeyper(name account,
