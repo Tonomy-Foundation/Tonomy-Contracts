@@ -64,6 +64,11 @@ namespace stakingtoken
         static constexpr uint64_t LOWEST_PERSON_NAME  = ("p1111111111"_n).value;
         static constexpr uint64_t HIGHEST_PERSON_NAME  = ("pzzzzzzzzzz"_n).value;    
 
+        stakingToken(name receiver, name code, eosio::datastream<const char *> ds)
+          : contract(receiver, code, ds),
+          staking_accounts_table(staking_accounts(get_self(), get_self().value)),
+          settings_table_instance(settings_table(get_self(), get_self().value)) {}
+
         /**
          * Sets the settings
          */
@@ -112,33 +117,33 @@ namespace stakingtoken
         #endif
         
         struct [[eosio::table]] staking_settings
-      {
-          eosio::asset current_yield_pool; // The amount of tokens available for staking yield each month.
-          eosio::asset yearly_stake_pool; // The amount of tokens that should be available for staking yield each month.
-          eosio::asset total_staked; // The total amount of tokens staked.
-          eosio::asset total_releasing; // The total amount of tokens being unstaked.
-          
-          EOSLIB_SERIALIZE(staking_settings, (current_yield_pool)(yearly_stake_pool)(total_staked)(total_releasing))
-      };
+        {
+            eosio::asset current_yield_pool; // The amount of tokens available for staking yield each month.
+            eosio::asset yearly_stake_pool; // The amount of tokens that should be available for staking yield each month.
+            eosio::asset total_staked; // The total amount of tokens staked.
+            eosio::asset total_releasing; // The total amount of tokens being unstaked.
+            
+            EOSLIB_SERIALIZE(staking_settings, (current_yield_pool)(yearly_stake_pool)(total_staked)(total_releasing))
+        };
 
-      typedef eosio::singleton<"settings"_n, staking_settings> settings_table;
-      // Following line needed to correctly generate ABI. See https://github.com/EOSIO/eosio.cdt/issues/280#issuecomment-439666574
-      typedef eosio::multi_index<"settings"_n, staking_settings> settings_table_dump;
+        typedef eosio::singleton<"settings"_n, staking_settings> settings_table;
+        // Following line needed to correctly generate ABI. See https://github.com/EOSIO/eosio.cdt/issues/280#issuecomment-439666574
+        typedef eosio::multi_index<"settings"_n, staking_settings> settings_table_dump;
 
-     // Define the structure of a staking allocation
-     struct [[eosio::table]] staking_allocation
-     {
-       uint64_t id;
-       eosio::asset initial_stake; // The amount of tokens initially staked.
-       eosio::asset tokens_staked; //The amount of tokens staked.
-       eosio::time_point stake_time; //The time when the staking started.
-       eosio::time_point unstake_time; //The time when the unstaking will occur.
-       bool unstake_requested; //A flag indicating whether the tokens are currently being unstaked.
-       uint64_t primary_key() const { return id; }
-       EOSLIB_SERIALIZE(struct staking_allocation, (id)(initial_stake)(tokens_staked)(stake_time)(unstake_time)(unstake_requested))
-     };
-     // Define the mapping of staking allocations
-     typedef eosio::multi_index<"stakingalloc"_n, staking_allocation> staking_allocations;
+        // Define the structure of a staking allocation
+        struct [[eosio::table]] staking_allocation
+        {
+          uint64_t id;
+          eosio::asset initial_stake; // The amount of tokens initially staked.
+          eosio::asset tokens_staked; //The amount of tokens staked.
+          eosio::time_point stake_time; //The time when the staking started.
+          eosio::time_point unstake_time; //The time when the unstaking will occur.
+          bool unstake_requested; //A flag indicating whether the tokens are currently being unstaked.
+          uint64_t primary_key() const { return id; }
+          EOSLIB_SERIALIZE(struct staking_allocation, (id)(initial_stake)(tokens_staked)(stake_time)(unstake_time)(unstake_requested))
+        };
+        // Define the mapping of staking allocations
+        typedef eosio::multi_index<"stakingalloc"_n, staking_allocation> staking_allocations;
 
         struct [[eosio::table]] staking_account
         {
@@ -153,17 +158,18 @@ namespace stakingtoken
         // Define the mapping of staking accounts
         typedef eosio::multi_index<"stakingaccou"_n, staking_account> staking_accounts;
 
-      
-
         using staketokens_action = action_wrapper<"staketokens"_n, &stakingToken::staketokens>;
         using requnstake_action = action_wrapper<"requnstake"_n, &stakingToken::requnstake>;
         using releasetoken_action = action_wrapper<"releasetoken"_n, &stakingToken::releasetoken>;
 
       private:
+        staking_accounts staking_accounts_table;
+        settings_table settings_table_instance;
+
         /**
          * Add yield to an account
          */
-        void create_account_yield(name staker);
+        void create_account_yield(time_point now, const name &staker, double apy, staking_settings &settings, staking_accounts::const_iterator accounts_itr);
       
         /**
          * Check minimum amount needed to prevent DOSing the action
@@ -173,6 +179,6 @@ namespace stakingtoken
         /**
           *  Releases staked tokens back to the staker.
         */
-        void _releasetoken(name staker, staking_settings settings, staking_allocations& staking_allocations_table, staking_allocations::const_iterator allocation);
+        void _releasetoken(const name &staker, staking_settings &settings, staking_allocations &staking_allocations_table, staking_allocations::const_iterator allocation);
     };
 }

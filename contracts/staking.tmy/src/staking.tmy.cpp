@@ -21,7 +21,6 @@ namespace stakingtoken
       require_auth(get_self());
       check_asset(yearly_stake_pool);
 
-      settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get_or_default({
             asset(0, SYSTEM_RESOURCE_CURRENCY), // current_yield_pool
             asset(0, SYSTEM_RESOURCE_CURRENCY), // yearly_stake_pool
@@ -37,7 +36,6 @@ namespace stakingtoken
       check_asset(quantity);
       check_minimum_asset_prevent_dos(quantity);
 
-      settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get();
       settings.current_yield_pool += quantity;
       settings_table_instance.set(settings, get_self());
@@ -82,8 +80,6 @@ namespace stakingtoken
          row.unstake_requested = false; });
 
       // Add the user to the accounts table if they are not already there
-      stakingToken::staking_accounts staking_accounts_table(get_self(), get_self().value);
-
       auto itr = staking_accounts_table.find(staker.value);
       if (itr == staking_accounts_table.end())
       {
@@ -98,7 +94,6 @@ namespace stakingtoken
       }
 
       // Update the total staked amount
-      stakingToken::settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get();
       settings.total_staked += quantity;
       settings_table_instance.set(settings, get_self());
@@ -131,16 +126,14 @@ namespace stakingtoken
       });
 
       // Update the settings total staked and releasing amounts
-      settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get();
       settings.total_staked -= itr->tokens_staked;
       settings.total_releasing += itr->tokens_staked;
       settings_table_instance.set(settings, get_self());
    }
 
-   void stakingToken::_releasetoken(name staker, staking_settings settings, staking_allocations& staking_allocations_table, staking_allocations::const_iterator allocation)
+   void stakingToken::_releasetoken(const name &staker, staking_settings &settings, staking_allocations &staking_allocations_table, staking_allocations::const_iterator allocation)
    {
-      settings_table settings_table_instance(get_self(), get_self().value);
       settings.total_releasing -= allocation->tokens_staked;
       settings_table_instance.set(settings, get_self());
 
@@ -165,9 +158,13 @@ namespace stakingtoken
       check(itr->unstake_time + RELEASE_PERIOD <= eosio::current_time_point(), "Release period not yet completed");
 
       // Update the settings total staked and releasing amounts
-      settings_table settings_table_instance(get_self(), get_self().value);
       staking_settings settings = settings_table_instance.get();
       require_recipient(staker);
+
+      const time_point now = eosio::current_time_point();
+      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"releasetoken\"},\"time\":\"", now.to_string(),
+            "Z\",\"events\":[{\"account\":\"", staker.to_string(), ",\"allocation_id\":", allocation_id,
+            ",\"calling\":\"_releasetoken()\"}]}");
 
       _releasetoken(staker, settings,staking_allocations_table,  itr);
    }
@@ -175,7 +172,6 @@ namespace stakingtoken
    void stakingToken::cron()
    {
       const time_point now = eosio::current_time_point();
-      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"cron\"},\"time\":\"", now.to_string(), "Z\",\"events\":[");
       // If the sender is not the system contract, require auth
       // This is so that it can be run from the eosio::onblock() action as a cron
       // or alternatively be called manually if needed
@@ -183,8 +179,11 @@ namespace stakingtoken
          require_auth(get_self());
       }
 
-      staking_accounts staking_accounts_table(get_self(), get_self().value);
-      
+      staking_settings settings = settings_table_instance.get();
+
+      // Calculate the yield rate for the interval
+      double apy = std::min(static_cast<double>(settings.yearly_stake_pool.amount) / static_cast<double>(settings.total_staked.amount), MAX_APY);
+
       // this is going to be called every hour of the day
       // for each hour, we will iterate through 1/24th of the stakers using the staker.value
       // this is to avoid hitting the CPU limit
@@ -197,7 +196,12 @@ namespace stakingtoken
       uint64_t lower_bound = LOWEST_PERSON_NAME + (current_cron_interval * range_size);
       uint64_t upper_bound = (current_cron_interval == (cron_intervals-1)) ? HIGHEST_PERSON_NAME + 1 : (lower_bound + range_size);
 
-      eosio::print("Processing stakers in range: ", lower_bound, " -> ", upper_bound, "\n");
+      eosio::print("{\"event_log\":{\"account\":\"staking.tmy\",\"action\":\"cron\"},\"time\":\"", now.to_string(),
+         "Z\",\"events\":[");
+      eosio::print("{\"lower_bound\":\"", name(lower_bound).to_string(), "\",upper_bound\":\"", name(upper_bound).to_string(),
+         "\",\"apy\":", std::to_string(apy), ",\"yearly_stake_pool\":\"", settings.yearly_stake_pool.to_string(),
+         "\",\"total_staked\":\"", settings.total_staked.to_string(), "\",\"total_releasing\":\"", settings.total_releasing.to_string(),
+         "\",\"current_yield_pool\":\"", settings.current_yield_pool.to_string(), "\"}");
 
       // Find the first account in the range
       auto itr = staking_accounts_table.lower_bound(lower_bound);
@@ -209,34 +213,24 @@ namespace stakingtoken
          // If so then this batch of accounts has already been processed in this interval, so exit
          if (itr->last_payout + microseconds(1.01 * CRON_PERIOD_MICROSECONDS) > now) return;
 
-         create_account_yield(itr->staker);
+         create_account_yield(now, itr->staker, apy, settings, itr);
          count++;
          itr++;
       }
-
-      eosio::print("\"Processed ", count, " staking accounts in batch ", current_cron_interval,"\"");
+      eosio::print(",{\"processed\":", count, "}");
       eosio::print("]}");
    }
 
-   void stakingToken::create_account_yield(name staker)
+   void stakingToken::create_account_yield(time_point now, const name &staker, double apy, staking_settings &settings, staking_accounts::const_iterator accounts_itr)
    {
-      stakingToken::staking_allocations staking_allocations_table(get_self(), staker.value);
-      stakingToken::staking_accounts staking_accounts_table(get_self(), get_self().value);
-      settings_table settings_table_instance(get_self(), get_self().value);
-      staking_settings settings = settings_table_instance.get();
-
-      auto accounts_itr = staking_accounts_table.find(staker.value);
-      
-      time_point now = eosio::current_time_point();
       microseconds since_last_payout = now - accounts_itr->last_payout;
-
-      // Calculate the yield rate for the interval
-      double apy = std::min(static_cast<double>(settings.yearly_stake_pool.amount) / static_cast<double>(settings.total_staked.amount), MAX_APY);
       double interval_percentage_yield = std::pow(1 + apy, static_cast<double>(since_last_payout.count()) / MICROSECONDS_PER_YEAR) - 1;
       asset total_yield = asset(0, SYSTEM_RESOURCE_CURRENCY);
 
-      eosio::print("staking.tmy::create_account_yield() called on account: ", staker, "\n");
+      eosio::print(",{\"account\":\"", staker.to_string(), "\",\"interval_percentage_yield\":\"",interval_percentage_yield,
+         "\",\"payments\":", accounts_itr->payments, ",\"last_payout\":\"", accounts_itr->last_payout.to_string(), "Z\"}");
 
+      staking_allocations staking_allocations_table(get_self(), staker.value);
       // Iterate through allocations and add yield (if not unstaking)
       for (auto itr = staking_allocations_table.begin(); itr != staking_allocations_table.end();)
       {
@@ -249,8 +243,9 @@ namespace stakingtoken
                row.tokens_staked += yield;
             });
       
-            total_yield += yield;            
-            eosio::print("staking.tmy::create_account_yield() staking allocation ", itr->id, " ", yield.to_string(), " yield added\n");
+            total_yield += yield;
+            eosio::print(",{\"account\":\"", staker.to_string(), ",\"allocation_id\":", itr->id,",\"yield\":\"", yield.to_string(), "\"}");
+      
             ++itr; // Move to the next element
          } 
          else if (now >= itr->unstake_time + RELEASE_PERIOD) 
@@ -258,12 +253,12 @@ namespace stakingtoken
             auto current_itr = itr; // Save the current iterator
             ++itr; // Move to the next element before erasing
             _releasetoken(staker, settings, staking_allocations_table, current_itr);
-            eosio::print("staking.tmy::create_account_yield() staking allocation ", current_itr->id, " released\n");
+            eosio::print(",{\"account\":\"", staker.to_string(), ",\"allocation_id\":", itr->id,",\"calling\":\"_releasetoken()\"}");
          }
          else
          {
             ++itr; // Ensure we don't get stuck in an infinite loop
-         }  
+         }
       }
       
       if (total_yield.amount != 0)
@@ -278,9 +273,9 @@ namespace stakingtoken
 
          settings.total_staked += total_yield;
          settings.current_yield_pool -= total_yield;
-         settings_table_instance.set(settings, get_self());   
-
-         eosio::print("staking.tmy::create_account_yield() ", total_yield.to_string(), " added to account\n");
+         settings_table_instance.set(settings, get_self());
+         
+         eosio::print(",{\"account\":\"", staker.to_string(), ",\"total_yield\":\"", total_yield.to_string(), "\"}");
       }
    }
 
@@ -289,7 +284,6 @@ namespace stakingtoken
    {
       require_auth(get_self());
 
-      staking_accounts staking_accounts_table(get_self(), get_self().value);
       auto account_itr = staking_accounts_table.begin();
       while (account_itr != staking_accounts_table.end())
       {
@@ -302,8 +296,6 @@ namespace stakingtoken
 
          account_itr = staking_accounts_table.erase(account_itr);
       }
-
-      settings_table settings_table_instance(get_self(), get_self().value);
 
       // send all tokens back to infra.tmy
       staking_settings settings = settings_table_instance.get();
