@@ -11,7 +11,8 @@ namespace tonomysystem
    tonomy::tonomy(name receiver, name code, eosio::datastream<const char *> ds) : native(receiver, code, ds),
                                                                                   // instantiate multi-index instance as data member (find it defined below)
                                                                                   _people(receiver, receiver.value),
-                                                                                  _apps(receiver, receiver.value)
+                                                                                  _apps(receiver, receiver.value),
+                                                                                  _appsv2(receiver, receiver.value)
    {
    }
 
@@ -183,7 +184,7 @@ namespace tonomysystem
       newaccountaction.send(get_self(), random_name, owner_authority, active_authority);
 
       // Check the username is not already taken
-      auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
+      auto apps_by_username_hash_itr = _appsv2.get_index<"usernamehash"_n>();
       const auto username_itr = apps_by_username_hash_itr.find(username_hash);
       if (username_itr != apps_by_username_hash_itr.end())
       {
@@ -192,7 +193,7 @@ namespace tonomysystem
 
       // Check the origin is not already taken
       auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
-      auto apps_by_origin_hash_itr = _apps.get_index<"originhash"_n>();
+      auto apps_by_origin_hash_itr = _appsv2.get_index<"originhash"_n>();
       const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
       if (origin_itr != apps_by_origin_hash_itr.end())
       {
@@ -206,18 +207,25 @@ namespace tonomysystem
       _resource_config.set(config, get_self());
 
       // Store the password_salt and hashed username in table
-      _apps.emplace(get_self(), [&](auto &app_itr)
-                    {
-                           app_itr.account_name = random_name;
-                           app_itr.app_name = app_name;
-                           app_itr.description = description;
-                           app_itr.logo_url = logo_url;
-                           app_itr.origin = origin;
-                           app_itr.username_hash = username_hash;
-                           app_itr.background_color = background_color;
-                           app_itr.text_color = text_color;
-                           app_itr.branding_color = branding_color;
-                        });
+      // Store the app details in JSON format
+      _appsv2.emplace(get_self(), [&](auto &app_itr)
+      {
+         app_itr.account_name = random_name;
+         
+         // Construct JSON string with app details
+         app_itr.json_data = "{"
+            "\"app_name\": \"" + app_name + "\","
+            "\"description\": \"" + description + "\","
+            "\"logo_url\": \"" + logo_url + "\","
+            "\"background_color\": \"" + background_color + "\","
+            "\"text_color\": \"" + text_color + "\","
+            "\"branding_color\": \"" + branding_color + "\""
+         "}";
+
+         app_itr.version = 2; 
+         app_itr.username_hash = username_hash;
+         app_itr.origin = origin;
+      });
 
       // Store the account type in the account_type table
       account_type_table account_type(get_self(), get_self().value);
@@ -228,30 +236,34 @@ namespace tonomysystem
          row.version = 1; });
    }
 
-   void tonomy::setappcolors(
-      string app_name,
-      string background_color,
-      string text_color,
-      string branding_color)
-   {
-     eosio::require_auth(get_self());
-
-     // Check if the app exists in the `_apps` table
-     uint64_t key = std::stoull(app_name);
-     auto apps_itr = _apps.find(key);
-     if (apps_itr == _apps.end())
-     {
-        throwError("TCON1005", "App does not exist");
-     }
-
-     // Update the colors in the `_apps` table
-     _apps.modify(apps_itr, get_self(), [&](auto &app_itr)
-                  {
-                     app_itr.background_color = background_color;
-                     app_itr.text_color = text_color;
-                     app_itr.branding_color = branding_color;
-                  });
-   }
+   void tonomy::migrateapps() {
+      eosio::require_auth(get_self()); 
+  
+      for (auto itr = _apps.begin(); itr != _apps.end(); itr++) {
+          _appsv2.emplace(get_self(), [&](auto &app_itr) {
+              app_itr.account_name = itr->account_name;
+              app_itr.username_hash = itr->username_hash;
+              app_itr.origin = itr->origin;
+  
+              // Assign default colors since they don't exist in the old version
+              string default_background_color = "#FFFFFF"; // White
+              string default_text_color = "#000000";       // Black
+              string default_branding_color = "#CBCBCB";   // Grey
+  
+              // Construct JSON data with default colors
+              app_itr.json_data = "{"
+                  "\"app_name\": \"" + itr->app_name + "\","
+                  "\"description\": \"" + itr->description + "\","
+                  "\"logo_url\": \"" + itr->logo_url + "\","
+                  "\"background_color\": \"" + default_background_color + "\","
+                  "\"text_color\": \"" + default_text_color + "\","
+                  "\"branding_color\": \"" + default_branding_color + "\""
+              "}";
+  
+              app_itr.version = 2; 
+          });
+      }
+  }  
 
    void tonomy::adminsetapp(
        name account_name,
@@ -281,14 +293,14 @@ namespace tonomysystem
                row.version = 1; });
 
       // Check the account name is not already used
-      auto apps_itr = _apps.find(account_name.value);
-      if (apps_itr != _apps.end())
+      auto apps_itr = _appsv2.find(account_name.value);
+      if (apps_itr != _appsv2.end())
       {
          throwError("TCON1004", "Account name is already used in apps table");
       }
 
       // Check the username is not already taken
-      auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
+      auto apps_by_username_hash_itr = _appsv2.get_index<"usernamehash"_n>();
       const auto username_itr = apps_by_username_hash_itr.find(username_hash);
       if (username_itr != apps_by_username_hash_itr.end())
       {
@@ -297,7 +309,7 @@ namespace tonomysystem
 
       // Check the origin is not already taken
       auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
-      auto apps_by_origin_hash_itr = _apps.get_index<"originhash"_n>();
+      auto apps_by_origin_hash_itr = _appsv2.get_index<"originhash"_n>();
       const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
       if (origin_itr != apps_by_origin_hash_itr.end())
       {
@@ -305,18 +317,22 @@ namespace tonomysystem
       }
 
       // Store the password_salt and hashed username in table
-      _apps.emplace(get_self(), [&](auto &app_itr)
-                    {
-                           app_itr.account_name = account_name;
-                           app_itr.app_name = app_name;
-                           app_itr.description = description;
-                           app_itr.logo_url = logo_url;
-                           app_itr.origin = origin;
-                           app_itr.username_hash = username_hash;
-                           app_itr.background_color = background_color;
-                           app_itr.text_color = text_color;
-                           app_itr.branding_color = branding_color;
-                         });
+      _appsv2.emplace(get_self(), [&](auto &app_itr)
+      {
+         app_itr.account_name = account_name;
+         app_itr.origin = origin;
+         app_itr.username_hash = username_hash;
+         // Construct JSON string with app details
+         app_itr.json_data = "{"
+            "\"app_name\": \"" + app_name + "\","
+            "\"description\": \"" + description + "\","
+            "\"logo_url\": \"" + logo_url + "\","
+            "\"background_color\": \"" + background_color + "\","
+            "\"text_color\": \"" + text_color + "\","
+            "\"branding_color\": \"" + branding_color + "\""
+         "}";
+         app_itr.version = 2; 
+      });
    }
 
    void tonomy::updatekeyper(name account,
@@ -394,8 +410,8 @@ namespace tonomysystem
       // eosio::require_auth(account); // this is not needed as tonomy::tonomy::updateauth_action checks the permission
 
       // check the app exists and is registered with status
-      auto app_itr = _apps.find(app.value);
-      check(app_itr != _apps.end(), "App does not exist");
+      auto app_itr = _appsv2.find(app.value);
+      check(app_itr != _appsv2.end(), "App does not exist");
 
       // TODO: uncomment when apps have status
       // check(app_itr->status == tonomy::enum_account_status::Active_Status, "App is not active");

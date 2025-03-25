@@ -144,18 +144,7 @@ namespace tonomysystem
           string text_color,
           string branding_color);
       
-      /**
-       * @brief Update the branding colors for a specific application.
-       *
-       * @param app_name The name of the application
-       * @param background_color The background color of the application 
-       * @param text_color The text color used in the application 
-       * @param branding_color The primary branding color of the application 
-       */
-       [[eosio::action]] void setappcolors(string app_name,
-         string background_color,
-          string text_color,
-          string branding_color);
+    
       /**
        * Adds a new key to a person's account to log into an app with
        *
@@ -201,6 +190,11 @@ namespace tonomysystem
        * @param ram_fee - the fee RAM purchases in fraction (0.01 = 1% fee)
        */
       [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, double ram_fee);
+
+      /**
+       * Migrate all the apps to new app structure
+       */
+       [[eosio::action]] void migrateapps();
 
       /**
        * Buy RAM action allows an app to purchase RAM.
@@ -273,16 +267,13 @@ namespace tonomysystem
          string description;
          string logo_url;
          string origin;
-         string background_color;
-         string text_color;
-         string branding_color;
 
          // primary key automatically added by EOSIO method
          uint64_t primary_key() const { return account_name.value; }
          // also index by username hash
          checksum256 index_by_username_hash() const { return username_hash; }
          checksum256 index_by_origin_hash() const { return eosio::sha256(origin.c_str(), std::strlen(origin.c_str())); }
-      };
+      };    
 
       // Create a multi-index-table with two indexes
       typedef eosio::multi_index<"apps"_n, app,
@@ -294,6 +285,30 @@ namespace tonomysystem
 
       // Create an instance of the table that can is initalized in the constructor
       apps_table _apps;
+
+      struct [[eosio::table]] appv2 
+      {
+         name account_name;
+         string json_data; // JSON string containing app details (name, description, logo URL, background_color, text_color, branding_color)
+         uint16_t version; // Version number to track schema changes
+         checksum256 username_hash;
+         string origin;
+
+         uint64_t primary_key() const { return account_name.value; }
+         checksum256 index_by_username_hash() const { return username_hash; }
+         checksum256 index_by_origin_hash() const { return eosio::sha256(origin.c_str(), std::strlen(origin.c_str())); }
+      };
+
+       // Create a multi-index-table with two indexes
+       typedef eosio::multi_index<"appsv2"_n, appv2,
+       eosio::indexed_by<"usernamehash"_n,
+                         eosio::const_mem_fun<appv2, checksum256, &appv2::index_by_username_hash>>,
+       eosio::indexed_by<"originhash"_n,
+                         eosio::const_mem_fun<appv2, checksum256, &appv2::index_by_origin_hash>>>
+      appsv2_table;
+
+      // Create an instance of the table that can is initalized in the constructor
+      appsv2_table _appsv2;
 
       struct [[eosio::table]] resource_config
       {
@@ -353,10 +368,10 @@ namespace tonomysystem
       using newperson_action = action_wrapper<"newperson"_n, &tonomy::newperson>;
       using updatekeyper_action = action_wrapper<"updatekeyper"_n, &tonomy::updatekeyper>;
       using newapp_action = action_wrapper<"newapp"_n, &tonomy::newapp>;
-      using setappcolors_action = action_wrapper<"setappcolors"_n, &tonomy::setappcolors>;
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
       using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
+      using migrateapps_action = action_wrapper<"migrateapps"_n, &tonomy::migrateapps>;
       using buyram_action = action_wrapper<"buyram"_n, &tonomy::buyram>;
       using sellram_action = action_wrapper<"sellram"_n, &tonomy::sellram>;
    };
