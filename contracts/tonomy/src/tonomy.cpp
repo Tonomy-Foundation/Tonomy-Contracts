@@ -154,25 +154,17 @@ namespace tonomysystem
          row.version = 1; });
    }
 
-   void tonomy::newapp(
-       string app_name,
-       string description,
-       checksum256 username_hash,
-       string logo_url,
-       string origin,
-       public_key key,
-       string background_color,
-       string text_color,
-       string branding_color)
+   void tonomy::newapp(string json_data,
+      checksum256 username_hash,
+      string origin,
+      public_key key)
    {
       // TODO: in the future only an organization type can create an app
       // check the transaction is signed by the `id.tmy` account
-      eosio::require_auth(get_self());
-
-      checksum256 description_hash = eosio::sha256(description.c_str(), description.length());
+      eosio::require_auth(get_self());     
 
       // generate new random account name
-      const eosio::name random_name = random_account_name(username_hash, description_hash, enum_account_type::App);
+      const eosio::name random_name = random_account_name(username_hash, enum_account_type::App);
 
       // use the password_key public key for the owner authority
       authority owner_authority = create_authority_with_account(app_controller_account);
@@ -211,17 +203,7 @@ namespace tonomysystem
       _appsv2.emplace(get_self(), [&](auto &app_itr)
       {
          app_itr.account_name = random_name;
-         
-         // Construct JSON string with app details
-         app_itr.json_data = "{"
-            "\"app_name\": \"" + app_name + "\","
-            "\"description\": \"" + description + "\","
-            "\"logo_url\": \"" + logo_url + "\","
-            "\"background_color\": \"" + background_color + "\","
-            "\"text_color\": \"" + text_color + "\","
-            "\"branding_color\": \"" + branding_color + "\""
-         "}";
-
+         app_itr.json_data = json_data;
          app_itr.version = 2; 
          app_itr.username_hash = username_hash;
          app_itr.origin = origin;
@@ -236,45 +218,20 @@ namespace tonomysystem
          row.version = 1; });
    }
 
-   void tonomy::migrateapps() {
+   void tonomy::eraseoldapps() {
       eosio::require_auth(get_self()); 
   
-      for (auto itr = _apps.begin(); itr != _apps.end(); itr++) {
-          _appsv2.emplace(get_self(), [&](auto &app_itr) {
-              app_itr.account_name = itr->account_name;
-              app_itr.username_hash = itr->username_hash;
-              app_itr.origin = itr->origin;
-  
-              // Assign default colors since they don't exist in the old version
-              string default_background_color = "#FFFFFF"; // White
-              string default_text_color = "#000000";       // Black
-              string default_branding_color = "#CBCBCB";   // Grey
-  
-              // Construct JSON data with default colors
-              app_itr.json_data = "{"
-                  "\"app_name\": \"" + itr->app_name + "\","
-                  "\"description\": \"" + itr->description + "\","
-                  "\"logo_url\": \"" + itr->logo_url + "\","
-                  "\"background_color\": \"" + default_background_color + "\","
-                  "\"text_color\": \"" + default_text_color + "\","
-                  "\"branding_color\": \"" + default_branding_color + "\""
-              "}";
-  
-              app_itr.version = 2; 
-          });
+      // Delete all items in the v1 table
+      while (_apps.begin() != _apps.end()) {
+          _apps.erase(_apps.begin());
       }
   }  
 
    void tonomy::adminsetapp(
-       name account_name,
-       string app_name,
-       string description,
-       checksum256 username_hash,
-       string logo_url,
-       string origin,
-       string background_color,
-       string text_color,
-       string branding_color)
+      name account_name,
+      string json_data,
+      checksum256 username_hash,
+      string origin)
    {
       eosio::require_auth(get_self()); // signed by active@id.tmy permission
 
@@ -322,15 +279,7 @@ namespace tonomysystem
          app_itr.account_name = account_name;
          app_itr.origin = origin;
          app_itr.username_hash = username_hash;
-         // Construct JSON string with app details
-         app_itr.json_data = "{"
-            "\"app_name\": \"" + app_name + "\","
-            "\"description\": \"" + description + "\","
-            "\"logo_url\": \"" + logo_url + "\","
-            "\"background_color\": \"" + background_color + "\","
-            "\"text_color\": \"" + text_color + "\","
-            "\"branding_color\": \"" + branding_color + "\""
-         "}";
+         app_itr.json_data = json_data;
          app_itr.version = 2; 
       });
    }

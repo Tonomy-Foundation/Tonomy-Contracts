@@ -8,7 +8,6 @@
 #include <eosio/producer_schedule.hpp>
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
-
 #include "native.hpp"
 
 namespace tonomysystem
@@ -93,56 +92,47 @@ namespace tonomysystem
           checksum256 username_hash,
           public_key password_key,
           checksum256 password_salt);
-
+         /**
+            * Manually sets the details of an app (admin only)
+            *
+            * @param account_name - name of the account* The app details are provided as a JSON string containing the following fields:
+            * - name: Name of the app
+            * - description: Description of the app
+            * - logo_url: URL to the logo of the app
+            * - background_color: Background color of the app
+            * - text_color: Text color of the app
+            * - branding_color: Branding color of the app
+            *
+            * @param json_data - JSON string containing app details 
+            * @param username_hash - hash of the username
+            * @param origin - domain associated with the app
+          */
+         [[eosio::action]] void adminsetapp(
+             name account_name,
+             string json_data,
+             checksum256 username_hash,
+             string origin);
       /**
-       * Manually sets the details of an app (admin only)
+       * Create a new account for an app and registers its details
        *
-       * @param account_name - name of the account
-       * @param app_name - name of the app
-       * @param description - description of the app
-       * @param username_hash - hash of the username
-       * @param logo_url - url to the logo of the app
-       * @param origin - domain associated with the app
-       * @param background_color - background color of the app
-       * @param text_color - text color of the app
-       * @param branding_color - branding color of the app
-       */
-      [[eosio::action]] void adminsetapp(
-          name account_name,
-          string app_name,
-          string description,
-          checksum256 username_hash,
-          string logo_url,
-          string origin,
-          string background_color,
-          string text_color,
-          string branding_color);
-      
-      /**
-       * Create a new account for an app and registers it's details
+       * The app details are provided as a JSON string containing the following fields:
+       * - name: Name of the app
+       * - description: Description of the app
+       * - logo_url: URL to the logo of the app
+       * - background_color: Background color of the app
+       * - text_color: Text color of the app
+       * - branding_color: Branding color of the app
        *
-       * @details Creates a new account for an app and registers it's details.
-       *
-       * @param name - name of the app
-       * @param description - description of the app
-       * @param username_hash - hash of the username
-       * @param logo_url - url to the logo of the app
-       * @param origin - domain associated with the app
-       * @param password_key - public key generated from the account's password
-       * @param background_color - background color of the app
-       * @param text_color - text color of the app
-       * @param branding_color - branding color of the app
+       * @param json_data - JSON string containing app details
+       * @param username_hash - Hash of the username
+       * @param origin - Domain associated with the app
+       * @param key - Public key generated from the account's password
        */
       [[eosio::action]] void newapp(
-          string app_name,
-          string description,
+          string json_data,
           checksum256 username_hash,
-          string logo_url,
           string origin,
-          public_key key,
-          string background_color,
-          string text_color,
-          string branding_color);
+          public_key key);
       
     
       /**
@@ -192,9 +182,9 @@ namespace tonomysystem
       [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, double ram_fee);
 
       /**
-       * Migrate all the apps to new app structure
+       * Delete all the old apps
        */
-       [[eosio::action]] void migrateapps();
+       [[eosio::action]] void eraseoldapps();
 
       /**
        * Buy RAM action allows an app to purchase RAM.
@@ -371,7 +361,7 @@ namespace tonomysystem
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
       using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
-      using migrateapps_action = action_wrapper<"migrateapps"_n, &tonomy::migrateapps>;
+      using eraseoldapps_action = action_wrapper<"eraseoldapps"_n, &tonomy::eraseoldapps>;
       using buyram_action = action_wrapper<"buyram"_n, &tonomy::buyram>;
       using sellram_action = action_wrapper<"sellram"_n, &tonomy::sellram>;
    };
