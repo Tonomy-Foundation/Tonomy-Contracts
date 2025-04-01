@@ -184,12 +184,10 @@ namespace eosio
 
       auto balance_itr = account_balance.find(SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
       
-      #ifdef BUILD_TEST
-         check(balance_itr == account_balance.end(), "No balance found for account with old symbol");
-      #endif
-
-      account_balance.modify(balance_itr, get_self(), [&](auto &a) {
-         a.balance = asset(balance_itr->balance.amount, SYSTEM_RESOURCE_CURRENCY);
-      });
+      if (balance_itr != account_balance.end()) {
+         account_balance.modify(balance_itr, get_self(), [&](auto &a) {
+            a.balance = asset(balance_itr->balance.amount, SYSTEM_RESOURCE_CURRENCY);
+         });   
+      }
    }
 } /// namespace eosio

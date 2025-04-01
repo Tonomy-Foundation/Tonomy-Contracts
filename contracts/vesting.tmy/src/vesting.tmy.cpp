@@ -218,9 +218,7 @@ namespace vestingtoken
 
         for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
-            #ifdef BUILD_TEST
-                check(iter->tokens_allocated.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-            #endif
+            check(iter->tokens_allocated.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol has already been upgraded");
             
             vesting_table.modify(iter, get_self(), [&](auto &row)
                                  {
