@@ -185,9 +185,10 @@ namespace eosio
       auto balance_itr = account_balance.find(SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
       
       if (balance_itr != account_balance.end()) {
-         account_balance.modify(balance_itr, get_self(), [&](auto &a) {
+         account_balance.emplace(get_self(), [&](auto &a) {
             a.balance = asset(balance_itr->balance.amount, SYSTEM_RESOURCE_CURRENCY);
-         });   
+         });
+         account_balance.erase(balance_itr);
       }
    }
 } /// namespace eosio
