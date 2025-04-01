@@ -191,7 +191,9 @@ namespace eosio
          });
       } else
       {
-         check(false, "No balance found for account with old symbol");
+         #ifdef BUILD_TEST
+            check(false, "No balance found for account with old symbol");
+         #endif
       }
    }
 } /// namespace eosio

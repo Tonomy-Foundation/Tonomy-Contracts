@@ -218,8 +218,10 @@ namespace vestingtoken
 
         for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
-            check(iter->tokens_allocated.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-
+            #ifdef BUILD_TEST
+                check(iter->tokens_allocated.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
+            #endif
+            
             vesting_table.modify(iter, get_self(), [&](auto &row)
                                  {
                 row.tokens_allocated = asset(row.tokens_allocated.amount, system_resource_currency);
