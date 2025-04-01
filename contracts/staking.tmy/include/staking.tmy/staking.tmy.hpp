@@ -29,7 +29,6 @@ namespace stakingtoken
       public:
         using contract::contract;
         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("TONO", 6);
-        static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY_OLD = eosio::symbol("LEOS", 6);
         static constexpr eosio::name TOKEN_CONTRACT = "eosio.token"_n;
         static constexpr eosio::name SYSTEM_CONTRACT = "eosio"_n;
         #ifdef BUILD_TEST
@@ -108,16 +107,6 @@ namespace stakingtoken
          * Cron job to be called every hour to distribute yield to stakers
          */
         [[eosio::action]] void cron();
-
-        /**
-         * Migrate the settings
-         */
-        [[eosio::action]] void migrateset();
-
-        /**
-         * Migrate the account and allocations from the old to the new symbol
-         */
-        [[eosio::action]] void migrateacc(name account);
 
         #ifdef BUILD_TEST
         /**

@@ -279,56 +279,6 @@ namespace stakingtoken
       }
    }
 
-   void stakingToken::migrateset()
-   {
-      require_auth(get_self());
-
-      staking_settings settings = settings_table_instance.get();
-      
-      check(settings.current_yield_pool.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-      check(settings.yearly_stake_pool.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-      check(settings.total_staked.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-      check(settings.total_releasing.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-
-      settings_table_instance.set({
-            asset(settings.current_yield_pool.amount, SYSTEM_RESOURCE_CURRENCY), // current_yield_pool
-            asset(settings.yearly_stake_pool.amount, SYSTEM_RESOURCE_CURRENCY), // yearly_stake_pool
-            asset(settings.total_staked.amount, SYSTEM_RESOURCE_CURRENCY), // total_staked
-            asset(settings.total_releasing.amount, SYSTEM_RESOURCE_CURRENCY)  // total_releasing
-      }, get_self());
-   }
-
-   void stakingToken::migrateacc(name account)
-   {
-      require_auth(get_self());
-
-      auto account_itr = staking_accounts_table.find(account.value);
-
-      if (account_itr != staking_accounts_table.end())
-      {
-         check(account_itr->total_yield.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-
-         staking_accounts_table.modify(account_itr, get_self(), [&](auto &row)
-         {
-            row.total_yield = asset(account_itr->total_yield.amount, SYSTEM_RESOURCE_CURRENCY);
-            row.version = 2;
-         });
-      }
-
-      staking_allocations staking_allocations_table(get_self(), account.value);
-
-      for (auto allocation_itr = staking_allocations_table.begin(); allocation_itr != staking_allocations_table.end(); ++allocation_itr)
-      {
-         check(allocation_itr->initial_stake.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-         check(allocation_itr->tokens_staked.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol is not the old symbol");
-
-         staking_allocations_table.modify(allocation_itr, get_self(), [&](auto &row)
-         {
-            row.initial_stake = asset(allocation_itr->initial_stake.amount, SYSTEM_RESOURCE_CURRENCY);
-            row.tokens_staked = asset(allocation_itr->tokens_staked.amount, SYSTEM_RESOURCE_CURRENCY);
-         });
-      }
-   }
    #ifdef BUILD_TEST
    void stakingToken::resetall()
    {
