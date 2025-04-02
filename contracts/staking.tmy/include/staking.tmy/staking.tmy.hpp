@@ -28,7 +28,7 @@ namespace stakingtoken
     
       public:
         using contract::contract;
-        static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("LEOS", 6);
+        static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("TONO", 6);
         static constexpr eosio::name TOKEN_CONTRACT = "eosio.token"_n;
         static constexpr eosio::name SYSTEM_CONTRACT = "eosio"_n;
         #ifdef BUILD_TEST
@@ -42,7 +42,7 @@ namespace stakingtoken
           // Staking cycle is how often the staking yield is distributed per account.
           const int64_t STAKING_CYCLE_MICROSECONDS = eosio::seconds(60).count();
           // Minimum transfer amount for DOS protection
-          const asset MINIMUM_TRANSFER = asset(1 * std::pow(10, SYSTEM_RESOURCE_CURRENCY.precision()), SYSTEM_RESOURCE_CURRENCY); // 1 LEOS
+          const asset MINIMUM_TRANSFER = asset(1 * std::pow(10, SYSTEM_RESOURCE_CURRENCY.precision()), SYSTEM_RESOURCE_CURRENCY); // 1 TONO
         #else
           static const uint8_t MAX_ALLOCATIONS = 20;
           // Lockup period is how long the tokens are locked up for before they can be unstaked
@@ -54,7 +54,7 @@ namespace stakingtoken
           // Staking cycle is how often the staking yield is distributed per account.
           const int64_t STAKING_CYCLE_MICROSECONDS = eosio::hours(24).count();
           // Minimum transfer amount for DOS protection
-          const asset MINIMUM_TRANSFER = asset(1000 * std::pow(10, SYSTEM_RESOURCE_CURRENCY.precision()), SYSTEM_RESOURCE_CURRENCY); // 1000 LEOS
+          const asset MINIMUM_TRANSFER = asset(1000 * std::pow(10, SYSTEM_RESOURCE_CURRENCY.precision()), SYSTEM_RESOURCE_CURRENCY); // 1000 TONO
         #endif
         // TODO: make sure that this does not need to be rounded otherwise will create a bug. if the cycle is 17 seconds and the period is 3 seconds there. 3 does not fit into 17 exactly
         const uint8_t cron_intervals = STAKING_CYCLE_MICROSECONDS / CRON_PERIOD_MICROSECONDS;

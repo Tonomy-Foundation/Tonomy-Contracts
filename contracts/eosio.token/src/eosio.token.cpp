@@ -156,4 +156,39 @@ namespace eosio
       acnts.erase(it);
    }
 
+   void token::migratestats()
+   {
+      // Admin only function
+      require_auth(get_self());
+
+      stats statstable(get_self(), SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
+      auto existing_itr = statstable.find(SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
+      check(existing_itr != statstable.end(), "token with old symbol does not exist");
+
+      statstable.emplace(get_self(), [&](auto &s)
+      {
+         s.supply.symbol = SYSTEM_RESOURCE_CURRENCY;
+         s.max_supply    = asset(existing_itr->max_supply.amount, SYSTEM_RESOURCE_CURRENCY);
+         s.issuer        = existing_itr->issuer;
+      });
+
+      statstable.erase(existing_itr);
+   }
+
+   void token::migrateacc(const name &account)
+   {
+      // Admin only function
+      require_auth(get_self());
+
+      accounts account_balance(get_self(), account.value);
+
+      auto balance_itr = account_balance.find(SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
+      
+      if (balance_itr != account_balance.end()) {
+         account_balance.emplace(get_self(), [&](auto &a) {
+            a.balance = asset(balance_itr->balance.amount, SYSTEM_RESOURCE_CURRENCY);
+         });
+         account_balance.erase(balance_itr);
+      }
+   }
 } /// namespace eosio

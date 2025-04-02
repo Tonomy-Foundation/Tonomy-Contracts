@@ -297,16 +297,18 @@ namespace stakingtoken
          account_itr = staking_accounts_table.erase(account_itr);
       }
 
-      // send all tokens back to infra.tmy
-      staking_settings settings = settings_table_instance.get();
-      eosio::action(
-          {get_self(), "active"_n},
-          TOKEN_CONTRACT,
-          "transfer"_n,
-          std::make_tuple(get_self(), "infra.tmy"_n, settings.total_staked + settings.total_releasing + settings.current_yield_pool, std::string("reset all")))
-          .send(); // This will also run eosio::require_auth(get_self())
-          
-      settings_table_instance.remove();
+      if (settings_table_instance.exists()) {
+         // send all tokens back to infra.tmy
+         staking_settings settings = settings_table_instance.get();
+         eosio::action(
+            {get_self(), "active"_n},
+            TOKEN_CONTRACT,
+            "transfer"_n,
+            std::make_tuple(get_self(), "infra.tmy"_n, settings.total_staked + settings.total_releasing + settings.current_yield_pool, std::string("reset all")))
+            .send(); // This will also run eosio::require_auth(get_self())
+            
+         settings_table_instance.remove();
+      }
    }
    #endif
 }

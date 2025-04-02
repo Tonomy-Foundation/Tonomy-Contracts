@@ -25,6 +25,8 @@ namespace eosio {
    class [[eosio::contract("eosio.token")]] token : public contract {
       public:
          using contract::contract;
+         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY = eosio::symbol("TONO", 6);
+         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY_OLD = eosio::symbol("LEOS", 6);
 
          /**
           * Allows `issuer` account to create a token in supply of `maximum_supply`. If validation is successful a new entry in statstable for token symbol scope gets created.
@@ -100,6 +102,18 @@ namespace eosio {
           */
          [[eosio::action]]
          void close( const name& owner, const symbol& symbol );
+
+         /**
+          * Migrates an accounts tokens from the old symbol to the new symbol
+          */
+         [[eosio::action]]
+         void migrateacc(const name &account);
+
+         /**
+          * Migrates a currency statistics from the old symbol to the new symbol
+          */
+         [[eosio::action]]
+         void migratestats();
 
          static asset get_supply( const name& token_contract_account, const symbol_code& sym_code )
          {
