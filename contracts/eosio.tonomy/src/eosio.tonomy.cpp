@@ -91,7 +91,7 @@ namespace eosiotonomy
       }
    }
 
-   void bios::onerror(ignore<uint128_t>, ignore<std::vector<char>>)
+   void bios::onerror(ignore<uint128_t>, ignore<std::vector<char> >)
    {
       check(false, "the onerror action cannot be called directly");
    }
@@ -116,7 +116,7 @@ namespace eosiotonomy
 
    void bios::reqauth(name from)
    {
-      // TODO is this function needed?
+      // TODO: is this function needed?
       require_auth(from);
    }
 
@@ -134,8 +134,34 @@ namespace eosiotonomy
 
    void bios::reqactivated(const eosio::checksum256 &feature_digest)
    {
-      // TODO is this function needed?
+      // TODO: is this function needed?
       check(is_feature_activated(feature_digest), "protocol feature is not activated");
+   }
+
+   void bios::onblock(ignore<block_header> header)
+   {
+      eosio::time_point now = eosio::current_time_point();
+      int64_t current_time = now.time_since_epoch().count();
+
+      eosio::print("{\"event_log\":{\"account\":\"eosio\",\"action\":\"onblock\"},\"time\":\"", now.to_string(), "Z\",\"events\":[");
+
+      // Determine the current period and what the previous block's period would have been
+      int64_t current_period = current_time / CRON_PERIOD_MICROSECONDS;
+      int64_t previous_period = (current_time - BLOCK_INTERVAL_MICROSECONDS) / CRON_PERIOD_MICROSECONDS;
+
+      // Only trigger if this block is the first in a new cron period.
+      if (current_period != previous_period)
+      {
+         eosio::print("{\"calling\":\"staking.tmy::cron()\"}");
+
+         eosio::action(
+             eosio::permission_level{"eosio"_n, "active"_n},
+             "staking.tmy"_n,
+             "cron"_n,
+             std::make_tuple())
+             .send();
+      }
+      eosio::print("]}");
    }
 
 }
