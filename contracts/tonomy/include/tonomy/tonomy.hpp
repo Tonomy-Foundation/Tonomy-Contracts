@@ -95,15 +95,8 @@ namespace tonomysystem
          /**
             * Manually sets the details of an app (admin only)
             *
-            * @param account_name - name of the account* The app details are provided as a JSON string containing the following fields:
-            * - name: Name of the app
-            * - description: Description of the app
-            * - logo_url: URL to the logo of the app
-            * - background_color: Background color of the app
-            * - text_color: Text color of the app
-            * - branding_color: Branding color of the app
-            *
-            * @param json_data - JSON string containing app details 
+            * @param account_name - name of the account
+            * @param json_data - JSON string containing app details (name,description, logo_url, background_color, accent_color)
             * @param username_hash - hash of the username
             * @param origin - domain associated with the app
           */
@@ -115,15 +108,7 @@ namespace tonomysystem
       /**
        * Create a new account for an app and registers its details
        *
-       * The app details are provided as a JSON string containing the following fields:
-       * - name: Name of the app
-       * - description: Description of the app
-       * - logo_url: URL to the logo of the app
-       * - background_color: Background color of the app
-       * - text_color: Text color of the app
-       * - branding_color: Branding color of the app
-       *
-       * @param json_data - JSON string containing app details
+       * @param json_data - JSON string containing app details (name,description, logo_url, background_color, accent_color)
        * @param username_hash - Hash of the username
        * @param origin - Domain associated with the app
        * @param key - Public key generated from the account's password
@@ -279,7 +264,7 @@ namespace tonomysystem
       struct [[eosio::table]] appv2 
       {
          name account_name;
-         string json_data; // JSON string containing app details (name, description, logo URL, background_color, text_color, branding_color)
+         string json_data; // JSON string containing app details (name, description, logo URL, background_color, accent_color)
          uint16_t version; // Version number to track schema changes
          checksum256 username_hash;
          string origin;

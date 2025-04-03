@@ -164,9 +164,8 @@ namespace tonomysystem
       eosio::require_auth(get_self());     
 
       // generate new random account name
-      auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
-
-      const eosio::name random_name = random_account_name(username_hash, origin_hash, enum_account_type::App);
+      auto json_hash = eosio::sha256(json_data.c_str(), std::strlen(json_data.c_str()));
+      const eosio::name random_name = random_account_name(username_hash, json_hash, enum_account_type::App);
 
       // use the password_key public key for the owner authority
       authority owner_authority = create_authority_with_account(app_controller_account);
@@ -186,6 +185,7 @@ namespace tonomysystem
       }
 
       // Check the origin is not already taken
+      auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
       auto apps_by_origin_hash_itr = _appsv2.get_index<"originhash"_n>();
       const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
       if (origin_itr != apps_by_origin_hash_itr.end())
