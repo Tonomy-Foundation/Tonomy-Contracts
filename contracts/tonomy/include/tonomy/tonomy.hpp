@@ -8,7 +8,6 @@
 #include <eosio/producer_schedule.hpp>
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
-
 #include "native.hpp"
 
 namespace tonomysystem
@@ -93,45 +92,34 @@ namespace tonomysystem
           checksum256 username_hash,
           public_key password_key,
           checksum256 password_salt);
-
+         /**
+            * Manually sets the details of an app (admin only)
+            *
+            * @param account_name - name of the account
+            * @param json_data - JSON string containing app details (name,description, logo_url, background_color, accent_color)
+            * @param username_hash - hash of the username
+            * @param origin - domain associated with the app
+          */
+         [[eosio::action]] void adminsetapp(
+             name account_name,
+             string json_data,
+             checksum256 username_hash,
+             string origin);
       /**
-       * Manually sets the details of an app (admin only)
+       * Create a new account for an app and registers its details
        *
-       * @param account_name - name of the account
-       * @param app_name - name of the app
-       * @param description - description of the app
-       * @param username_hash - hash of the username
-       * @param logo_url - url to the logo of the app
-       * @param origin - domain associated with the app
-       */
-      [[eosio::action]] void adminsetapp(
-          name account_name,
-          string app_name,
-          string description,
-          checksum256 username_hash,
-          string logo_url,
-          string origin);
-
-      /**
-       * Create a new account for an app and registers it's details
-       *
-       * @details Creates a new account for an app and registers it's details.
-       *
-       * @param name - name of the app
-       * @param description - description of the app
-       * @param username_hash - hash of the username
-       * @param logo_url - url to the logo of the app
-       * @param origin - domain associated with the app
-       * @param password_key - public key generated from the account's password
+       * @param json_data - JSON string containing app details (name,description, logo_url, background_color, accent_color)
+       * @param username_hash - Hash of the username
+       * @param origin - Domain associated with the app
+       * @param key - Public key generated from the account's password
        */
       [[eosio::action]] void newapp(
-          string app_name,
-          string description,
+          string json_data,
           checksum256 username_hash,
-          string logo_url,
           string origin,
           public_key key);
-
+      
+    
       /**
        * Adds a new key to a person's account to log into an app with
        *
@@ -158,6 +146,7 @@ namespace tonomysystem
                                           public_key key,
                                           bool link_auth = false);
 
+
       /**
        * Update active of a person
        * (this is so that users can add staking.tmy@eosio.code authorization to use the staking contract)
@@ -176,6 +165,11 @@ namespace tonomysystem
        * @param ram_fee - the fee RAM purchases in fraction (0.01 = 1% fee)
        */
       [[eosio::action]] void setresparams(double ram_price, uint64_t total_ram_available, double ram_fee);
+
+      /**
+       * Delete all the old apps
+       */
+       [[eosio::action]] void eraseoldapps();
 
       /**
        * Buy RAM action allows an app to purchase RAM.
@@ -254,7 +248,7 @@ namespace tonomysystem
          // also index by username hash
          checksum256 index_by_username_hash() const { return username_hash; }
          checksum256 index_by_origin_hash() const { return eosio::sha256(origin.c_str(), std::strlen(origin.c_str())); }
-      };
+      };    
 
       // Create a multi-index-table with two indexes
       typedef eosio::multi_index<"apps"_n, app,
@@ -266,6 +260,30 @@ namespace tonomysystem
 
       // Create an instance of the table that can is initalized in the constructor
       apps_table _apps;
+
+      struct [[eosio::table]] appv2 
+      {
+         name account_name;
+         string json_data; // JSON string containing app details (name, description, logo URL, background_color, accent_color)
+         uint16_t version; // Version number to track schema changes
+         checksum256 username_hash;
+         string origin;
+
+         uint64_t primary_key() const { return account_name.value; }
+         checksum256 index_by_username_hash() const { return username_hash; }
+         checksum256 index_by_origin_hash() const { return eosio::sha256(origin.c_str(), std::strlen(origin.c_str())); }
+      };
+
+       // Create a multi-index-table with two indexes
+       typedef eosio::multi_index<"appsv2"_n, appv2,
+       eosio::indexed_by<"usernamehash"_n,
+                         eosio::const_mem_fun<appv2, checksum256, &appv2::index_by_username_hash>>,
+       eosio::indexed_by<"originhash"_n,
+                         eosio::const_mem_fun<appv2, checksum256, &appv2::index_by_origin_hash>>>
+      appsv2_table;
+
+      // Create an instance of the table that can is initalized in the constructor
+      appsv2_table _appsv2;
 
       struct [[eosio::table]] resource_config
       {
@@ -328,6 +346,7 @@ namespace tonomysystem
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &tonomy::loginwithapp>;
       using adminsetapp_action = action_wrapper<"adminsetapp"_n, &tonomy::adminsetapp>;
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
+      using eraseoldapps_action = action_wrapper<"eraseoldapps"_n, &tonomy::eraseoldapps>;
       using buyram_action = action_wrapper<"buyram"_n, &tonomy::buyram>;
       using sellram_action = action_wrapper<"sellram"_n, &tonomy::sellram>;
    };
