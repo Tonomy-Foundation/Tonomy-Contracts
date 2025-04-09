@@ -81,7 +81,7 @@ namespace tonomysystem
       hash_uint64_t = uint64_t_from_checksum256(hash2);
       name_uint64_t ^= hash_uint64_t << 32;
 
-      // TODO go through and change any '.' character for a random character
+      // TODO: go through and change any '.' character for a random character
       name res = name(name_uint64_t);
       return tidy_name(res, uint8_t(name_uint64_t), account_type);
    }
@@ -90,6 +90,14 @@ namespace tonomysystem
    {
       key_weight new_key = key_weight{.key = key, .weight = 1};
       authority new_authority{.threshold = 1, .keys = {new_key}, .accounts = {}, .waits = {}};
+
+      return new_authority;
+   }
+
+   authority create_authority_with_account(const eosio::name &account)
+   {
+      permission_level_weight new_account = permission_level_weight{.permission = permission_level(account, "active"_n), .weight = 1};
+      authority new_authority{.threshold = 1, .keys = {}, .accounts = {new_account}, .waits = {}};
 
       return new_authority;
    }
@@ -153,7 +161,7 @@ namespace tonomysystem
        string origin,
        public_key key)
    {
-      // TODO in the future only an organization type can create an app
+      // TODO: in the future only an organization type can create an app
       // check the transaction is signed by the `id.tmy` account
       eosio::require_auth(get_self());
 
@@ -163,12 +171,13 @@ namespace tonomysystem
       const eosio::name random_name = random_account_name(username_hash, description_hash, enum_account_type::App);
 
       // use the password_key public key for the owner authority
-      authority key_authority = create_authority_with_key(key);
-      key_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
+      authority owner_authority = create_authority_with_account(app_controller_account);
+      authority active_authority = create_authority_with_key(key);
+      active_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
       // If the account name exists, this will fail
       newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});
-      newaccountaction.send(get_self(), random_name, key_authority, key_authority);
+      newaccountaction.send(get_self(), random_name, owner_authority, active_authority);
 
       // Check the username is not already taken
       auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
@@ -326,8 +335,15 @@ namespace tonomysystem
          // link the permission to the `loginwithapp` action
          linkauth_action linkauthaction("eosio"_n, {account, "owner"_n});
          linkauthaction.send(account, get_self(), "loginwithapp"_n, permission);
-         // TODO also needs to link to any other actions that require the permission that we know of at this stage
+         // TODO: also needs to link to any other actions that require the permission that we know of at this stage
       }
+   }
+
+   void tonomy::updateactive(name account, authority active)
+   {
+      // eosio::require_auth(account); // this is not needed as tonomy::tonomy::updateauth_action checks the permission
+      eosiotonomy::bios::updateauth_action updateauthaction("eosio"_n, {account, "active"_n});
+      updateauthaction.send(account, "active"_n, "owner"_n, active);
    }
 
    void tonomy::loginwithapp(
@@ -342,12 +358,12 @@ namespace tonomysystem
       auto app_itr = _apps.find(app.value);
       check(app_itr != _apps.end(), "App does not exist");
 
-      // TODO uncomment when apps have status
+      // TODO: uncomment when apps have status
       // check(app_itr->status == tonomy::enum_account_status::Active_Status, "App is not active");
 
-      // TODO check parent is only from allowed parents : "local", "pin", "biometric", "active"
+      // TODO: check parent is only from allowed parents : "local", "pin", "biometric", "active"
 
-      // TODO instead of "app" as the permission, use sha256(parent, app, name of key(TODO provide as argument with default = "main"))
+      // TODO: instead of "app" as the permission, use sha256(parent, app, name of key(TODO: provide as argument with default = "main"))
 
       // setup the new key authoritie(s)
       authority authority = create_authority_with_key(key);
@@ -439,7 +455,7 @@ namespace tonomysystem
       // Allocate the RAM
       int64_t myRAM, myNET, myCPU;
       eosio::get_resource_limits(app, myRAM, myNET, myCPU);
-      eosio::print("RAM: ", myRAM, " --> ", myRAM + ram_purchase);
+      eosio::print("{\"event_log\":{\"account\":\"tonomy\",\"action\":\"buyram\"},\"time\":\"", eosio::current_time_point().to_string(), "Z\",\"events\":[{\"previous\":", myRAM, ",\"current\":", myRAM + ram_purchase, "}]");
       eosio::set_resource_limits(app, myRAM + ram_purchase, myNET, myNET);
 
       eosio::action(permission_level{dao_owner, "active"_n},
@@ -484,12 +500,12 @@ namespace tonomysystem
       // Deallocate the RAM
       int64_t myRAM, myNET, myCPU;
       eosio::get_resource_limits(app, myRAM, myNET, myCPU);
-      eosio::print("RAM: ", myRAM, " --> ", myRAM - ram_sold);
+      eosio::print("{\"event_log\":{\"account\":\"tonomy\",\"action\":\"sellram\"},\"time\":\"", eosio::current_time_point().to_string(), "Z\",\"events\":[{\"previous\":", myRAM, ",\"current\":", myRAM - ram_sold, "}]");
       eosio::check(myRAM - ram_sold >= 0, "Account cannot have less than 0 RAM");
       eosio::set_resource_limits(app, myRAM - ram_sold, myNET, myNET);
 
       // Transfer token and sell RAM
-      // TODO should buy and sell from proxy counttract, otherwise cannot autorize to sell ram
+      // TODO: should buy and sell from proxy counttract, otherwise cannot autorize to sell ram
       eosio::action(permission_level{get_self(), "active"_n},
                     token_contract_name,
                     "transfer"_n,

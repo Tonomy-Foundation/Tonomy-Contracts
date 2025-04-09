@@ -39,8 +39,8 @@ namespace vestingtoken
         {6, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Reserves, Partnerships, Liquidly Allocation
         {7, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Community and Marketing, Platform Dev, Infra Rewards
         // New (replacing depreciated):
-        {8, {days(0 * 30), days(0 * 30), days(2 * 365), 0.05}},  // Seed (Early Bird)
-        {9, {days(0 * 30), days(0 * 30), days(2 * 365), 0.025}}, // Seed (Last Chance)
+        {8, {days(0 * 30), days(0 * 30), days(2 * 365), 0.05}},  // Seed
+        {9, {days(0 * 30), days(0 * 30), days(2 * 365), 0.025}}, // Pre-sale
         {10, {days(0 * 30), days(14), days(0 * 365), 1.0}},      // Public (TGE)
         // Public sale has a delay of 14 days to accommodate the "right of withdrawal" under EU's MICA regulations
 
@@ -58,8 +58,11 @@ namespace vestingtoken
         using contract::contract;
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
         static constexpr eosio::name token_contract_name = "eosio.token"_n;
-        static const uint32_t MAX_ALLOCATIONS = 150;
-
+        #ifdef BUILD_TEST
+            static const uint8_t MAX_ALLOCATIONS = 5;
+        #else
+            static const uint8_t MAX_ALLOCATIONS = 150;
+        #endif
         struct [[eosio::table]] vesting_settings
         {
             eosio::time_point sales_start_date;

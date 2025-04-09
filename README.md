@@ -20,6 +20,16 @@ Run `./setup-cpp.sh` to install these.
 
 `./build-contracts.sh`
 
+### Build contracts for testing
+
+To build the contracts for testing (with the Tonomy-ID-SDK integration tests):
+
+```bash
+export BUILD_TEST=true
+./delete-built-contracts.sh
+./build-contracts.sh
+```
+
 ## Build blockchain node container
 
 `./blockchain/build-docker.sh`

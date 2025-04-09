@@ -9,4 +9,5 @@ cp ./contracts/eosio.bios/ ../ -ur
 cp ./contracts/demo.tmy/ ../ -ur
 cp ./contracts/eosio.token/ ../ -ur
 cp ./contracts/vesting.tmy/ ../ -ur
+cp ./contracts/staking.tmy/ ../ -ur
 rm eosio.contracts -rf

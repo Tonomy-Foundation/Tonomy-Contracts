@@ -37,19 +37,11 @@ namespace vestingtoken
         // Create a new vesting schedule
         vesting_allocations vesting_table(get_self(), holder.value);
 
-        // Check the number of rows for the user
-        uint32_t num_rows = 0;
-        for (auto itr = vesting_table.begin(); itr != vesting_table.end(); ++itr)
-        {
-            ++num_rows;
-            // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
-            // may no longer be able to withdraw from the account.
-            // For more information, see https://swcregistry.io/docs/SWC-128/
-            if (num_rows >= MAX_ALLOCATIONS)
-            {
-                eosio::check(false, "Too many purchases received on this account.");
-            }
-        }
+        // Prevent unbounded array iteration DoS. If too many rows are added to the table, the user
+        // may no longer be able to withdraw from the account.
+        // For more information, see https://swcregistry.io/docs/SWC-128/
+        std::ptrdiff_t allocations_count = std::distance(vesting_table.begin(), vesting_table.end());
+        eosio::check(allocations_count < MAX_ALLOCATIONS, "Too many purchases received on this account.");
 
         // Calculate the number of seconds since sales start
         time_point now = eosio::current_time_point();
@@ -94,7 +86,8 @@ namespace vestingtoken
         eosio::check(now >= launch_date, "Launch date not yet reached");
 
         int64_t total_claimable = 0;
-        for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
+        
+        for (auto iter = vesting_table.begin(); iter != vesting_table.end();)
         {
             const vested_allocation &vesting_allocation = *iter;
 
@@ -131,10 +124,27 @@ namespace vestingtoken
 
                 // Update the tokens_claimed field
                 eosio::asset tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
-                vesting_table.modify(iter, get_self(), [&](auto &row)
-                                     { row.tokens_claimed = tokens_claimed; });
+
+                if (claimable == vesting_allocation.tokens_allocated.amount)
+                {
+                    // Erase and update iterator correctly
+                    iter = vesting_table.erase(iter);
+                }
+                else
+                {
+                    vesting_table.modify(iter, get_self(), [&](auto &row)
+                    {
+                        row.tokens_claimed = tokens_claimed;
+                    });
+                    ++iter;
+                }
+            }
+            else
+            {
+                ++iter; 
             }
         }
+
 
         if (total_claimable > 0)
         {
@@ -145,6 +155,7 @@ namespace vestingtoken
                           "transfer"_n,
                           std::make_tuple(get_self(), holder, total_tokens_claimed, std::string("Unlocked vested coins")))
                 .send();
+            
         }
     }
 
