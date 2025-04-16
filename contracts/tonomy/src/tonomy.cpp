@@ -221,6 +221,28 @@ namespace tonomysystem
          row.version = 1; });
    }
 
+   
+   void tonomy::check_app_username(const checksum256 &username_hash)
+   {
+      // Check the username is not already taken
+      auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
+      const auto username_itr = apps_by_username_hash_itr.find(username_hash);
+      if (username_itr != apps_by_username_hash_itr.end())
+      {
+         throwError("TCON1001", "This app username is already taken");
+      }
+   }
+   void tonomy::check_app_origin(const string &origin) {
+      // Check the origin is not already taken
+      auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
+      auto apps_by_origin_hash_itr = _apps.get_index<"originhash"_n>();
+      const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
+      if (origin_itr != apps_by_origin_hash_itr.end())
+      {
+         throwError("TCON1002", "This app origin is already taken");
+      }
+   }
+
    void tonomy::adminsetapp(
        name account_name,
        string app_name,
@@ -247,34 +269,25 @@ namespace tonomysystem
       // Check the account name is not already used
       auto apps_itr = _apps.find(account_name.value);
       
-      // Check the username is not already taken
-      auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
-      const auto username_itr = apps_by_username_hash_itr.find(username_hash);
-      if (username_itr != apps_by_username_hash_itr.end())
-      {
-         throwError("TCON1001", "This app username is already taken");
-      }
-
-      // Check the origin is not already taken
-      auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
-      auto apps_by_origin_hash_itr = _apps.get_index<"originhash"_n>();
-      const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
-      if (origin_itr != apps_by_origin_hash_itr.end())
-      {
-         throwError("TCON1002", "This app origin is already taken");
-      }
-
       if (apps_itr != _apps.end())
       {
-         _apps.modify(apps_itr, get_self(), [&](auto &app_itr) {
+          if (apps_itr->origin != origin) {
+            check_app_origin(origin);
+          }
+          if (apps_itr->username_hash != username_hash) {
+            check_app_username(username_hash);
+          }
+          _apps.modify(apps_itr, get_self(), [&](auto &app_itr) {
             app_itr.account_name = account_name;
             app_itr.app_name = app_name;
             app_itr.description = description;
             app_itr.logo_url = logo_url;
             app_itr.origin = origin;
             app_itr.username_hash = username_hash;
-         });
+          });
       } else {
+         check_app_username(username_hash);
+         check_app_origin(origin);
          _apps.emplace(get_self(), [&](auto &app_itr) {
             app_itr.account_name = account_name;
             app_itr.app_name = app_name;
