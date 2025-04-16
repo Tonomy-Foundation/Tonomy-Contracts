@@ -222,7 +222,7 @@ namespace tonomysystem
    }
 
    
-   void check_app_username(const checksum256 &username_hash)
+   void tonomy::check_app_username(const checksum256 &username_hash)
    {
       // Check the username is not already taken
       auto apps_by_username_hash_itr = _apps.get_index<"usernamehash"_n>();
@@ -232,7 +232,7 @@ namespace tonomysystem
          throwError("TCON1001", "This app username is already taken");
       }
    }
-   void check_app_origin(const string &origin) {
+   void tonomy::check_app_origin(const string &origin) {
       // Check the origin is not already taken
       auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
       auto apps_by_origin_hash_itr = _apps.get_index<"originhash"_n>();
@@ -277,7 +277,7 @@ namespace tonomysystem
             }
             if(app_itr.username_hash != username_hash) {
                check_app_username(username_hash);
-            }  
+            }
             app_itr.account_name = account_name;
             app_itr.app_name = app_name;
             app_itr.description = description;
