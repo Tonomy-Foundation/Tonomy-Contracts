@@ -35,7 +35,7 @@ When prompted, provide the following inputs:
 2- Blockchain URL: {{Enter the API URL of the Antelope blockchain}}
 
 Then you can type in commands using cleos that will sign transactions. e.g.
-`cleos transfer gov.tmy opts.tmy 10000.000000 LEOS "Sending LEOS tokens from gov.tmy to ops.tmy account"`
+`cleos transfer gov.tmy opts.tmy 10000.000000 TONO "Sending TONO tokens from gov.tmy to ops.tmy account"`
 
 
 ## Example
@@ -48,12 +48,12 @@ Here's an example of how to create a new key pair and sign a transaction using t
 3. `alias cleos='cleos -u https://blockchain-api-staging.tonomy.foundation'` (change blockchain url accordingly)
 4. Use cleos commands For example:
     - To sign transactions:
-    `cleos transfer ops.tmy gov.tmy "10000.000000 LEOS"`
+    `cleos transfer ops.tmy gov.tmy "10000.000000 TONO"`
 
     - Get account information:
     `cleos get account gov.tmy`
 
     - Check balance:
-    `cleos get currency balance eosio.token gov.tmy LEOS`
+    `cleos get currency balance eosio.token gov.tmy TONO`
 
 For more information on using cleos, refer to the [cleos documentation](https://docs.antelope.io/leap/latest/cleos/).
