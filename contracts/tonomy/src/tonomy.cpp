@@ -271,20 +271,20 @@ namespace tonomysystem
       
       if (apps_itr != _apps.end())
       {
-         _apps.modify(apps_itr, get_self(), [&](auto &app_itr) {
-            if(app_itr.origin != origin) {
-               check_app_origin(origin);
-            }
-            if(app_itr.username_hash != username_hash) {
-               check_app_username(username_hash);
-            }
+          if (apps_itr->origin != origin) {
+            check_app_origin(origin);
+          }
+          if (apps_itr->username_hash != username_hash) {
+            check_app_username(username_hash);
+          }
+          _apps.modify(apps_itr, get_self(), [&](auto &app_itr) {
             app_itr.account_name = account_name;
             app_itr.app_name = app_name;
             app_itr.description = description;
             app_itr.logo_url = logo_url;
             app_itr.origin = origin;
             app_itr.username_hash = username_hash;
-         });
+          });
       } else {
          check_app_username(username_hash);
          check_app_origin(origin);
