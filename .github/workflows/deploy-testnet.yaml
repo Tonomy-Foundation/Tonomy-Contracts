@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Compile eosio.boot, eosio.bios and tonomy contracts
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     container: tonomy/antelope
 
     steps:
@@ -44,7 +44,7 @@ jobs:
   deploy-testnet:
     name: Deploy tonomy contract to testnet
     needs: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     container: tonomy/antelope
     environment: testnet
     env:
@@ -74,7 +74,7 @@ jobs:
   push-docker:
     name: Builds docker image and push to Docker Hub
     needs: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
 
