@@ -156,8 +156,6 @@ namespace eosio
       acnts.erase(it);
    }
 
-s
-
    void token::migratestats()
    {
       // Admin only function
