@@ -71,7 +71,7 @@ namespace tonomysystem
       uint64_t initial_cpu_weight_allocation = 1000;
       uint64_t initial_net_weight_allocation = 1000;
 
-      static constexpr eosio::symbol system_resource_currency = eosio::symbol("LEOS", 6);
+      static constexpr eosio::symbol system_resource_currency = eosio::symbol("TONO", 6);
       static constexpr eosio::name token_contract_name = "eosio.token"_n;
       static constexpr eosio::name app_controller_account = "gov.tmy"_n;
 
@@ -330,5 +330,20 @@ namespace tonomysystem
       using setresparams_action = action_wrapper<"setresparams"_n, &tonomy::setresparams>;
       using buyram_action = action_wrapper<"buyram"_n, &tonomy::buyram>;
       using sellram_action = action_wrapper<"sellram"_n, &tonomy::sellram>;
+   
+      private:
+      /**
+       * Check if the app username is already taken
+       *
+       * @param username_hash - hash of the username of the account
+       */    
+      void check_app_username(const checksum256 &username_hash);
+    
+      /**
+       * Check if the app origin is already taken
+       *
+       * @param origin - domain associated with the app
+       */
+      void check_app_origin(const string &origin);
    };
 }
