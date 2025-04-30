@@ -161,18 +161,35 @@ namespace eosio
       // Admin only function
       require_auth(get_self());
 
-      stats statstable(get_self(), SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
-      auto existing_itr = statstable.find(SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
-      check(existing_itr != statstable.end(), "token with old symbol does not exist");
+      asset max_supply;
+      name issuer;
 
-      statstable.emplace(get_self(), [&](auto &s)
+      // Look at the table using old symbol as scope
+      stats statstable(get_self(), SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
+      // Check if old token found
+      auto existing_itr = statstable.find(SYSTEM_RESOURCE_CURRENCY_OLD.code().raw());
+      if(existing_itr != statstable.end()) {
+         max_supply = asset(existing_itr->max_supply.amount, SYSTEM_RESOURCE_CURRENCY);
+         issuer = existing_itr->issuer;
+         statstable.erase(existing_itr);
+      }
+      // Check if new token found
+      auto new_itr = statstable.find(SYSTEM_RESOURCE_CURRENCY.code().raw());
+      if(new_itr != statstable.end()) {
+         max_supply = asset(new_itr->max_supply.amount, SYSTEM_RESOURCE_CURRENCY);
+         issuer = new_itr->issuer;
+         statstable.erase(new_itr);
+      }
+
+      // New symbol as scope
+      stats statstable2(get_self(), SYSTEM_RESOURCE_CURRENCY.code().raw());
+      statstable2.emplace(get_self(), [&](auto &s)
       {
          s.supply.symbol = SYSTEM_RESOURCE_CURRENCY;
-         s.max_supply    = asset(existing_itr->max_supply.amount, SYSTEM_RESOURCE_CURRENCY);
-         s.issuer        = existing_itr->issuer;
+         s.max_supply    = max_supply;
+         s.issuer        = issuer;
       });
 
-      statstable.erase(existing_itr);
    }
 
    void token::migrateacc(const name &account)
