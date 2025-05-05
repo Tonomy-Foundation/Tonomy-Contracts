@@ -218,13 +218,14 @@ namespace vestingtoken
 
         for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
-            check(iter->tokens_allocated.symbol == SYSTEM_RESOURCE_CURRENCY_OLD, "Symbol has already been upgraded");
-            
-            vesting_table.modify(iter, get_self(), [&](auto &row)
+            if (iter->tokens_allocated.symbol === SYSTEM_RESOURCE_CURRENCY_OLD)
+            {
+                vesting_table.modify(iter, get_self(), [&](auto &row)
                                  {
-                row.tokens_allocated = asset(row.tokens_allocated.amount, system_resource_currency);
-                row.tokens_claimed = asset(row.tokens_claimed.amount, system_resource_currency);
-            });
+                    row.tokens_allocated = asset(row.tokens_allocated.amount, system_resource_currency);
+                    row.tokens_claimed = asset(row.tokens_claimed.amount, system_resource_currency);
+                });
+            }            
         }
     }
 }
