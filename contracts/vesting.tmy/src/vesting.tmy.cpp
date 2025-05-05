@@ -218,7 +218,7 @@ namespace vestingtoken
 
         for (auto iter = vesting_table.begin(); iter != vesting_table.end(); ++iter)
         {
-            if (iter->tokens_allocated.symbol === SYSTEM_RESOURCE_CURRENCY_OLD)
+            if (iter->tokens_allocated.symbol == SYSTEM_RESOURCE_CURRENCY_OLD)
             {
                 vesting_table.modify(iter, get_self(), [&](auto &row)
                                  {
