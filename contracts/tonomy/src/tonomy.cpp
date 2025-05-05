@@ -226,37 +226,10 @@ namespace tonomysystem
       while (_apps.begin() != _apps.end()) {
           _apps.erase(_apps.begin());
       }
-  }  
-
-   void tonomy::adminsetapp(
-      name account_name,
-      string json_data,
-      checksum256 username_hash,
-      string origin)
+   }  
+   
+   void tonomy::check_app_username(const checksum256 &username_hash)
    {
-      eosio::require_auth(get_self()); // signed by active@id.tmy permission
-
-      // Add to the account_type table
-      account_type_table account_type(get_self(), get_self().value);
-
-      auto itr = account_type.find(account_name.value);
-      if (itr != account_type.end())
-      {
-         throwError("TCON1003", "Account has already been set in account_type table");
-      }
-      account_type.emplace(get_self(), [&](auto &row)
-                           {
-               row.account_name = account_name;
-               row.acc_type = enum_account_type::App;
-               row.version = 1; });
-
-      // Check the account name is not already used
-      auto apps_itr = _appsv2.find(account_name.value);
-      if (apps_itr != _appsv2.end())
-      {
-         throwError("TCON1004", "Account name is already used in apps table");
-      }
-
       // Check the username is not already taken
       auto apps_by_username_hash_itr = _appsv2.get_index<"usernamehash"_n>();
       const auto username_itr = apps_by_username_hash_itr.find(username_hash);
@@ -264,7 +237,8 @@ namespace tonomysystem
       {
          throwError("TCON1001", "This app username is already taken");
       }
-
+   }
+   void tonomy::check_app_origin(const string &origin) {
       // Check the origin is not already taken
       auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
       auto apps_by_origin_hash_itr = _appsv2.get_index<"originhash"_n>();
@@ -273,16 +247,58 @@ namespace tonomysystem
       {
          throwError("TCON1002", "This app origin is already taken");
       }
+   }
 
-      // Store the password_salt and hashed username in table
-      _appsv2.emplace(get_self(), [&](auto &app_itr)
+   void tonomy::adminsetapp(
+      name account_name,
+      string json_data,
+      checksum256 username_hash,
+      string origin)
+   {
+      eosio::require_auth(get_self()); // signed by tonomy@active permission
+
+      // Add to the account_type table
+      account_type_table account_type(get_self(), get_self().value);
+
+      auto itr = account_type.find(account_name.value);
+      if (itr == account_type.end())
       {
-         app_itr.account_name = account_name;
-         app_itr.origin = origin;
-         app_itr.username_hash = username_hash;
-         app_itr.json_data = json_data;
-         app_itr.version = 2; 
-      });
+         account_type.emplace(get_self(), [&](auto &row) {
+            row.account_name = account_name;
+            row.acc_type = enum_account_type::App;
+            row.version = 1;
+         });
+      }
+
+      // Check the account name is not already used
+      auto apps_itr = _appsv2.find(account_name.value);
+      
+      if (apps_itr != _appsv2.end())
+      {
+          if (apps_itr->origin != origin) {
+            check_app_origin(origin);
+          }
+          if (apps_itr->username_hash != username_hash) {
+            check_app_username(username_hash);
+          }
+          _appsv2.modify(apps_itr, get_self(), [&](auto &app_itr) {
+            app_itr.account_name = account_name;
+            app_itr.origin = origin;
+            app_itr.username_hash = username_hash;
+            app_itr.json_data = json_data;
+            app_itr.version = 2; 
+          });
+      } else {
+         check_app_username(username_hash);
+         check_app_origin(origin);
+         _appsv2.emplace(get_self(), [&](auto &app_itr) {
+            app_itr.account_name = account_name;
+            app_itr.origin = origin;
+            app_itr.username_hash = username_hash;
+            app_itr.json_data = json_data;
+            app_itr.version = 2; 
+         });
+      }
    }
 
    void tonomy::updatekeyper(name account,
