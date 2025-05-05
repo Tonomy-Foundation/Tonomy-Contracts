@@ -223,7 +223,8 @@ namespace tonomysystem
       eosio::require_auth(get_self()); 
   
       // Delete all items in the v1 table
-      while (_apps.begin() != _apps.end()) {
+      while (
+         begin() != _apps.end()) {
           _apps.erase(_apps.begin());
       }
    }  
