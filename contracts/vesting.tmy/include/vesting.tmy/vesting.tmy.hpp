@@ -32,8 +32,8 @@ namespace vestingtoken
         // DEPRECIATED:
         {1, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}}, // Seed Private Sale (DEPRECIATED),
         {2, {days(6 * 30), days(6 * 30), days(2 * 365), 0.0}}, // Strategic Partnerships Private Sale (DEPRECIATED),
-        {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},   // Public Sale (DEPRECIATED),
-        {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}},  // Legal and Compliance
+        {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},  // Public Sale (DEPRECIATED),
+        {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}}, // Legal and Compliance
         // Unchanged:
         {4, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}}, // Team
         {6, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Reserves, Partnerships
@@ -47,12 +47,13 @@ namespace vestingtoken
         {12, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // KOL
         {13, {days(0 * 30), days(0 * 30), days(6 * 30), 0.7}},   // Incubator
         {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.25}},  // Liquidity
+        {15, {days(0 * 30), days(7), days(0), 0.0}}              // Airdrop
 
-        #ifdef BUILD_TEST
+#ifdef BUILD_TEST
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
         {998, {eosio::seconds(0), eosio::seconds(10), eosio::seconds(20), 0.5}},  // TESTING ONLY
         {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.0}}, // TESTING ONLY
-        #endif
+#endif
     };
 
     static const std::map<int, bool> depreciated_categories = {{1, true}, {2, true}};
@@ -64,11 +65,11 @@ namespace vestingtoken
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("TONO", 6);
         static constexpr eosio::symbol SYSTEM_RESOURCE_CURRENCY_OLD = eosio::symbol("LEOS", 6);
         static constexpr eosio::name token_contract_name = "eosio.token"_n;
-        #ifdef BUILD_TEST
-            static const uint8_t MAX_ALLOCATIONS = 5;
-        #else
-            static const uint8_t MAX_ALLOCATIONS = 150;
-        #endif
+#ifdef BUILD_TEST
+        static const uint8_t MAX_ALLOCATIONS = 5;
+#else
+        static const uint8_t MAX_ALLOCATIONS = 150;
+#endif
         struct [[eosio::table]] vesting_settings
         {
             eosio::time_point sales_start_date;
