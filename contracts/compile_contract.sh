@@ -24,4 +24,7 @@ function compile_contract {
     else
         docker run -v "${PARENT_PATH}:${WORKING_DIR}" antelope_blockchain bash -c "${BUILD_COMMAND}"
     fi
+
+    # copy all the .abi files in ${WORKING_DIR} to .abi.json
+    cp "${PARENT_PATH}/${CONTRACT_NAME}.abi" "${PARENT_PATH}/${CONTRACT_NAME}.abi.json"
 }
