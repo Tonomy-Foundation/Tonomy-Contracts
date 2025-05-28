@@ -32,8 +32,8 @@ namespace vestingtoken
         // DEPRECIATED:
         {1, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}}, // Seed Private Sale (DEPRECIATED),
         {2, {days(6 * 30), days(6 * 30), days(2 * 365), 0.0}}, // Strategic Partnerships Private Sale (DEPRECIATED),
-        {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},   // Public Sale (DEPRECIATED),
-        {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}},  // Legal and Compliance
+        {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},  // Public Sale (DEPRECIATED),
+        {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}}, // Legal and Compliance
         // Unchanged:
         {4, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}}, // Team
         {6, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Reserves, Partnerships
@@ -47,6 +47,7 @@ namespace vestingtoken
         {12, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // KOL
         {13, {days(0 * 30), days(0 * 30), days(6 * 30), 0.7}},   // Incubator
         {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.25}},  // Liquidity
+        {15, {days(0 * 30), days(7), days(0), 0.0}},              // Airdrop
 
         #ifdef BUILD_TEST
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
@@ -67,7 +68,7 @@ namespace vestingtoken
         #ifdef BUILD_TEST
             static const uint8_t MAX_ALLOCATIONS = 5;
         #else
-            static const uint8_t MAX_ALLOCATIONS = 150;
+        static const uint8_t MAX_ALLOCATIONS = 150;
         #endif
         struct [[eosio::table]] vesting_settings
         {
