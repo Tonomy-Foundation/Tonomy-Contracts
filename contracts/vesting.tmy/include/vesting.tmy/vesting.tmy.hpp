@@ -47,6 +47,7 @@ namespace vestingtoken
         {12, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // KOL
         {13, {days(0 * 30), days(0 * 30), days(6 * 30), 0.7}},   // Incubator
         {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.25}},  // Liquidity
+        {15, {days(1 * 30), days(1 * 30), days(1 * 30), 1.0}},   // Special Token Round
 
         #ifdef BUILD_TEST
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
