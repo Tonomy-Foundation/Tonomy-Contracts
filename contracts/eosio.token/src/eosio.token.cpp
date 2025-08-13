@@ -72,6 +72,65 @@ namespace eosio
       sub_balance(st.issuer, quantity);
    }
 
+   void token::bridgeissue(const name& to, const asset& quantity, const string& memo)
+   {
+      require_auth(get_self());
+
+      check(is_account(to), "to account does not exist");
+      check(memo.size() <= 256, "memo has more than 256 bytes");
+
+      const symbol& sym = quantity.symbol;
+      check(sym.is_valid(), "invalid symbol name");
+      check(quantity.is_valid(), "invalid quantity");
+      check(quantity.amount > 0, "must issue positive quantity");
+
+      stats statstable(get_self(), sym.code().raw());
+      auto it = statstable.find(sym.code().raw());
+      check(it != statstable.end(), "token with symbol does not exist, create token before issue");
+      const auto& st = *it;
+
+      check(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+      check(st.supply.amount + quantity.amount <= st.max_supply.amount,
+            "quantity exceeds available supply");
+
+      statstable.modify(st, same_payer, [&](auto& s) {
+         s.supply += quantity;
+      });
+
+      add_balance(to, quantity, get_self());
+      require_recipient(to);
+   }
+
+   void token::bridgeretire(const name& from, const asset& quantity, const string& memo)
+   {
+      require_auth(get_self());
+
+      check(is_account(from), "from account does not exist");
+      check(memo.size() <= 256, "memo has more than 256 bytes");
+
+      const symbol& sym = quantity.symbol;
+      check(sym.is_valid(), "invalid symbol name");
+      check(quantity.is_valid(), "invalid quantity");
+      check(quantity.amount > 0, "must retire positive quantity");
+
+      stats statstable(get_self(), sym.code().raw());
+      auto it = statstable.find(sym.code().raw());
+      check(it != statstable.end(), "token with symbol does not exist");
+      const auto& st = *it;
+
+      check(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+      check(st.supply.amount >= quantity.amount, "retire quantity exceeds current supply");
+
+      sub_balance(from, quantity);
+
+      statstable.modify(st, same_payer, [&](auto& s) {
+         s.supply -= quantity;
+      });
+
+      require_recipient(from);
+   }
+
+
    void token::transfer(const name &from,
                         const name &to,
                         const asset &quantity,

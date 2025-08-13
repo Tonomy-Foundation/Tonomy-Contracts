@@ -115,6 +115,18 @@ namespace eosio {
          [[eosio::action]]
          void migratestats();
 
+         /**
+          * Issues a token to a user
+          */
+         [[eosio::action]]
+         void bridgeissue(const name& to, const asset& quantity, const std::string& memo);
+
+         /**
+          * Retires a token from a user
+          */
+         [[eosio::action]]
+         void bridgeretire(const name& from, const asset& quantity, const std::string& memo);
+
          static asset get_supply( const name& token_contract_account, const symbol_code& sym_code )
          {
             stats statstable( token_contract_account, sym_code.raw() );
@@ -132,6 +144,8 @@ namespace eosio {
          using create_action = eosio::action_wrapper<"create"_n, &token::create>;
          using issue_action = eosio::action_wrapper<"issue"_n, &token::issue>;
          using retire_action = eosio::action_wrapper<"retire"_n, &token::retire>;
+         using bridgeissue_action = eosio::action_wrapper<"bridgeissue"_n, &token::bridgeissue>;
+         using bridgeretire_action = eosio::action_wrapper<"bridgeretire"_n, &token::bridgeretire>;
          using transfer_action = eosio::action_wrapper<"transfer"_n, &token::transfer>;
          using open_action = eosio::action_wrapper<"open"_n, &token::open>;
          using close_action = eosio::action_wrapper<"close"_n, &token::close>;
