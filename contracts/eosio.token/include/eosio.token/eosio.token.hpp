@@ -169,6 +169,11 @@ namespace eosio {
 
          void sub_balance( const name& owner, const asset& value );
          void add_balance( const name& owner, const asset& value, const name& ram_payer );
+
+         const currency_stats& get_stats(stats& statstable, const symbol& sym);
+         void check_quantity(const asset& quantity, const string& memo, const currency_stats& st);
+         void add_supply(stats& statstable, const currency_stats& st, const asset& quantity);
+         void sub_supply(stats& statstable, const currency_stats& st, const asset& quantity);
    };
 
 }
