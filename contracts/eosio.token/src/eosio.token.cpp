@@ -105,7 +105,7 @@ namespace eosio
 
       check_quantity(quantity, memo, st);
 
-      auto payer = has_auth(to) ? to : from;
+      auto payer = get_self();
 
       sub_balance(from, quantity);
       add_balance(to, quantity, payer);
@@ -244,6 +244,8 @@ namespace eosio
    }
 
    void token::sub_supply(stats& statstable, const currency_stats& st, const asset& quantity) {
+      check(st.supply.amount >= quantity.amount, "quantity exceeds available supply");
+      
       statstable.modify(st, same_payer, [&](auto &s)
                         { s.supply -= quantity; });
    }
