@@ -46,7 +46,7 @@ namespace vestingtoken
         {11, {days(0 * 30), days(3 * 30), days(9 * 30), 0.125}}, // Private
         {12, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // KOL
         {13, {days(0 * 30), days(0 * 30), days(6 * 30), 0.7}},   // Incubator
-        {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.25}},  // Liquidity
+        {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.0}},  // Liquidity (there is actually a 25% TGE unlock, but we handle that manually in the migration script)
 
         #ifdef BUILD_TEST
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
@@ -55,7 +55,7 @@ namespace vestingtoken
         #endif
     };
 
-    static const std::map<int, bool> depreciated_categories = {{1, true}, {2, true}};
+    static const std::map<int, bool> depreciated_categories = {{1, true}, {2, true}, {8, true}, {9, true}, {10, true}, {15, true}};
 
     class [[eosio::contract("vesting.tmy")]] vestingToken : public eosio::contract
     {
