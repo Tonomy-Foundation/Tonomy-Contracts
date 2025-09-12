@@ -34,20 +34,24 @@ namespace vestingtoken
         {2, {days(6 * 30), days(6 * 30), days(2 * 365), 0.0}}, // Strategic Partnerships Private Sale (DEPRECIATED),
         {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},   // Public Sale (DEPRECIATED),
         {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}},  // Legal and Compliance
+        {8, {days(0 * 30), days(6 * 30), days(12 * 30), 0.05}},  // Seed
+        {9, {days(0 * 30), days(4 * 30), days(12 * 30), 0.075}}, // Pre-sale
+        {11, {days(0 * 30), days(3 * 30), days(9 * 30), 0.125}}, // Private
+        {15, {days(0 * 30), days(1 * 30), days(1 * 30), 1.0}},   // Special Token Round
         // Unchanged:
         {4, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}}, // Team
         {6, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Reserves, Partnerships
         {7, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Community & Marketing, Platform Dev, Staking & Infra Rewards, Ecosystem
-        // New (replacing depreciated):
-        {8, {days(0 * 30), days(6 * 30), days(12 * 30), 0.05}},  // Seed
-        {9, {days(0 * 30), days(4 * 30), days(12 * 30), 0.075}}, // Pre-sale
         {10, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // Public (TGE)
+        // New (replacing depreciated):
+        {16, {days(0 * 30), days(6 * 30), days(12 * 30), 0.05}},  // Seed
+        {17, {days(0 * 30), days(4 * 30), days(12 * 30), 0.075}}, // Pre-sale
+        {18, {days(0 * 30), days(3 * 30), days(9 * 30), 0.125}}, // Private
+        {19, {days(0 * 30), days(1 * 30), days(1 * 30), 1.0}},   // Special Token Round
         // New:
-        {11, {days(0 * 30), days(3 * 30), days(9 * 30), 0.125}}, // Private
         {12, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // KOL
         {13, {days(0 * 30), days(0 * 30), days(6 * 30), 0.7}},   // Incubator
         {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.0}},  // Liquidity (there is actually a 25% TGE unlock, but we handle that manually in the migration script)
-        {15, {days(0 * 30), days(1 * 30), days(1 * 30), 1.0}},   // Special Token Round
         // Testing categories:
         #ifdef BUILD_TEST
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
@@ -56,7 +60,7 @@ namespace vestingtoken
         #endif
     };
 
-    static const std::map<int, bool> depreciated_categories = {{1, true}, {2, true}, {8, true}, {9, true}, {10, true}, {15, true}};
+    static const std::map<int, bool> depreciated_categories = {{1, true}, {2, true}, {8, true}, {9, true}, {10, true}, {11, true}, {15, true}};
 
     class [[eosio::contract("vesting.tmy")]] vestingToken : public eosio::contract
     {
