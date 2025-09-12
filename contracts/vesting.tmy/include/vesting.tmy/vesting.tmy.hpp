@@ -47,7 +47,8 @@ namespace vestingtoken
         {12, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // KOL
         {13, {days(0 * 30), days(0 * 30), days(6 * 30), 0.7}},   // Incubator
         {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.0}},  // Liquidity (there is actually a 25% TGE unlock, but we handle that manually in the migration script)
-
+        {15, {days(0 * 30), days(1 * 30), days(1 * 30), 1.0}},   // Special Token Round
+        // Testing categories:
         #ifdef BUILD_TEST
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
         {998, {eosio::seconds(0), eosio::seconds(10), eosio::seconds(20), 0.5}},  // TESTING ONLY
