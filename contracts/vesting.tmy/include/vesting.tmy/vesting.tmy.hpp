@@ -51,7 +51,9 @@ namespace vestingtoken
         {18, {days(0 * 30), days(2 * 30), days(0 * 30), 0.5}},   // Special Token Round
         {19, {days(0 * 30), days(0 * 30), days(3 * 30), 0.4}},   // Private
         {20, {days(0 * 30), days(1 * 30), days(3 * 30), 0.4}},   // Public (TGE)
-        {21, {days(0 * 30), days(0 * 30), days(6 * 30), 0.25}},  // Liquidity (there is actually a 25% TGE unlock, but we handle that manually in the migration script)
+        {21, {days(0 * 30), days(0 * 30), days(6 * 30), 1.0 / 3.0}},  // Liquidity
+        // NOTE: there is actually a 25% TGE unlock, but we handle that manually in the migration script
+        // The TGE + 72 hour unlock is increased from 25% to 33.33% to account for the fact that 25% is not vested at TGE (to give the 25% unlock)
         {22, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}}, // Team
         {23, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Reserves
         {24, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Partnerships
