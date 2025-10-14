@@ -43,7 +43,7 @@ namespace vestingtoken
         {11, {days(0 * 30), days(3 * 30), days(9 * 30), 0.125}}, // Private
         {12, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // KOL
         {13, {days(0 * 30), days(0 * 30), days(6 * 30), 0.7}},   // Incubator
-        {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.0}},   // Liquidity
+        {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.25}},   // Liquidity
         {15, {days(0 * 30), days(1 * 30), days(1 * 30), 1.0}},   // Special Token Round
         // New:
         {16, {days(0 * 30), days(4 * 30), days(9 * 30), 0.05}},  // Seed
@@ -115,13 +115,13 @@ namespace vestingtoken
         /**
          * @details Updates the start date for vesting schedules to a new specified date
          *
-         * @param sales_start_date {string} - The new start date for vesting schedules.
-         * @param launch_date {string} - The new start date for vesting schedules.
+         * @param sales_start_date {string} - The new start date for vesting schedules (ISO format).
+         * @param launch_date {string} - The new start date for vesting schedules (ISO format).
          * @details
          * Before any allocations can be executed, the start date should be set using this action.
          * If the launch date is not known when the sale starts, set it to a long time in the future.
          *
-         * Example of the string format expected: "2024-04-01T24:00:00"
+         * Example of the ISO string format expected: "2024-04-01T24:00:00.000Z"
          */
         [[eosio::action]] void setsettings(string sales_start_date, string launch_date);
 
