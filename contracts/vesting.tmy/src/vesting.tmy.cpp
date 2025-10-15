@@ -13,8 +13,8 @@ namespace vestingtoken
 
     void check_category(int category_id)
     {
-        eosio::check(vesting_categories.contains(category_id), "Invalid new vesting category");
-        eosio::check(!depreciated_categories.contains(category_id), "New category is depreciated");
+        eosio::check(vesting_categories.contains(category_id), "Invalid new vesting category: " + std::to_string(category_id));
+        eosio::check(!depreciated_categories.contains(category_id), "New category is depreciated: " + std::to_string(category_id));
     }
 
     void vestingToken::setsettings(string sales_date_str, string launch_date_str)
