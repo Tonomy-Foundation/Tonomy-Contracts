@@ -257,6 +257,8 @@ namespace tonomysystem
    {
       eosio::require_auth(get_self()); // signed by tonomy@active permission
 
+      eosio::check(is_account(account_name), "Account does not exist");
+
       // Add to the account_type table
       account_type_table account_type(get_self(), get_self().value);
 
@@ -298,6 +300,22 @@ namespace tonomysystem
             app_itr.json_data = json_data;
             app_itr.version = 2; 
          });
+      }
+   }
+
+   void tonomy::deleteapp(name account_name) {
+      eosio::require_auth(get_self()); // signed by tonomy@active permission
+
+      auto itr1 = _apps.find(account_name.value);
+      if (itr1 != _apps.end())
+      {
+         _apps.erase(itr1);
+      }
+
+      auto itr2 = _appsv2.find(account_name.value);
+      if (itr2 != _appsv2.end())
+      {
+          _appsv2.erase(itr2);
       }
    }
 

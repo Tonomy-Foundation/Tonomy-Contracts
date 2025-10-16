@@ -92,19 +92,26 @@ namespace tonomysystem
           checksum256 username_hash,
           public_key password_key,
           checksum256 password_salt);
-         /**
-            * Manually sets the details of an app (admin only)
-            *
-            * @param account_name - name of the account
-            * @param json_data - JSON string containing app details (name,description, logo_url, background_color, accent_color)
-            * @param username_hash - hash of the username
-            * @param origin - domain associated with the app
-          */
-         [[eosio::action]] void adminsetapp(
-             name account_name,
-             string json_data,
-             checksum256 username_hash,
-             string origin);
+      /**
+      * Manually sets the details of an app (admin only)
+      *
+      * @param account_name - name of the account
+      * @param json_data - JSON string containing app details (name,description, logo_url, background_color, accent_color)
+      * @param username_hash - hash of the username
+      * @param origin - domain associated with the app
+      */
+      [[eosio::action]] void adminsetapp(
+            name account_name,
+            string json_data,
+            checksum256 username_hash,
+            string origin);
+      
+      /**
+       * Removes an app (admin only)
+       * @param account_name - name of the account
+       */
+      [[eosio::action]] void deleteapp(name account_name);
+
       /**
        * Create a new account for an app and registers its details
        *
@@ -118,7 +125,6 @@ namespace tonomysystem
           checksum256 username_hash,
           string origin,
           public_key key);
-      
     
       /**
        * Adds a new key to a person's account to log into an app with
