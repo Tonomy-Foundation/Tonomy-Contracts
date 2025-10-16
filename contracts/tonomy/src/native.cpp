@@ -92,6 +92,7 @@ namespace tonomysystem
    void native::setcode(name account, uint8_t vmtype, uint8_t vmversion, const std::vector<char> &code)
    {
       special_governance_check(account);
+      require_auth(account);
       native::setcode_action action("eosio"_n, {account, "active"_n});
       action.send(account, vmtype, vmversion, code);
    }
@@ -99,6 +100,7 @@ namespace tonomysystem
    void native::setabi(name account, const std::vector<char> &abi)
    {
       special_governance_check(account);
+      require_auth(account);
       native::setabi_action action("eosio"_n, {account, "active"_n});
       action.send(account, abi);
    }
