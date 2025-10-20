@@ -24,4 +24,7 @@ function compile_contract {
     else
         docker run -v "${PARENT_PATH}:${WORKING_DIR}" antelope_blockchain bash -c "${BUILD_COMMAND}"
     fi
+
+    echo ""
+    echo "Compiled ${CONTRACT_NAME} successfully"
 }
