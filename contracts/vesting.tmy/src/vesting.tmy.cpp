@@ -99,11 +99,14 @@ namespace vestingtoken
             // Calculate the vesting end time
             time_point vesting_end = vesting_start + category.vesting_period;
 
+            // Calculate the claimable amount:
+            // + tokens allocated * TGE unlock percentage
+            int64_t claimable = vesting_allocation.tokens_allocated.amount * category.tge_unlock;
+
             // Check if vesting period after cliff has started
             if (now >= cliff_finished)
             {
                 // Calculate the total claimable amount
-                int64_t claimable = 0;
                 if (now >= vesting_end)
                 {
                     claimable = vesting_allocation.tokens_allocated.amount;
@@ -113,9 +116,8 @@ namespace vestingtoken
                     // Calculate the percentage of the vesting period that has passed
                     double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
                     // Calculate the claimable amount:
-                    // + tokens allocated * TGE unlock percentage
                     // + tokens allocated * % of vesting time that has passed * what is left after TGE unlock
-                    claimable = vesting_allocation.tokens_allocated.amount * ((1.0 - category.tge_unlock) * vesting_finished + category.tge_unlock);
+                    claimable += vesting_allocation.tokens_allocated.amount * (1.0 - category.tge_unlock) * vesting_finished;
                     // Ensure the claimable amount is not greater than the total allocated amount
                     claimable = std::min(claimable, vesting_allocation.tokens_allocated.amount);
                 }
