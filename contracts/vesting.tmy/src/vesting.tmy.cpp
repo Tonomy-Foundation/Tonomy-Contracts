@@ -99,35 +99,36 @@ namespace vestingtoken
             // Calculate the vesting end time
             time_point vesting_end = vesting_start + category.vesting_period;
 
-            // Check if vesting period after cliff has started
-            if (now >= cliff_finished)
-            {
-                // Calculate the total claimable amount
-                int64_t claimable = 0;
-                if (now >= vesting_end)
-                {
-                    claimable = vesting_allocation.tokens_allocated.amount;
-                }
-                else
-                {
-                    // Calculate the percentage of the vesting period that has passed
-                    double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
-                    // Calculate the claimable amount:
-                    // + tokens allocated * TGE unlock percentage
-                    // + tokens allocated * % of vesting time that has passed * what is left after TGE unlock
-                    claimable = vesting_allocation.tokens_allocated.amount * ((1.0 - category.tge_unlock) * vesting_finished + category.tge_unlock);
-                    // Ensure the claimable amount is not greater than the total allocated amount
-                    claimable = std::min(claimable, vesting_allocation.tokens_allocated.amount);
-                }
+            // Calculate the claimable amount so far
+            int64_t total_allocated = vesting_allocation.tokens_allocated.amount;
+            // Portion unlocked at launch date (TGE unlock)
+            int64_t claimable = static_cast<int64_t>(total_allocated * category.tge_unlock);
 
+            if (now >= vesting_end)
+            {
+                // All tokens have vested by end of schedule
+                claimable = total_allocated;
+            }
+            else if (now >= cliff_finished)
+            {
+                // After cliff, linear vesting for the remaining tokens
+                double vesting_finished = static_cast<double>((now - vesting_start).count()) / category.vesting_period.count();
+                int64_t remaining_after_tge = total_allocated - claimable;
+                claimable = std::min(total_allocated,
+                                     claimable + static_cast<int64_t>(remaining_after_tge * vesting_finished));
+            }
+
+            // Only process if there's anything new to claim
+            if (claimable > vesting_allocation.tokens_claimed.amount)
+            {
                 total_claimable += claimable - vesting_allocation.tokens_claimed.amount;
 
                 // Update the tokens_claimed field
                 eosio::asset tokens_claimed = eosio::asset(claimable, vesting_allocation.tokens_claimed.symbol);
 
-                if (claimable == vesting_allocation.tokens_allocated.amount)
+                if (claimable == total_allocated)
                 {
-                    // Erase and update iterator correctly
+                    // Fully vested and claimed: remove the row
                     iter = vesting_table.erase(iter);
                 }
                 else
@@ -141,7 +142,7 @@ namespace vestingtoken
             }
             else
             {
-                ++iter; 
+                ++iter;
             }
         }
 
