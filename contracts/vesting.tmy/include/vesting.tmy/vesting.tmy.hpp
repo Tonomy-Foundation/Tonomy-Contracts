@@ -30,50 +30,49 @@ namespace vestingtoken
 
     static const std::map<int, vesting_category> vesting_categories = {
         // OLD:
-        {1, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}}, // Seed Private Sale,
-        {2, {days(6 * 30), days(6 * 30), days(2 * 365), 0.0}}, // Strategic Partnerships Private Sale,
-        {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},   // Public Sale,
-        {4, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}}, // Team
-        {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}},  // Legal and Compliance
-        {6, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Reserves, Partnerships
-        {7, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Community & Marketing, Platform Dev, Staking & Infra Rewards, Ecosystem
+        {1, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},   // Seed Private Sale,
+        {2, {days(6 * 30), days(6 * 30), days(2 * 365), 0.0}},   // Strategic Partnerships Private Sale,
+        {3, {days(0 * 30), days(0 * 30), days(0 * 30), 0.0}},    // Public Sale,
+        {4, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}},  // Team
+        {5, {days(0 * 30), days(0 * 30), days(1 * 365), 0.0}},   // Legal and Compliance
+        {6, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},   // Reserves, Partnerships
+        {7, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},   // Community & Marketing, Platform Dev, Staking & Infra Rewards, Ecosystem
         {8, {days(0 * 30), days(6 * 30), days(12 * 30), 0.05}},  // Seed
         {9, {days(0 * 30), days(4 * 30), days(12 * 30), 0.075}}, // Pre-sale
         {10, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // Public (TGE)
         {11, {days(0 * 30), days(3 * 30), days(9 * 30), 0.125}}, // Private
         {12, {days(0 * 30), days(1 * 30), days(3 * 30), 0.25}},  // KOL
         {13, {days(0 * 30), days(0 * 30), days(6 * 30), 0.7}},   // Incubator
-        {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.25}},   // Liquidity
+        {14, {days(0 * 30), days(0 * 30), days(6 * 30), 0.25}},  // Liquidity
         {15, {days(0 * 30), days(1 * 30), days(1 * 30), 1.0}},   // Special Token Round
         // New:
-        {16, {days(0 * 30), days(4 * 30), days(9 * 30), 0.05}},  // Seed
-        {17, {days(0 * 30), days(4 * 30), days(9 * 30), 0.05}},  // Pre-sale
-        {18, {days(0 * 30), days(2 * 30), days(0 * 30), 0.5}},   // Special Token Round
-        {19, {days(0 * 30), days(0 * 30), days(3 * 30), 0.4}},   // Private
-        {20, {days(0 * 30), days(1 * 30), days(3 * 30), 0.4}},   // Public (TGE)
-        {21, {days(0 * 30), days(0 * 30), days(6 * 30), 1.0 / 3.0}},  // Liquidity
+        {16, {days(0 * 30), days(4 * 30), days(9 * 30), 0.05}},      // Seed
+        {17, {days(0 * 30), days(4 * 30), days(9 * 30), 0.05}},      // Pre-sale
+        {18, {days(0 * 30), days(2 * 30), days(0 * 30), 0.5}},       // Special Token Round
+        {19, {days(0 * 30), days(0 * 30), days(3 * 30), 0.4}},       // Private
+        {20, {days(0 * 30), days(1 * 30), days(3 * 30), 0.4}},       // Public (TGE)
+        {21, {days(0 * 30), days(0 * 30), days(6 * 30), 1.0 / 3.0}}, // Liquidity
         // NOTE: there is actually a 25% TGE unlock, but we handle that manually in the migration script
         // The TGE + 72 hour unlock is increased from 25% to 33.33% to account for the fact that 25% is not vested at TGE (to give the 25% unlock)
-        {22, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}}, // Team
-        {23, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Reserves
-        {24, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},  // Partnerships
-        {25, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Community & Marketing
-        {26, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Platform Dev
-        {27, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Staking & Infra Rewards
-        {28, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Ecosystem
-        // Testing categories:
-        #ifdef BUILD_TEST
+        {22, {days(0 * 30), days(1 * 365), days(5 * 365), 0.0}},    // Team
+        {23, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},     // Reserves
+        {24, {days(0 * 30), days(0 * 30), days(2 * 365), 0.0}},     // Partnerships
+        {25, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},     // Community & Marketing
+        {26, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},     // Platform Dev
+        {27, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},     // Staking & Infra Rewards
+        {28, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},     // Ecosystem
+        {29, {days(0 * 30), days(30 + 0 * 30), days(3 * 30), 0.3}}, // Double Special Round - Part 1
+        {30, {days(0 * 30), days(30 + 3 * 30), days(3 * 30), 0.0}}, // Double Special Round - Part 2
+// Testing categories:
+#ifdef BUILD_TEST
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
         {998, {eosio::seconds(0), eosio::seconds(10), eosio::seconds(20), 0.5}},  // TESTING ONLY
         {999, {eosio::seconds(10), eosio::seconds(10), eosio::seconds(20), 0.0}}, // TESTING ONLY
-        #endif
+#endif
     };
 
     static const std::map<int, bool> depreciated_categories = {
-        {1, true}, {2, true}, {3, true}, {4, true}, {5, true},
-        {6, true}, {7, true}, {8, true}, {9, true}, {10, true},
-        {11, true}, {12, true}, {13, true}, {14, true}, {15, true}
-    };
+        {1, true}, {2, true}, {3, true}, {4, true}, {5, true}, {6, true}, {7, true}, {8, true}, {9, true}, {10, true}, {11, true}, {12, true}, {13, true}, {14, true}, {15, true}};
 
     class [[eosio::contract("vesting.tmy")]] vestingToken : public eosio::contract
     {
@@ -81,11 +80,11 @@ namespace vestingtoken
         using contract::contract;
         static constexpr eosio::symbol system_resource_currency = eosio::symbol("TONO", 6);
         static constexpr eosio::name token_contract_name = "eosio.token"_n;
-        #ifdef BUILD_TEST
-            static const uint8_t MAX_ALLOCATIONS = 5;
-        #else
-            static const uint8_t MAX_ALLOCATIONS = 150;
-        #endif
+#ifdef BUILD_TEST
+        static const uint8_t MAX_ALLOCATIONS = 5;
+#else
+        static const uint8_t MAX_ALLOCATIONS = 150;
+#endif
         struct [[eosio::table]] vesting_settings
         {
             eosio::time_point sales_start_date;
