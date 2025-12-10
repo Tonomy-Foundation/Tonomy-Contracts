@@ -176,7 +176,7 @@ namespace vestingtoken
         // Checks to verify new allocation is valid
         eosio::check(iter->tokens_allocated.amount == old_amount.amount, "Old amount does not match existing allocation");
         eosio::check(iter->vesting_category_type == old_category_id, "Old category does not match existing allocation");
-        eosio::check(iter->tokens_claimed.amount < new_amount.amount, "New amount is less than the amount already claimed");
+        eosio::check(iter->tokens_claimed.amount <= new_amount.amount, "New amount is less than the amount already claimed");
 
         // Modify the table row data, and update the table
         vesting_table.modify(iter, get_self(), [&](auto &row)
