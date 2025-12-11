@@ -61,6 +61,9 @@ namespace vestingtoken
         {26, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Platform Dev
         {27, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Staking & Infra Rewards
         {28, {days(0 * 30), days(0 * 30), days(5 * 365), 0.0}},  // Ecosystem
+        {29, {days(0 * 30), days(26), days(6 * 30), 0.15}}, // Double Special Round - Full
+        {30, {days(0 * 30), days(26), days(3 * 30), 0.3}}, // Double Special Round - Part 1
+        {31, {days(0 * 30), days(26 + 3 * 30), days(3 * 30), 0.0}}, // Double Special Round - Part 2
         // Testing categories:
         #ifdef BUILD_TEST
         {997, {days(6 * 30), days(0 * 30), days(2 * 365), 0.0}},                  // TESTING ONLY
