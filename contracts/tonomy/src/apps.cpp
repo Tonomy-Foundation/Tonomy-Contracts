@@ -16,11 +16,14 @@ apps::apps(name receiver, name code, eosio::datastream<const char *> ds)
             _smartcontracts(receiver, receiver.value) {}
 
 // Admin create app with random account name
-void apps::admncrtapp(string json_data,
+void apps::admncrtapp(name creator,
+                      string json_data,
                       string username,
                       string origin)
 {
     require_auth(get_self());
+
+    check(is_account(creator), "Creator account does not exist");
 
     check_app_username_chars(username);
 
@@ -40,9 +43,9 @@ void apps::admncrtapp(string json_data,
     auto json_hash = eosio::sha256(json_data.c_str(), std::strlen(json_data.c_str()));
     const eosio::name random_name = random_account_name(username_hash, json_hash, enum_account_type::App);
 
-    // Create account with owner=gov.tmy, active=contract
+    // Create account with owner=gov.tmy, active=creator
     authority owner_authority = create_authority_with_account(app_controller_account);
-    authority active_authority = create_authority_with_account(get_self());
+    authority active_authority = create_authority_with_account(creator);
     active_authority.accounts.push_back({.permission = create_eosio_code_permission_level(get_self()), .weight = 1});
 
     newaccount_action newaccountaction("eosio"_n, {get_self(), "active"_n});

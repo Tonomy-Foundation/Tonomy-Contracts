@@ -300,11 +300,13 @@ namespace tonomysystem
         /**
          * Admin: create or set an app record
          *
+         * @param creator - account that will own the active permission (in addition to code permission)
          * @param json_data - JSON with display details
          * @param username - raw username (unique)
          * @param origin - domain (unique)
          */
         [[eosio::action]] void admncrtapp(
+           name creator,
            string json_data,
            string username,
            string origin);
