@@ -18,6 +18,9 @@ namespace tonomysystem
    using eosio::asset;
    using eosio::check;
    using eosio::checksum256;
+
+   // Constants
+   static constexpr eosio::name app_controller_account = "gov.tmy"_n;
    using eosio::ignore;
    using eosio::name;
    using eosio::permission_level;

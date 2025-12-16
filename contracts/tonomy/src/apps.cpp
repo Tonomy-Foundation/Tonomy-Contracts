@@ -53,8 +53,8 @@ void apps::admncrtapp(string json_data,
     config.total_net_weight_allocated = this->initial_net_weight_allocation;
     _resource_config.set(config, get_self());
 
-    // Set resource limits: cpu and net to initial, ram to 0
-    eosio::set_resource_limits(random_name, 0, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+    // Set resource limits: ram=0, net=initial, cpu=initial
+    eosio::set_resource_limits(random_name, 0, this->initial_net_weight_allocation, this->initial_cpu_weight_allocation);
 
     // Register in appsv3
     _appsv3.emplace(get_self(), [&](auto &row) {
@@ -78,7 +78,7 @@ void apps::admncrtapp(string json_data,
 
 void apps::check_app_username(const checksum256 &username_hash)
 {
-    auto apps_by_username_hash_itr = _appsv2.get_index<"usernamehash"_n>();
+    auto apps_by_username_hash_itr = _appsv3.get_index<"usernamehash"_n>();
     const auto username_itr = apps_by_username_hash_itr.find(username_hash);
     if (username_itr != apps_by_username_hash_itr.end()) {
         throwError("TCON1001", "This app username is already taken");
@@ -88,7 +88,7 @@ void apps::check_app_username(const checksum256 &username_hash)
 void apps::check_app_origin(const string &origin)
 {
     auto origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
-    auto apps_by_origin_hash_itr = _appsv2.get_index<"originhash"_n>();
+    auto apps_by_origin_hash_itr = _appsv3.get_index<"originhash"_n>();
     const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
     if (origin_itr != apps_by_origin_hash_itr.end()) {
         throwError("TCON1002", "This app origin is already taken");
@@ -181,7 +181,7 @@ void apps::scbuyram(const name &account_name, const asset &quant)
     int64_t myRAM, myNET, myCPU;
     eosio::get_resource_limits(account_name, myRAM, myNET, myCPU);
     eosio::print("{\"event_log\":{\"account\":\"tonomy\",\"action\":\"scbuyram\"},\"time\":\"", eosio::current_time_point().to_string(), "Z\",\"events\":[{\"previous\":", myRAM, ",\"current\":", myRAM + ram_purchase, "}]\"}");
-    eosio::set_resource_limits(account_name, myRAM + ram_purchase, myNET, myNET);
+    eosio::set_resource_limits(account_name, myRAM + ram_purchase, myNET, myCPU);
 
     eosio::action(permission_level{account_name, "active"_n},
                   tonomy::token_contract_name,
@@ -218,7 +218,7 @@ void apps::scsellram(const name &account_name, const asset &quant)
     eosio::get_resource_limits(account_name, myRAM, myNET, myCPU);
     eosio::print("{\"event_log\":{\"account\":\"tonomy\",\"action\":\"scsellram\"},\"time\":\"", eosio::current_time_point().to_string(), "Z\",\"events\":[{\"previous\":", myRAM, ",\"current\":", myRAM - ram_sold, "}]\"}");
     eosio::check(myRAM - ram_sold >= 0, "Account cannot have less than 0 RAM");
-    eosio::set_resource_limits(account_name, myRAM - ram_sold, myNET, myNET);
+    eosio::set_resource_limits(account_name, myRAM - ram_sold, myNET, myCPU);
 
     eosio::action(permission_level{get_self(), "active"_n},
                   tonomy::token_contract_name,
@@ -289,8 +289,8 @@ void apps::appcreate(name creator,
     config.total_net_weight_allocated = this->initial_net_weight_allocation;
     _resource_config.set(config, get_self());
 
-    // Set resource limits: cpu and net to initial, ram to 0
-    eosio::set_resource_limits(random_name, 0, this->initial_cpu_weight_allocation, this->initial_net_weight_allocation);
+    // Set resource limits: ram=0, net=initial, cpu=initial
+    eosio::set_resource_limits(random_name, 0, this->initial_net_weight_allocation, this->initial_cpu_weight_allocation);
 
     // Register in appsv3
     _appsv3.emplace(get_self(), [&](auto &row) {
