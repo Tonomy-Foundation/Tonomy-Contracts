@@ -13,7 +13,7 @@ else
     WORKING_DIR="/contracts"
 fi
 
-BUILD_COMMAND="cdt-cpp -abigen -I ${WORKING_DIR}/include -R ${WORKING_DIR}/ricardian -contract ${CONTRACT_NAME} -o ${WORKING_DIR}/${CONTRACT_NAME}.wasm ${WORKING_DIR}/src/${CONTRACT_NAME}.cpp ${WORKING_DIR}/src/native.cpp"
+BUILD_COMMAND="cdt-cpp -abigen -I ${WORKING_DIR}/include -R ${WORKING_DIR}/ricardian -contract ${CONTRACT_NAME} -o ${WORKING_DIR}/${CONTRACT_NAME}.wasm ${WORKING_DIR}/src/${CONTRACT_NAME}.cpp ${WORKING_DIR}/src/apps.cpp ${WORKING_DIR}/src/native.cpp"
 
 echo $BUILD_COMMAND
 
