@@ -155,7 +155,14 @@ namespace tonomysystem
       struct [[eosio::table]] appv2 
       {
          name account_name;
-         string json_data; // JSON string containing app details (name, description, logo URL, background_color, accent_color)
+         string json_data; // JSON string containing app details
+         // {
+         //    app_name: string;
+         //    description: string;
+         //    logo_url: string;
+         //    background_color: string; // hex string starting with #
+         //    accent_color: string; // hex string starting with #
+         // };
          uint16_t version; // Version number to track schema changes
          checksum256 username_hash;
          string origin;
@@ -175,6 +182,64 @@ namespace tonomysystem
 
       // Create an instance of the table that can is initalized in the constructor
       appsv2_table _appsv2;
+
+      // ----------------------------------------------------------------------
+      // Apps V3
+      // ----------------------------------------------------------------------
+      // Plan enum for subscription tiers
+      enum plan_t : uint8_t {
+         plan_basic = 0,
+         plan_pro = 1
+      };
+
+      struct [[eosio::table]] appv3
+      {
+         name account_name;           // app account name
+         string json_data;            // JSON string containing app details:
+         // {
+         //    app_name: string;
+         //    description: string;
+         //    logo_url: string;
+         //    background_color: string; // hex string starting with #
+         //    accent_color: string; // hex string starting with #
+         // };
+         uint16_t version;            // schema/data version
+         string username;             // raw username string (e.g., "coolapp")
+         string origin;               // app domain
+         uint8_t plan;                // subscription plan (0 = basic, 1 = pro)
+
+         uint64_t primary_key() const { return account_name.value; }
+         checksum256 index_by_username_hash() const { return eosio::sha256(username.c_str(), std::strlen(username.c_str())); }
+         checksum256 index_by_origin_hash() const { return eosio::sha256(origin.c_str(), std::strlen(origin.c_str())); }
+      };
+
+      // Multi-index for appsv3 with indexes on username (via hash) and origin
+      typedef eosio::multi_index<"appsv3"_n, appv3,
+         eosio::indexed_by<"usernamehash"_n,
+            eosio::const_mem_fun<appv3, checksum256, &appv3::index_by_username_hash>>,
+         eosio::indexed_by<"originhash"_n,
+            eosio::const_mem_fun<appv3, checksum256, &appv3::index_by_origin_hash>>
+      > appsv3_table;
+
+      // Instance to be initialized in the constructor
+      appsv3_table _appsv3;
+
+      // ----------------------------------------------------------------------
+      // Smart Contract info per app
+      // ----------------------------------------------------------------------
+      struct [[eosio::table]] smartcontract
+      {
+         name account_name;           // app account
+         uint16_t version;            // deployment/version number
+         uint32_t ram_purchased_mb;   // purchased RAM in MB
+         string source_code_url;      // optional: empty string if not set
+
+         uint64_t primary_key() const { return account_name.value; }
+      };
+
+      typedef eosio::multi_index<"appscntrct"_n, smartcontract> smartcontract_table;
+
+      smartcontract_table _smartcontracts;
 
       /**
        * Returns the account name of the app that corresponds to the origin
@@ -237,5 +302,19 @@ namespace tonomysystem
        * @param origin - domain associated with the app
        */
       void check_app_origin(const string &origin);
+
+      /**
+       * Check if the raw username is already taken in appsv3
+       *
+       * @param username - raw username string (may include leading '@')
+       */
+      void check_app_username_v3(const string &username)
+      {
+         // Compute hash index from raw username for efficient lookup
+         checksum256 username_hash = eosio::sha256(username.c_str(), std::strlen(username.c_str()));
+         auto idx = _appsv3.get_index<"usernamehash"_n>();
+         auto itr = idx.find(username_hash);
+         check(itr == idx.end(), "Username already taken");
+      }
    };
 }
