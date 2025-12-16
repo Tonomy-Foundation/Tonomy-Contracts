@@ -11,8 +11,9 @@ namespace tonomysystem {
 
 apps::apps(name receiver, name code, eosio::datastream<const char *> ds)
     : native(receiver, code, ds),
-      _apps(receiver, receiver.value),
-      _appsv2(receiver, receiver.value) {}
+      _appsv2(receiver, receiver.value),
+      _appsv3(receiver, receiver.value),
+      _smartcontracts(receiver, receiver.value) {}
 
 void apps::newapp(string json_data,
                   checksum256 username_hash,
@@ -248,6 +249,30 @@ void apps::sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant)
                   "transfer"_n,
                   std::make_tuple(native::governance_name, dao_owner, eosio::asset(ram_sold, tonomy::system_resource_currency), std::string("sell ram")))
         .send();
+}
+
+const name apps::get_app_permission_by_origin(string origin, name contract_name)
+{
+   appsv3_table appsv3(contract_name, contract_name.value);
+   auto apps_by_origin_hash_itr = appsv3.get_index<"originhash"_n>();
+
+   eosio::checksum256 origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
+   const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
+   check(origin_itr != apps_by_origin_hash_itr.end(), "No app with this origin found");
+
+   return origin_itr->account_name;
+}
+
+const name apps::get_app_permission_by_username(string username, name contract_name)
+{
+   appsv3_table appsv3(contract_name, contract_name.value);
+   auto apps_by_username_hash_itr = appsv3.get_index<"usernamehash"_n>();
+
+   eosio::checksum256 username_hash = eosio::sha256(username.c_str(), std::strlen(username.c_str()));
+   const auto username_itr = apps_by_username_hash_itr.find(username_hash);
+   check(username_itr != apps_by_username_hash_itr.end(), "No app with this username found");
+
+   return username_itr->account_name;
 }
 
 } // namespace tonomysystem

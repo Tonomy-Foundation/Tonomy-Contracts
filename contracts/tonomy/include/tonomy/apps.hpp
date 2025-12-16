@@ -9,6 +9,7 @@
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
 #include <cstring>
+#include <vector>
 #include "native.hpp"
 
 namespace tonomysystem
@@ -45,39 +46,41 @@ namespace tonomysystem
        */
       apps(name receiver, name code, eosio::datastream<const char *> ds);
 
-      /**
-      * Manually sets the details of an app (admin only)
-      *
-      * @param account_name - name of the account
-      * @param json_data - JSON string containing app details (name,description, logo_url, background_color, accent_color)
-      * @param username_hash - hash of the username
-      * @param origin - domain associated with the app
-      */
-      [[eosio::action]] void adminsetapp(
-            name account_name,
-            string json_data,
-            checksum256 username_hash,
-            string origin);
-      
-      /**
-       * Removes an app (admin only)
-       * @param account_name - name of the account
-       */
-      [[eosio::action]] void deleteapp(name account_name);
+        /**
+         * Create a new app account and register its details (sets plan = basic)
+         *
+         * @param account_name - the account that creates the app
+         * @param json_data - JSON with display details: app_name, description, logo_url, background_color, accent_color
+         * @param username - raw username string (e.g., "coolapp" or "@coolapp"); must be unique
+         * @param origin - domain or origin associated with the app; must be unique
+         */
+        [[eosio::action]] void appcreate(
+             name account_name,
+           string json_data,
+           string username,
+           string origin);
 
-      /**
-       * Create a new account for an app and registers its details
-       *
-       * @param json_data - JSON string containing app details (name,description, logo_url, background_color, accent_color)
-       * @param username_hash - Hash of the username
-       * @param origin - Domain associated with the app
-       * @param key - Public key generated from the account's password
-       */
-      [[eosio::action]] void newapp(
-          string json_data,
-          checksum256 username_hash,
-          string origin,
-          public_key key);
+        /**
+         * Update app data
+         *
+         * @param account_name - the app account name
+         * @param json_data - updated JSON data (full)
+         * @param username - new raw username; must be unique if changed
+         */
+        [[eosio::action]] void appupdate(
+           name account_name,
+           string json_data,
+           string username);
+
+        /**
+         * Update the app subscription plan
+         *
+         * @param account_name - the app account name
+         * @param plan - subscription plan enum: 0 = basic, 1 = pro
+         */
+        [[eosio::action]] void appupdplan(
+           name account_name,
+           uint8_t plan);
     
       /**
        * Adds a new key to a person's account to log into an app with
@@ -94,63 +97,81 @@ namespace tonomysystem
           public_key key);
 
 
-      /**
-       * Delete all the old apps
-       */
-       [[eosio::action]] void eraseoldapps();
+        /**
+         * Deploy initial smart contract code, ABI, and metadata for an app (sets version = 1)
+         *
+         * @param account_name - the app account name
+         * @param vmtype - WebAssembly VM type (as in `setcode`)
+         * @param vmversion - WebAssembly VM version (as in `setcode`)
+         * @param code - WASM code bytes for the contract
+         * @param abi - ABI bytes for the contract
+         * @param source_code_url - optional URL to the contract source code (empty for none)
+         */
+        [[eosio::action]] void scdeploy(
+           name account_name,
+           uint8_t vmtype,
+           uint8_t vmversion,
+           const std::vector<char> &code,
+           const std::vector<char> &abi,
+           string source_code_url);
 
-      /**
-       * Buy RAM action allows an app to purchase RAM.
-       * It checks the account type of the app, ensures the RAM is being purchased with the correct token,
-       * and that the amount of tokens being used for the purchase is positive.
-       * It then calculates the amount of RAM to purchase based on the current RAM price,
-       * checks if there is enough available RAM, and allocates the purchased RAM to the app.
-       * Finally, it updates the total RAM used and available in the system, and
-       * transfers the tokens used for the purchase.
-       *
-       * @param dao_owner - the name of the DAO owner account
-       * @param app - the name of the app account purchasing the RAM
-       * @param quant - the amount and symbol of the tokens used for the purchase
-       */
-      [[eosio::action]] void buyram(const name &dao_owner, const name &app, const asset &quant);
+        /**
+         * Update smart contract code, ABI, and/or metadata for an app (increments version)
+         *
+         * @param account_name - the app account name
+         * @param vmtype - WebAssembly VM type (as in `setcode`)
+         * @param vmversion - WebAssembly VM version (as in `setcode`)
+         * @param code - WASM code bytes for the contract (empty vector to skip)
+         * @param abi - ABI bytes for the contract (empty vector to skip)
+         * @param source_code_url - optional new source code URL (empty to leave unchanged)
+         */
+        [[eosio::action]] void scupdate(
+           name account_name,
+           uint8_t vmtype,
+           uint8_t vmversion,
+           const std::vector<char> &code,
+           const std::vector<char> &abi,
+           string source_code_url);
 
-      /**
-       * Sell RAM action allows an app to sell RAM.
-       * It checks the account type of the app, ensures the RAM is being sold for the correct token,
-       * and that the amount of RAM being sold is positive.
-       * It then calculates the amount of tokens to return based on the current RAM price,
-       * checks if there is enough RAM being used by the app, and deallocates the sold RAM from the app.
-       * Finally, it updates the total RAM used in the system, and
-       * transfers the tokens from the sale.
-       *
-       * @param dao_owner - the name of the DAO owner account
-       * @param app - the name of the app account selling the RAM
-       * @param quant - the amount and symbol of the tokens used to sell
-       */
-      [[eosio::action]] void sellram(eosio::name dao_owner, eosio::name app, eosio::asset quant);
+        /**
+         * Buy RAM for the app's smart contract using core tokens
+         *
+         * @param account_name - the app account name
+         * @param quant - amount of core tokens to spend for RAM
+         */
+        [[eosio::action]] void scbuyram(
+           const name &account_name,
+           const asset &quant);
 
-      struct [[eosio::table]] app
-      {
-         name account_name;
-         string app_name;
-         checksum256 username_hash;
-         string description;
-         string logo_url;
-         string origin;
+        /**
+         * Sell RAM from the app's smart contract and return core tokens
+         *
+         * @param account_name - the app account name
+         * @param quant - amount of core tokens to sell for RAM reduction
+         */
+        [[eosio::action]] void scsellram(
+           const name &account_name,
+           const asset &quant);
 
-         uint64_t primary_key() const { return account_name.value; }
-         checksum256 index_by_username_hash() const { return username_hash; }
-         checksum256 index_by_origin_hash() const { return eosio::sha256(origin.c_str(), std::strlen(origin.c_str())); }
-      };
+        /**
+         * Add a new key to the app account's active permission
+         *
+         * @param account_name - the app account name
+         * @param key - the new public key to add
+         */
+        [[eosio::action]] void appaddkey(
+           name account_name,
+           public_key key);
 
-      typedef eosio::multi_index<"apps"_n, app,
-                                 eosio::indexed_by<"usernamehash"_n,
-                                                   eosio::const_mem_fun<app, checksum256, &app::index_by_username_hash>>,
-                                 eosio::indexed_by<"originhash"_n,
-                                                   eosio::const_mem_fun<app, checksum256, &app::index_by_origin_hash>>>
-          apps_table;
-
-      apps_table _apps;
+        /**
+         * Remove a key from the app account's active permission
+         *
+         * @param account_name - the app account name
+         * @param key - the public key to remove
+         */
+        [[eosio::action]] void appremkey(
+           name account_name,
+           public_key key);
 
       struct [[eosio::table]] appv2 
       {
@@ -249,44 +270,95 @@ namespace tonomysystem
        * @param {name} [contract_name] - the name of the contract to query
        * @returns {name} - the account name of the app
        */
-      static const name get_app_permission_by_origin(string origin, name contract_name = "id.tmy"_n)
-      {
-         apps_table id_apps = apps_table(contract_name, contract_name.value);
-         auto apps_by_origin_hash_itr = id_apps.get_index<"originhash"_n>();
-
-         eosio::checksum256 origin_hash = eosio::sha256(origin.c_str(), std::strlen(origin.c_str()));
-         const auto origin_itr = apps_by_origin_hash_itr.find(origin_hash);
-         check(origin_itr == apps_by_origin_hash_itr.end(), "No app with this origin found");
-
-         return origin_itr->account_name;
-      }
+      static const name get_app_permission_by_origin(string origin, name contract_name = "id.tmy"_n);
 
       /**
-       * Returns the account name of the app that corresponds to the origin
+       * Returns the account name of the app that corresponds to the username
        *
        * @param {string} username - the username of the app
-       * @example "demo.app.tonomy.id"
+       * @example "demo.app.tonomy.id" or "@coolapp"
        * @param {name} [contract_name] - the name of the contract to query
        * @returns {name} - the account name of the app
        */
-      static const name get_app_permission_by_username(string username, name contract_name = "tonomy"_n)
-      {
-         apps_table id_apps = apps_table(contract_name, contract_name.value);
-         auto apps_by_username_hash_itr = id_apps.get_index<"usernamehash"_n>();
+      static const name get_app_permission_by_username(string username, name contract_name = "tonomy"_n);
 
-         eosio::checksum256 username_hash = eosio::sha256(username.c_str(), std::strlen(username.c_str()));
-         const auto username_itr = apps_by_username_hash_itr.find(username_hash);
-         check(username_itr == apps_by_username_hash_itr.end(), "No app with this username found");
-
-         return username_itr->account_name;
-      }
-
-      using newapp_action = action_wrapper<"newapp"_n, &apps::newapp>;
       using loginwithapp_action = action_wrapper<"loginwithapp"_n, &apps::loginwithapp>;
-      using adminsetapp_action = action_wrapper<"adminsetapp"_n, &apps::adminsetapp>;
-      using eraseoldapps_action = action_wrapper<"eraseoldapps"_n, &apps::eraseoldapps>;
-      using buyram_action = action_wrapper<"buyram"_n, &apps::buyram>;
-      using sellram_action = action_wrapper<"sellram"_n, &apps::sellram>;
+
+        // Action wrappers
+        using appcreate_action = action_wrapper<"appcreate"_n, &apps::appcreate>;
+        using appupdate_action = action_wrapper<"appupdate"_n, &apps::appupdate>;
+        using appupdplan_action = action_wrapper<"appupdplan"_n, &apps::appupdplan>;
+        using scdeploy_action = action_wrapper<"scdeploy"_n, &apps::scdeploy>;
+        using scupdate_action = action_wrapper<"scupdate"_n, &apps::scupdate>;
+        using scbuyram_action = action_wrapper<"scbuyram"_n, &apps::scbuyram>;
+        using scsellram_action = action_wrapper<"scsellram"_n, &apps::scsellram>;
+        using appaddkey_action = action_wrapper<"appaddkey"_n, &apps::appaddkey>;
+        using appremkey_action = action_wrapper<"appremkey"_n, &apps::appremkey>;
+
+        /**
+         * Admin: create or set an app record
+         *
+         * @param json_data - JSON with display details
+         * @param username - raw username (unique)
+         * @param origin - domain (unique)
+         */
+        [[eosio::action]] void admncrtapp(
+           string json_data,
+           string username,
+           string origin);
+
+        /**
+         * Admin: update an app record
+         *
+         * @param account_name - the app account name
+         * @param json_data - JSON with display details
+         * @param username - raw username (unique)
+         * @param origin - domain (unique)
+         * @param plan - subscription plan enum: 0 = basic, 1 = pro
+         */
+        [[eosio::action]] void admnupdapp(
+           name account_name,
+           string json_data,
+           string username,
+           string origin,
+           uint8_t plan);
+
+        /**
+         * Admin: delete an app record
+         *
+         * @param account_name - the app account name
+         */
+        [[eosio::action]] void admndelapp(
+           name account_name);
+
+        /**
+         * Admin: migrate a single app from V2
+         *
+         * @param account_name - the app account name to migrate
+         * @param username - raw username string (e.g., "coolapp" or "@coolapp")
+         * @param plan - subscription plan enum: 0 = basic, 1 = pro (default to basic)
+         */
+        [[eosio::action]] void admnmigapp(
+           name account_name,
+           string username,
+           uint8_t plan);
+
+        /**
+         * Admin: migrate smart contract metadata for an app
+         * Note: RAM info is fetched from get_resource_limits for the account
+         *
+         * @param account_name - the app account name
+         * @param source_code_url - optional URL to the contract source code
+         */
+        [[eosio::action]] void admnmigsc(
+           name account_name,
+           string source_code_url);
+
+        using admncrtapp_action = action_wrapper<"admncrtapp"_n, &apps::admncrtapp>;
+        using admnupdapp_action = action_wrapper<"admnupdapp"_n, &apps::admnupdapp>;
+        using admndelapp_action = action_wrapper<"admndelapp"_n, &apps::admndelapp>;
+        using admnmigapp_action = action_wrapper<"admnmigapp"_n, &apps::admnmigapp>;
+        using admnmigsc_action = action_wrapper<"admnmigsc"_n, &apps::admnmigsc>;
    
       private:
       /**
