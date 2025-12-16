@@ -380,6 +380,11 @@ namespace tonomysystem
       void check_app_origin(const string &origin);
 
       /**
+       * Validate username characters against allowed set [A-Za-z0-9_-]
+       */
+      void check_app_username_chars(const string &username);
+
+      /**
        * Check if the raw username is already taken in appsv3
        *
        * @param username - raw username string (may include leading '@')

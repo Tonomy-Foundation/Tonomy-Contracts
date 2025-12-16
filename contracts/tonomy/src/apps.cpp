@@ -22,6 +22,8 @@ void apps::admncrtapp(string json_data,
 {
     require_auth(get_self());
 
+    check_app_username_chars(username);
+
     // Uniqueness checks for username and origin
     checksum256 username_hash = eosio::sha256(username.c_str(), std::strlen(username.c_str()));
     {
@@ -95,6 +97,19 @@ void apps::check_app_origin(const string &origin)
     }
 }
 
+void apps::check_app_username_chars(const string &username)
+{
+    for (const char c : username) {
+        const bool is_upper = c >= 'A' && c <= 'Z';
+        const bool is_lower = c >= 'a' && c <= 'z';
+        const bool is_digit = c >= '0' && c <= '9';
+        const bool is_allowed_symbol = c == '_' || c == '-';
+        if (!(is_upper || is_lower || is_digit || is_allowed_symbol)) {
+            check(false, "Username may only contain A-Z, a-z, 0-9, '_' or '-' characters");
+        }
+    }
+}
+
 void apps::admnupdapp(name account_name,
                        string json_data,
                        string username,
@@ -107,8 +122,9 @@ void apps::admnupdapp(name account_name,
     auto itr = _appsv3.find(account_name.value);
     check(itr != _appsv3.end(), "App does not exist; use admncrtapp to create");
 
-    // uniqueness checks if changed
+    // validate and uniqueness checks if changed
     if (itr->username != username) {
+        check_app_username_chars(username);
         auto uidx = _appsv3.get_index<"usernamehash"_n>();
         checksum256 username_hash = eosio::sha256(username.c_str(), std::strlen(username.c_str()));
         check(uidx.find(username_hash) == uidx.end(), "Username already taken");
@@ -259,6 +275,7 @@ void apps::appcreate(name creator,
     require_auth(creator);
 
     // Uniqueness checks for username and origin
+    check_app_username_chars(username);
     checksum256 username_hash = eosio::sha256(username.c_str(), std::strlen(username.c_str()));
     {
         auto uidx = _appsv3.get_index<"usernamehash"_n>();
@@ -321,6 +338,7 @@ void apps::appupdate(name account_name,
 
     // If username changed, ensure uniqueness
     if (itr->username != username) {
+        check_app_username_chars(username);
         checksum256 username_hash = eosio::sha256(username.c_str(), std::strlen(username.c_str()));
         auto uidx = _appsv3.get_index<"usernamehash"_n>();
         check(uidx.find(username_hash) == uidx.end(), "Username already taken");
