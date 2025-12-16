@@ -47,15 +47,15 @@ namespace tonomysystem
       apps(name receiver, name code, eosio::datastream<const char *> ds);
 
         /**
-         * Create a new app account and register its details (sets plan = basic)
+         * Create a new app account with random name and register its details (sets plan = basic)
          *
-         * @param account_name - the account that creates the app
+         * @param creator - the account name of the creator (used for auth and active permission)
          * @param json_data - JSON with display details: app_name, description, logo_url, background_color, accent_color
          * @param username - raw username string (e.g., "coolapp" or "@coolapp"); must be unique
          * @param origin - domain or origin associated with the app; must be unique
          */
         [[eosio::action]] void appcreate(
-             name account_name,
+           name creator,
            string json_data,
            string username,
            string origin);
@@ -252,7 +252,6 @@ namespace tonomysystem
       {
          name account_name;           // app account
          uint16_t version;            // deployment/version number
-         uint32_t ram_purchased_mb;   // purchased RAM in MB
          string source_code_url;      // optional: empty string if not set
 
          uint64_t primary_key() const { return account_name.value; }
@@ -337,11 +336,13 @@ namespace tonomysystem
          * @param account_name - the app account name to migrate
          * @param username - raw username string (e.g., "coolapp" or "@coolapp")
          * @param plan - subscription plan enum: 0 = basic, 1 = pro (default to basic)
+         * @param key - public key to initialize/attach to the app during migration
          */
         [[eosio::action]] void admnmigapp(
            name account_name,
            string username,
-           uint8_t plan);
+           uint8_t plan,
+           public_key key);
 
         /**
          * Admin: migrate smart contract metadata for an app
