@@ -306,7 +306,8 @@ namespace tonomysystem
          * @param origin - domain (unique)
          */
         [[eosio::action]] void admncrtapp(
-           name creator,
+           name   account_name,
+           name   creator,
            string json_data,
            string username,
            string origin);
@@ -326,6 +327,24 @@ namespace tonomysystem
            string username,
            string origin,
            uint8_t plan);
+
+        /**
+         * Admin: register app data for an existing account
+         * Similar to admncrtapp but does not create the account or set resource limits.
+         * Used when the account already exists.
+         *
+         * @param account_name - the app account name (must already exist)
+         * @param creator - the creator account (used for active permission via updateauth)
+         * @param json_data - JSON with display details
+         * @param username - raw username (unique)
+         * @param origin - domain (unique)
+         */
+        [[eosio::action]] void adminregapp(
+           name account_name,
+           name creator,
+           string json_data,
+           string username,
+           string origin);
 
         /**
          * Admin: delete an app record
@@ -362,6 +381,7 @@ namespace tonomysystem
 
         using admncrtapp_action = action_wrapper<"admncrtapp"_n, &apps::admncrtapp>;
         using admnupdapp_action = action_wrapper<"admnupdapp"_n, &apps::admnupdapp>;
+        using adminregapp_action = action_wrapper<"adminregapp"_n, &apps::adminregapp>;
         using admndelapp_action = action_wrapper<"admndelapp"_n, &apps::admndelapp>;
         using admnmigapp_action = action_wrapper<"admnmigapp"_n, &apps::admnmigapp>;
         using admnmigsc_action = action_wrapper<"admnmigsc"_n, &apps::admnmigsc>;
@@ -372,19 +392,38 @@ namespace tonomysystem
        *
        * @param username_hash - hash of the username of the account
        */    
-      void check_app_username(const checksum256 &username_hash);
+      // Helper: ensure the provided username is not already taken
+      void check_username_is_unique(const string &username);
     
       /**
        * Check if the app origin is already taken
        *
        * @param origin - domain associated with the app
        */
-      void check_app_origin(const string &origin);
+      void check_app_origin_is_unique(const string &origin);
 
       /**
        * Validate username characters against allowed set [A-Za-z0-9_-]
+       *
+       * @param username - raw username string
        */
       void check_app_username_chars(const string &username);
+
+      /**
+       * Update resource config and set resource limits for an account
+       *
+       * @param account_name - the account to set resource limits for
+       */
+      void update_resource_config_and_limits(name account_name);
+
+      /**
+       * Create a new account with specified owner and active authorities
+       *
+       * @param account_name - the new account name
+       * @param owner_account - the account name for owner permission
+       * @param active_account - the account name for active permission
+       */
+      void create_app_account(name account_name, name owner_account, name active_account);
 
       /**
        * Check if the raw username is already taken in appsv3
@@ -399,5 +438,17 @@ namespace tonomysystem
          auto itr = idx.find(username_hash);
          check(itr == idx.end(), "Username already taken");
       }
+
+      /**
+       * Register app data in appsv3 table and update authority
+       * Common logic used by both admncrtapp and adminregapp
+       *
+       * @param account_name - the app account name
+       * @param creator - the creator account for active permission
+       * @param json_data - JSON with display details
+       * @param username - raw username string (unique)
+       * @param origin - domain (unique)
+       */
+      void register_app_data(name account_name, name creator, const string &json_data, const string &username, const string &origin);
    };
 }
