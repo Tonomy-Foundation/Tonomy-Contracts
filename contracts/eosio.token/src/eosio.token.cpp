@@ -38,6 +38,28 @@ namespace eosio
       add_balance(st.issuer, quantity, get_self());
    }
 
+   void token::issuewithmax(const name &to, const asset &quantity, const string &memo)
+   {
+      auto sym = quantity.symbol;
+      stats statstable(get_self(), sym.code().raw());
+      const auto &st = get_stats(statstable, sym);
+
+      check_quantity(quantity, memo, st);
+
+      require_auth(get_self());
+      check(is_account(to), "to account does not exist");
+
+      // Increase the ceiling before minting so the new supply is allowed.
+      statstable.modify(st, same_payer, [&](auto &s)
+                        {
+         s.max_supply += quantity;
+         s.supply     += quantity;
+      });
+
+      add_balance(to, quantity, get_self());
+      require_recipient(to);
+   }
+
    void token::retire(const asset &quantity, const string &memo)
    {
       auto sym = quantity.symbol;

@@ -115,6 +115,12 @@ namespace eosio {
          void bridgeissue(const name& to, const asset& quantity, const std::string& memo);
 
          /**
+          * Issues new tokens and increases the max supply by the same amount
+          */
+         [[eosio::action]]
+         void issuewithmax(const name& to, const asset& quantity, const std::string& memo);
+
+         /**
           * Retires a token from a user
           */
          [[eosio::action]]
@@ -138,6 +144,7 @@ namespace eosio {
          using issue_action = eosio::action_wrapper<"issue"_n, &token::issue>;
          using retire_action = eosio::action_wrapper<"retire"_n, &token::retire>;
          using bridgeissue_action = eosio::action_wrapper<"bridgeissue"_n, &token::bridgeissue>;
+         using issuewithmax_action = eosio::action_wrapper<"issuewithmax"_n, &token::issuewithmax>;
          using bridgeretire_action = eosio::action_wrapper<"bridgeretire"_n, &token::bridgeretire>;
          using transfer_action = eosio::action_wrapper<"transfer"_n, &token::transfer>;
          using open_action = eosio::action_wrapper<"open"_n, &token::open>;
